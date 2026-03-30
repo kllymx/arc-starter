@@ -76,12 +76,14 @@ Once context is loaded, you can:
 
 ## Commands
 
-| Command | What it does |
-|---------|--------------|
-| `/setup` | Interviews you and populates your business context files |
-| `/brainstorm` | Suggests automation and augmentation opportunities based on your context |
-| `/audit` | Structured task audit — inventory what you do and identify what to automate first |
-| `/explore` | Takes an idea and researches the best way to build it |
+You can trigger these by typing the `/command` name, or just say it naturally — the agent understands both.
+
+| Command | Or just say... | What it does |
+|---------|---------------|--------------|
+| `/setup` | "let's set up" | Interviews you and populates your business context files |
+| `/brainstorm` | "what should I automate?" | Suggests automation and augmentation opportunities based on your context |
+| `/audit` | "audit my tasks" | Structured task audit — inventory what you do and identify what to automate first |
+| `/explore` | "explore this idea" | Takes an idea and researches the best way to build it |
 
 ---
 
