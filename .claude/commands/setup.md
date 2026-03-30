@@ -41,10 +41,10 @@ Ask these questions conversationally — not as a form. Group related questions 
 
 ### Business (for context/business.md)
 
-1. What does your business do? Give me the one-sentence version.
-2. How do you make money? What's the business model?
-3. Who are your customers? Who do you sell to?
-4. How big is the business right now? (team size, rough revenue range, stage)
+1. What does your business do? Give me the one-sentence version. Don't assume the business is a typical software or services company — founders span every industry: hardware, biotech, robotics, manufacturing, clean energy, materials science, research, aerospace, medical devices, neurotech, climate tech, deep tech, SaaS, marketplace, and more. Let them describe it in their own terms.
+2. How do you make money? What's the business model? (e.g., product sales, licensing, contracts, grants, subscriptions, services, etc.)
+3. Who are your customers? Who do you sell to? (could be enterprises, consumers, governments, research institutions, other businesses, etc.)
+4. How big is the business right now? (team size, rough revenue range or funding stage)
 5. What makes you different from competitors?
 
 ### Founder (for context/founder.md)
