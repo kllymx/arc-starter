@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="arc-system.png" alt="ARC by Arcane Intelligence" width="700" />
+</p>
+
 # ARC
 
 **By Arcane Intelligence — Built by Max Kelly**
