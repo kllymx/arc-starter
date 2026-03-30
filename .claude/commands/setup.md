@@ -23,18 +23,27 @@ If the imports folder is empty, mention to the founder:
 
 ### Ask for company website
 
-Before starting the interview, ask:
+Before starting the interview, ask for quick context sources:
 
-> "Do you have a company website? If so, drop the URL here and I'll pull context from it — saves you answering a lot of questions I can figure out myself."
+> "Before we dive in, a couple of things that can speed this up:
+>
+> 1. **Company website** — drop the URL and I'll pull what I can from it
+> 2. **Your LinkedIn** — paste your profile URL or copy-paste your LinkedIn 'About' and experience sections (LinkedIn often blocks automated scraping, so pasting the text directly works best)
+>
+> Either, both, or neither is fine — we can do it all conversationally too."
 
-If they provide a URL:
-
+If they provide a **website URL**:
 1. Fetch and read the website content
 2. Extract: what the company does, products/services, positioning, team info, customer types, any other relevant details
 3. Use this to pre-fill your understanding
-4. In the interview, confirm what you found rather than asking from scratch: "From your website, it looks like you do X for Y customers. Is that right? Anything missing or outdated?"
 
-If they don't have one or skip this step, proceed to the interview normally.
+If they provide **LinkedIn content** (URL or pasted text):
+1. Extract: founder background, career history, skills, education, notable achievements
+2. Use this to pre-fill the founder profile
+
+If they provide either or both, adjust the interview to **confirm what you found** rather than asking from scratch: "From your website and profile, it looks like [summary]. Is that right? Anything missing or outdated?"
+
+If they skip this step, proceed to the interview normally.
 
 ### Ask which mode
 
@@ -51,6 +60,14 @@ Ask the founder:
 ## Quick Setup Interview
 
 Ask these questions conversationally — not as a form. Group related questions naturally and respond to what they say before moving on. If they give a long answer that covers multiple questions, don't re-ask what they already answered.
+
+**Save each context file as you complete that section** — don't wait until the end to write all four. If the founder needs to leave mid-setup, they can resume in a new session and you'll see which files are already populated.
+
+**Early on, ask about communication preference:**
+
+> "Quick question — how do you prefer I communicate? Brief and direct, or more detailed and explanatory?"
+
+Save their answer to `context/memory.md`.
 
 ### Business (for context/business.md)
 
@@ -129,9 +146,9 @@ Covers everything in the quick setup, plus these additional questions:
 
 ## After the Interview
 
-### Write the context files
+### Write the context files (if not already saved incrementally)
 
-Populate each context file with clean, structured markdown. Use headers, bullet points, and tables where appropriate. Write in a way that is:
+If you haven't already been saving each file as you completed its section, write them now. Populate each context file with clean, structured markdown. Use headers, bullet points, and tables where appropriate. Write in a way that is:
 
 - **Factual** — state what is, not what could be
 - **Structured** — use consistent formatting so it's easy to scan
@@ -160,16 +177,32 @@ After writing the files, give the founder a brief summary of what's in each file
 
 Make any corrections they request.
 
-### Suggest next steps
+### Deliver the first insight (the wow moment)
+
+Don't just suggest next steps — prove you understand the business by offering an unsolicited observation. Based on everything you've just learned, share 2-3 specific insights:
+
+- The biggest bottleneck or time sink you've identified
+- One thing that looks highly automatable based on their tools and tasks
+- A gap between their stated priorities and how they actually spend their time
+
+Frame it like:
+
+> "Here's what jumps out to me from everything you've shared:
+>
+> 1. [Specific bottleneck or observation]
+> 2. [Something that looks automatable]
+> 3. [A gap or opportunity they might not have noticed]
+>
+> Any of these feel right? I can dig deeper into whichever one matters most."
+
+This is the moment where the founder sees this is different from ChatGPT. Make it count.
+
+### Then suggest next steps
 
 If they did the quick setup:
 
-> "You're set up with the essentials. When you have more time, run `/setup` again and choose the deep setup — I'll only ask about what's still missing.
->
-> In the meantime, try asking me anything about your business, or run `/brainstorm` to see what automation opportunities I can spot."
+> "When you have more time, you can run the deep setup to fill in the gaps. Otherwise, just start using me — ask questions, give me tasks, or say 'let's brainstorm' and I'll suggest what to automate."
 
 If they did the deep setup:
 
-> "Your context is fully loaded. Try asking me anything about your business — I should be able to answer with specifics, not generic advice.
->
-> When you're ready, run `/brainstorm` to see what I think you should automate first, or `/audit` for a full task inventory."
+> "Your context is fully loaded. You can ask me anything about your business and I'll answer with specifics, not generic advice. Say 'let's brainstorm' when you want automation ideas, or 'audit my tasks' for a full inventory."
