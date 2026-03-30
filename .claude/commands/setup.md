@@ -6,6 +6,74 @@ You are running the ARC setup process. Your goal is to interview the founder and
 
 ## Before You Start
 
+### Check the founder's environment first
+
+Look at `context/workspace.md`. If it is empty or still contains placeholder text, ask this before anything else:
+
+> "Before we dive in, what environment are you using ARC in — Claude Code, Cursor, Codex, Claude Desktop, or something else?
+>
+> And how technical should I be: non-technical, somewhat technical, or technical?"
+
+Save the answer to `context/workspace.md` immediately using this structure:
+
+```markdown
+# Workspace Context
+
+> Last updated: [date]
+
+## Environment
+- Primary environment: [Claude Code / Cursor / Codex / Claude Desktop / other]
+- Slash commands available: [yes / no / unknown]
+
+## Founder Preferences
+- Technical comfort: [non-technical / somewhat technical / technical]
+- Preferred guidance style: [plain language / mixed / technical]
+
+## Notes
+- [Any setup constraints or helpful notes about how ARC should behave in this environment]
+```
+
+Use that file to adapt the rest of setup:
+- If slash commands are available, you can mention `/setup`, `/brainstorm`, `/audit`, and `/explore` as optional shortcuts.
+- If slash commands are not available or unclear, use natural language throughout: "say let's set up", "ask me to brainstorm", "tell me to audit your tasks".
+- If the founder is non-technical, avoid jargon and explain any file or environment steps plainly.
+
+### Check setup status before interviewing
+
+Look at `context/setup-status.md`.
+
+If it already shows setup is partially complete:
+- tell the founder what is already done
+- tell them what is still missing
+- resume from the missing sections instead of restarting
+
+If setup has not started yet, initialize `context/setup-status.md` right away using this structure:
+
+```markdown
+# Setup Status
+
+> Last updated: [date]
+
+## Overall
+- Status: Not started / In progress / Complete
+- Setup mode: Unknown / Quick / Deep
+
+## Sections
+- Workspace: pending / complete
+- Business: pending / complete
+- Founder: pending / complete
+- Stack: pending / complete
+- Priorities: pending / complete
+- Overview: pending / complete
+
+## Resume Notes
+- Last completed step: [step]
+- Still needed: [what is still missing]
+- Recommended next move: [what ARC should do next]
+```
+
+As setup progresses, keep this file updated. It should make resuming setup obvious in a fresh conversation.
+
 ### Check for imports
 
 Look in the `imports/` folder. If there are any documents there (pitch decks, business plans, one-pagers, website copy, meeting notes, ChatGPT memory exports, or any other business documents):
@@ -62,6 +130,8 @@ Ask the founder:
 Ask these questions conversationally — not as a form. Group related questions naturally and respond to what they say before moving on. If they give a long answer that covers multiple questions, don't re-ask what they already answered.
 
 **Save each context file as you complete that section** — don't wait until the end to write all four. If the founder needs to leave mid-setup, they can resume in a new session and you'll see which files are already populated.
+
+Every time you finish a section, update `context/setup-status.md`.
 
 **Early on, ask about communication preference:**
 
@@ -177,6 +247,38 @@ After writing the files, give the founder a brief summary of what's in each file
 
 Make any corrections they request.
 
+### Create the one-page overview
+
+Create or update `context/overview.md`. This should be the fastest file to skim before any session.
+
+Use this structure:
+
+```markdown
+# Business Overview
+
+> Last updated: [date]
+
+## Snapshot
+- Business: [one sentence]
+- Founder: [role and strongest value]
+- Stage: [team size / funding / revenue range if known]
+
+## Current Reality
+- Biggest bottleneck: [one line]
+- Top priorities: [3 bullets max]
+- Key tools: [short list]
+
+## Where ARC Can Help Most
+- [first high-value opportunity]
+- [second high-value opportunity]
+- [third high-value opportunity]
+
+## Best Immediate Next Move
+- [the most useful thing ARC should do next]
+```
+
+Keep it tight. This is a summary file, not a duplicate of the full context.
+
 ### Deliver the first insight (the wow moment)
 
 Don't just suggest next steps — prove you understand the business by offering an unsolicited observation. Based on everything you've just learned, share 2-3 specific insights:
@@ -197,12 +299,35 @@ Frame it like:
 
 This is the moment where the founder sees this is different from ChatGPT. Make it count.
 
+### Turn insight into immediate value
+
+Don't stop at observations. Recommend one specific first win that you can do right now in this same session.
+
+Pick something that is:
+- small enough to finish quickly
+- tied to a real priority or pain point
+- obviously useful to the founder today
+
+Frame it like:
+
+> "The fastest useful thing I could do for you right now is [specific action].
+>
+> It would help because [reason tied to their business].
+>
+> Want me to do that now?"
+
+If they say yes, do it immediately. Don't send them off to another command unless it is clearly the best path.
+
+If they want alternatives, offer up to two more options or suggest `/first-win`.
+
 ### Then suggest next steps
 
 If they did the quick setup:
 
-> "When you have more time, you can run the deep setup to fill in the gaps. Otherwise, just start using me — ask questions, give me tasks, or say 'let's brainstorm' and I'll suggest what to automate."
+> "When you have more time, you can do the deep setup to fill in the gaps. Otherwise, just start using me — ask questions, give me tasks, ask me for a quick win, or ask me to brainstorm and I'll suggest what to automate."
 
 If they did the deep setup:
 
-> "Your context is fully loaded. You can ask me anything about your business and I'll answer with specifics, not generic advice. Say 'let's brainstorm' when you want automation ideas, or 'audit my tasks' for a full inventory."
+> "Your context is fully loaded. You can ask me anything about your business and I'll answer with specifics, not generic advice. Ask me for a quick win when you want immediate value, ask me to brainstorm when you want automation ideas, or tell me to audit your tasks for a full inventory."
+
+At the very end, update `context/setup-status.md` to mark setup complete and note the recommended next move.

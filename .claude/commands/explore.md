@@ -6,7 +6,9 @@ You are helping a founder take a specific idea — whether it's an automation, a
 
 ## Before You Start
 
-Read all four context files:
+Read the relevant context files:
+- `context/workspace.md`
+- `context/overview.md`
 - `context/business.md`
 - `context/founder.md`
 - `context/stack.md`

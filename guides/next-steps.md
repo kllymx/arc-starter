@@ -6,6 +6,21 @@ You've got your ARC workspace set up and your context loaded. Here's how to get 
 
 ## Right Now (This Week)
 
+### Get a first win immediately
+
+Before you worry about workflows or integrations, ask ARC for a quick win. The goal is to have it do one useful thing for you right away so you can feel how this workspace is different from a generic chat.
+
+Try:
+- "Get me a quick win"
+- "What can you do for me right now?"
+- "Show me something useful"
+
+The best first wins are usually things like:
+- drafting an important email or memo with your business context baked in
+- producing a summary, brief, or analysis you already need
+- mapping one painful process clearly enough to improve it next
+- creating the first version of a recurring update or briefing
+
 ### Use it conversationally
 
 Just talk to it. Ask it questions about your business. Give it small tasks. The more you use it, the more you'll discover what it's good at and where it falls short.

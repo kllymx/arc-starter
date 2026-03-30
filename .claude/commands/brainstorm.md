@@ -6,7 +6,9 @@ You are helping a founder identify what to automate or augment in their business
 
 ## Before You Start
 
-Read all four context files:
+Read the relevant context files:
+- `context/workspace.md`
+- `context/overview.md`
 - `context/business.md`
 - `context/founder.md`
 - `context/stack.md`
@@ -73,6 +75,10 @@ Ask the founder:
 > "Any of these jump out? If something interests you, I can run `/explore` to research the best way to build it and spec it out."
 
 If they pick one, suggest running `/explore` with that specific idea.
+
+If they seem to want immediate value rather than a bigger build, say:
+
+> "If you want, I can also pick the fastest useful thing to do right now and just do it. Ask me for a quick win."
 
 If nothing resonates, ask:
 
