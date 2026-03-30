@@ -21,7 +21,20 @@ If the imports folder is empty, mention to the founder:
 >
 > If you use ChatGPT, you can also export your ChatGPT memory (Settings > Personalization > Memory > Manage > Export) and drop it here — it's a fast way to bring over what AI already knows about you."
 
-Then proceed to the interview.
+### Ask for company website
+
+Before starting the interview, ask:
+
+> "Do you have a company website? If so, drop the URL here and I'll pull context from it — saves you answering a lot of questions I can figure out myself."
+
+If they provide a URL:
+
+1. Fetch and read the website content
+2. Extract: what the company does, products/services, positioning, team info, customer types, any other relevant details
+3. Use this to pre-fill your understanding
+4. In the interview, confirm what you found rather than asking from scratch: "From your website, it looks like you do X for Y customers. Is that right? Anything missing or outdated?"
+
+If they don't have one or skip this step, proceed to the interview normally.
 
 ### Ask which mode
 
