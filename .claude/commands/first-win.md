@@ -20,6 +20,15 @@ If the business context files are empty or still contain placeholders, stop and 
 
 Use `context/workspace.md` to match your tone and instructions to the founder's environment and technical comfort.
 
+Then check for supporting artifacts:
+- `audit-results.md` if it exists
+- relevant files in `explorations/`
+- recent or relevant files in `imports/`
+
+Then choose the first win using both the structured context and the best supporting artifacts.
+
+If the founder has already explored or audited something relevant, do not ignore that prior work.
+
 ---
 
 ## What Counts as a First Win

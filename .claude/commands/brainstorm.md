@@ -16,6 +16,13 @@ Read the relevant context files:
 
 If any are empty or contain only placeholders, stop and tell the founder to run `/setup` first. You cannot brainstorm effectively without business context.
 
+Then check for supporting artifacts:
+- `audit-results.md` if it exists
+- relevant files in `explorations/`
+- recent or relevant files in `imports/`
+
+Use these to sharpen your suggestions. Do not repeat ideas that are already captured well elsewhere unless the founder asks you to revisit them.
+
 ---
 
 ## How to Brainstorm

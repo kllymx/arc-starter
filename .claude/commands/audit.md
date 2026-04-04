@@ -16,6 +16,12 @@ Read the relevant context files:
 
 If any are empty or contain only placeholders, stop and tell the founder to run `/setup` first.
 
+Then check for supporting artifacts:
+- relevant files in `explorations/`
+- recent or relevant files in `imports/`
+
+Use them to understand what work may already be structured, documented, or partially solved.
+
 ---
 
 ## Phase 1 — Task Inventory

@@ -44,6 +44,17 @@ For a more systematic approach, run `/audit` to do a full task inventory. This s
 
 When priorities change, update `context/priorities.md`. When you add a new tool, update `context/stack.md`. The workspace is only as good as the context it has.
 
+### Run /reflect
+
+After you've done a few useful tasks, ask ARC to reflect on what changed.
+
+Try:
+- "Review what we learned"
+- "Reflect on recent work"
+- "Update the workspace based on what changed"
+
+This helps ARC promote durable learnings into the right context files instead of letting good work disappear into old chats.
+
 ---
 
 ## Soon (Next 1-2 Weeks)
@@ -67,6 +78,17 @@ Example: if you keep asking "draft a client proposal for [company]", create a `/
 ### Explore your first MCP
 
 If one of your workflows would benefit from live data (email, calendar, spreadsheets), look into adding an MCP. See `mcps-explained.md` for guidance on which ones are most useful and how to set them up.
+
+### If you're in the workshop series
+
+Session 2 should build on this starter rather than replace it.
+
+The pattern should be:
+- keep your current workspace
+- add a workflow-focused pack or extension layer
+- preserve your existing context and outputs
+
+See `session-roadmap.md` for the intended progression.
 
 ---
 

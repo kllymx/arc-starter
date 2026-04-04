@@ -16,6 +16,13 @@ Read the relevant context files:
 
 If any are empty or contain only placeholders, stop and tell the founder to run `/setup` first.
 
+Then check for supporting artifacts:
+- `audit-results.md` if it exists
+- relevant prior files in `explorations/`
+- recent or relevant files in `imports/`
+
+If a similar idea has already been explored, build from that work instead of starting from zero unless the founder wants a fresh take.
+
 ---
 
 ## Phase 1 — Define

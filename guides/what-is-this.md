@@ -33,6 +33,8 @@ There are four things that make this different from a regular AI chat:
 Right now, after setup:
 
 - **Ask questions about your business** and get answers grounded in your actual context — not generic advice
+- **Get a quick first win** and have ARC do one immediately useful thing
+- **Reflect on what worked** so the workspace compounds over time (`/reflect`)
 - **Brainstorm** what to automate or improve (`/brainstorm`)
 - **Audit your tasks** to find where AI can save you the most time (`/audit`)
 - **Explore ideas** and turn them into buildable plans (`/explore`)
@@ -70,10 +72,20 @@ These are pre-written prompts stored in `.claude/commands/`. When you type `/set
 
 A drop zone. Put any documents here (pitch decks, business plans, reports, spreadsheets) and the `/setup` command will analyze them as part of building your context.
 
+Before you use it, read `privacy-and-imports.md`. ARC works best with real context, but you should still be thoughtful about what you include.
+
+### Extension layers
+
+This starter is the base layer.
+
+Later sessions can extend it with optional overlays in `extensions/active/` instead of replacing the whole workspace. That keeps your existing context, explorations, and outputs intact while adding new capabilities over time.
+
 ---
 
 ## What Comes Next?
 
 See `next-steps.md` for where to go after you've got the basics working.
+
+See `session-roadmap.md` for how ARC is intended to grow across Session 1, Session 2, and Session 3.
 
 See `skills-explained.md` and `mcps-explained.md` to learn about more advanced capabilities you can add over time.

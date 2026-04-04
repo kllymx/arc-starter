@@ -66,6 +66,8 @@ The goal is to leave with:
 - a clearer sense of where AI can actually help in your business
 - a workspace you can keep using after the workshop
 
+This starter is the base layer. Session 2 and Session 3 should extend it rather than replace it.
+
 ---
 
 ## Getting Started
@@ -110,6 +112,8 @@ You can do the quick setup now and run the deep setup later when you have more t
 
 **Have existing documents?** Drop pitch decks, one-pagers, business plans, or any relevant docs into the `imports/` folder before starting setup. The agent will analyze them first and only ask about what's missing.
 
+Before you do that, read `guides/privacy-and-imports.md`. ARC works best with real context, but you should still be thoughtful about what you include.
+
 ### Step 4 — Start using it
 
 Once context is loaded, you can:
@@ -133,6 +137,7 @@ These are workflow shortcuts. In environments that support slash commands, you c
 |---------|---------------|--------------|
 | `/setup` | "let's set up" | Interviews you and populates your business context files |
 | `/first-win` | "get me a quick win" | Recommends the fastest useful thing ARC can do right now, then does it |
+| `/reflect` | "review what we learned" | Reviews recent work and promotes durable learnings into the right context files |
 | `/brainstorm` | "what should I automate?" | Suggests automation and augmentation opportunities based on your context |
 | `/audit` | "audit my tasks" | Structured task audit — inventory what you do and identify what to automate first |
 | `/explore` | "explore this idea" | Takes an idea and researches the best way to build it |
@@ -158,9 +163,11 @@ arc-starter/
 │   ├── priorities.md      # Current priorities and pain points
 │   ├── memory.md          # Lightweight preferences learned over time
 │   └── agent-learnings.md # Corrections — so mistakes aren't repeated
+├── extensions/active/     # Optional overlays from later session packs
 ├── .claude/commands/      # Workflow prompts and slash commands in compatible environments
 │   ├── setup.md
 │   ├── first-win.md
+│   ├── reflect.md
 │   ├── brainstorm.md
 │   ├── audit.md
 │   └── explore.md
@@ -170,6 +177,8 @@ arc-starter/
     ├── what-is-this.md    # Plain-English explanation of the workspace
     ├── skills-explained.md # What skills are and how to create them
     ├── mcps-explained.md  # What MCPs are and when to add them
+    ├── privacy-and-imports.md # How to think about importing business documents safely
+    ├── session-roadmap.md # How ARC grows across Session 1, 2, and 3
     ├── troubleshooting.md # What to do when the environment or setup is confusing
     └── next-steps.md      # Where to go after the basics
 ```
@@ -183,6 +192,8 @@ New to this? Start with the guides in the `guides/` folder:
 - **what-is-this.md** — Plain-English explanation of how this workspace works
 - **skills-explained.md** — What skills are, how they work, and how to create your own
 - **mcps-explained.md** — What MCP integrations are and when to add them
+- **privacy-and-imports.md** — How to think about importing business documents safely
+- **session-roadmap.md** — How ARC should grow across the workshop series
 - **troubleshooting.md** — What to do if slash commands or context loading are confusing
 - **next-steps.md** — Where to go after you've got the basics set up
 

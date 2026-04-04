@@ -89,6 +89,10 @@ If the imports folder is empty, mention to the founder:
 >
 > If you use ChatGPT, you can also export your ChatGPT memory (Settings > Personalization > Memory > Manage > Export) and drop it here — it's a fast way to bring over what AI already knows about you."
 
+Also remind them:
+
+> "Only import documents you're comfortable using in an AI-assisted working session. Avoid secrets, passwords, and highly sensitive personal data. If needed, redact or summarize first. See `guides/privacy-and-imports.md` for the rule of thumb."
+
 ### Ask for company website
 
 Before starting the interview, ask for quick context sources:

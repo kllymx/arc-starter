@@ -35,6 +35,15 @@ Your knowledge of this business lives in structured context files. **Read all co
 
 **Use `context/overview.md` as the skim-first file.** It is not the full source of truth, but it should give you and the founder a fast snapshot of the business and the best current opportunities.
 
+**Read installed extension instructions if they exist.** If `extensions/active/` contains `.md` files, treat them as additive instructions layered on top of this starter. They should extend ARC, not replace the core rules.
+
+**Treat prior artifacts as workspace memory too.** When relevant, consult:
+- `audit-results.md`
+- files in `explorations/`
+- recent or relevant documents in `imports/`
+
+Use them as supporting artifacts, not as a replacement for the structured context files. Promote durable learnings into the right context files instead of copying artifact content wholesale.
+
 ---
 
 ## First Conversation
@@ -70,6 +79,7 @@ These can be triggered by typing the `/command` name in compatible environments 
 |---------|-------------------|-------------|
 | `/setup` | "set up", "get started", "onboard", "interview me" | First thing to run. Interviews the founder and populates context files. |
 | `/first-win` | "get me a quick win", "what can you do for me right now", "show me something useful", "help me get value fast" | After basic context is loaded. Suggests the fastest high-value thing to do immediately, then does it. |
+| `/reflect` | "review what we learned", "reflect on recent work", "update the workspace based on what changed" | Reviews recent artifacts and conversations, then promotes durable learnings into the right context files. |
 | `/brainstorm` | "brainstorm", "what should I automate", "give me ideas", "what can you help with" | After context is loaded. Suggests concrete automation and augmentation opportunities. |
 | `/audit` | "audit my tasks", "task inventory", "what am I spending time on" | Structured task inventory across business areas. Identifies what to automate first. |
 | `/explore` | "explore this idea", "research this", "how would I build", "spec this out" | Takes a specific idea and researches/specs it into a buildable plan. |
@@ -144,6 +154,7 @@ arc-starter/
 │   ├── workspace.md   ← How the founder is using ARC
 │   ├── setup-status.md← Where setup stands and how to resume
 │   ├── overview.md    ← One-page business snapshot
+├── extensions/active/ ← Optional Session 2 / Session 3 instruction overlays
 ├── .claude/commands/  ← ARC workflow prompts and slash commands in compatible environments
 ├── imports/           ← Founders drop documents here for /setup to analyze
 ├── explorations/      ← Output from /explore — specs and plans accumulate here

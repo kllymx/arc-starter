@@ -106,3 +106,24 @@ Good prompts:
 - "Turn this recurring task into a repeatable workflow."
 
 ARC gets more impressive when it is asked to produce something specific, not just discuss possibilities.
+
+If you've already done a few useful things, ask:
+
+> "Review what we've learned and update the workspace."
+
+That should trigger `/reflect` or the natural-language equivalent so ARC promotes durable learnings instead of leaving them buried in old chats.
+
+---
+
+## I Installed A Later Session Pack But Nothing Changed
+
+If you extend ARC in a later session, the new files should usually land in `extensions/active/` plus any new commands or guides.
+
+Check:
+- that the pack was added into this workspace, not a separate folder
+- that `extensions/active/` contains the new overlay files
+- that you started a fresh conversation after installation
+
+If needed, tell ARC:
+
+> "Re-read AGENTS.md or CLAUDE.md and any files in extensions/active/ before continuing."
