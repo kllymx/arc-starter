@@ -40,9 +40,9 @@ If you haven't already, run `/brainstorm` to get suggestions for what to automat
 
 For a more systematic approach, run `/audit` to do a full task inventory. This shows you exactly where your time goes and which tasks have the highest automation potential.
 
-### Keep context files updated
+### Keep the wiki growing
 
-When priorities change, update `context/priorities.md`. When you add a new tool, update `context/stack.md`. The workspace is only as good as the context it has.
+When priorities change, tell ARC — it will update the relevant wiki articles. When you add a new tool, mention it and the wiki gets updated. Drop new documents in `imports/` and say "ingest this" to process them into wiki knowledge. The workspace is only as good as the knowledge it has — and it grows automatically with every session.
 
 ### Run /reflect
 
@@ -53,7 +53,7 @@ Try:
 - "Reflect on recent work"
 - "Update the workspace based on what changed"
 
-This helps ARC promote durable learnings into the right context files instead of letting good work disappear into old chats.
+This helps ARC compile durable learnings into wiki articles instead of letting good work disappear into old chats.
 
 ---
 
@@ -123,8 +123,8 @@ Once you have data integrations in place, a daily or weekly briefing is one of t
 
 Remember: this is built in layers, not leaps.
 
-**Layer 1 — Context** (where you are now)
-Your workspace knows your business. You can ask questions, brainstorm, and explore ideas.
+**Layer 1 — Wiki Foundation** (where you are now)
+Your workspace knows your business through a compounding wiki. You can ask questions, brainstorm, and explore ideas — and every interaction makes the wiki smarter.
 
 **Layer 2 — Workflows**
 You build specific automations and augmentations. You connect tools. You create custom commands. The workspace starts doing real work for you.

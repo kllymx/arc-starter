@@ -6,22 +6,21 @@ You are helping a founder take a specific idea — whether it's an automation, a
 
 ## Before You Start
 
-Read the relevant context files:
+Read context files:
 - `context/workspace.md`
 - `context/overview.md`
-- `context/business.md`
-- `context/founder.md`
-- `context/stack.md`
-- `context/priorities.md`
 
-If any are empty or contain only placeholders, stop and tell the founder to run `/setup` first.
+Read the wiki:
+- `wiki/index.md`
+- Drill into relevant articles based on the idea being explored
 
-Then check for supporting artifacts:
-- `audit-results.md` if it exists
+If the wiki has no articles, stop and tell the founder to run setup first.
+
+Check for prior work:
 - relevant prior files in `explorations/`
-- recent or relevant files in `imports/`
+- recent files in `imports/`
 
-If a similar idea has already been explored, build from that work instead of starting from zero unless the founder wants a fresh take.
+If a similar idea has already been explored, build from that work unless the founder wants a fresh take.
 
 ---
 
@@ -31,40 +30,32 @@ If the founder hasn't clearly stated what they want to explore, ask:
 
 > "What's the idea? It can be rough — even just 'I wish I could...' or 'It would be cool if...' is enough to start."
 
-Then clarify until you have:
+Clarify until you have:
+1. **What** they want to achieve
+2. **Why** it matters (connect to wiki articles — priorities, bottlenecks)
+3. **What triggers it**
+4. **What inputs it needs**
+5. **What output it should produce**
+6. **Who benefits**
 
-1. **What** they want to achieve (the outcome, not the implementation)
-2. **Why** it matters (connect to their priorities or pain points)
-3. **What triggers it** (when does this need to happen?)
-4. **What inputs it needs** (where does the information come from?)
-5. **What output it should produce** (what does "done" look like?)
-6. **Who benefits** (founder, team, customer?)
-
-Don't ask all six as a list. Have a conversation and naturally cover these.
+Don't ask all six as a list. Have a conversation.
 
 ---
 
 ## Phase 2 — Analyze
 
 Look at:
+1. **Wiki knowledge** — What do you already know from the wiki that's relevant?
+2. **Tech stack** — What tools are involved? APIs available?
+3. **Feasibility** — Can this be done with the current setup?
 
-1. **Current workspace** — What's already set up that could support this? Any existing context, tools, or workflows that are relevant?
-2. **Tech stack** — From stack.md, what tools are involved? Are there APIs available? Are there existing integrations?
-3. **Feasibility** — Is this something that can be done with the current setup, or does it need new tools/integrations?
-
-Search the web if needed to:
-- Check if APIs exist for the tools involved
-- Find best practices for this type of automation
-- Identify existing solutions or approaches
-- Understand technical constraints
+Search the web if needed for APIs, best practices, existing solutions.
 
 ---
 
 ## Phase 3 — Spec
 
-Produce a clear exploration document. This is not code — it's a plan that anyone could follow to build the thing.
-
-### Format
+Save as `explorations/[short-name].md`:
 
 ```markdown
 # Exploration: [Name of the idea]
@@ -78,64 +69,50 @@ Produce a clear exploration document. This is not code — it's a plan that anyo
 
 ## How It Works
 
-[Step-by-step description of the workflow, in plain language]
-
 1. [Trigger] — what kicks it off
 2. [Input] — where data comes from
-3. [Process] — what happens in the middle
+3. [Process] — what happens
 4. [Output] — what gets produced
 5. [Delivery] — where the result goes
 
 ## What's Needed
 
-- **Tools/integrations**: [list any APIs, MCPs, or connections needed]
+- **Tools/integrations**: [list any APIs, MCPs, or connections]
 - **Data sources**: [where information comes from]
-- **New files/commands**: [any new workspace additions needed]
+- **New files/commands**: [any workspace additions]
 
 ## Complexity
 
 - **Effort**: [Quick win / Half-day build / Multi-session project]
-- **Risk**: [What could go wrong? What needs human oversight?]
+- **Risk**: [What could go wrong?]
 - **Dependencies**: [What needs to be set up first?]
 
 ## Recommended Approach
 
-[Your specific recommendation for how to build this, given the founder's context and tech stack. Be concrete — don't just say "use an API," say which API and roughly how.]
+[Concrete recommendation given the founder's context and stack]
 
 ## Next Steps
 
-[Exactly what the founder should do next to start building this]
+[Exactly what to do next]
 ```
 
-Save this document as `explorations/[short-name].md`.
-
-**Save progress incrementally.** If the research or analysis is extensive, write findings to the exploration file as you go rather than building everything in the conversation. Long conversations degrade quality. Use this structure for in-progress saves:
-
-```
-## Progress
-- **Goal**: [what we're trying to achieve]
-- **Done**: [completed steps]
-- **In Progress**: [current step]
-- **Blocked**: [anything waiting on the founder]
-- **Next Steps**: [what comes after]
-```
+**Save progress incrementally** if the research is extensive.
 
 ---
 
 ## After the Exploration
 
-Present the spec to the founder. Then:
+> "This is the plan. Want to start building it now, or save it for later?"
 
-> "This is the plan. Want to start building it now, or save it for later?
->
-> If you want to build it now, I can walk you through it step by step."
+If they want to build, walk them through step by step.
 
-If they want to build:
-- Walk them through each step
-- Write any code, commands, or configurations needed
-- Test as you go
-- Confirm before taking any actions that affect external systems
+### Update the wiki
 
-If they want to save it for later:
-- The exploration document is saved — they can come back to it anytime
-- Suggest they review it before the next session
+Every exploration produces knowledge worth keeping:
+- **New concepts** discovered during research → create `wiki/concepts/` articles
+- **New tools or APIs** identified → create entity articles
+- **Connections** between the exploration and existing wiki content → create `wiki/connections/` articles
+- **Update `wiki/index.md`** with new articles
+- **Append to `wiki/log.md`** with what was explored and what was learned
+
+The exploration file stays in `explorations/` as the spec. The knowledge it produced enters the wiki for future use.

@@ -6,27 +6,28 @@
 
 **By Arcane Intelligence — Built by Max Kelly**
 
-A starter kit that gives founders an AI-powered operating partner for their business.
+A starter kit that gives founders an AI-powered operating partner with a compounding knowledge base.
 
-Clone it, run the setup, and you get a workspace that learns your business well enough to help with day-to-day work, strategic thinking, and workflow design.
+Clone it, run the setup, and you get a workspace that learns your business deeply — and gets smarter every session.
 
-This is not a generic chatbot prompt. It is a structured workspace designed to become more useful over time.
+This is not a generic chatbot prompt. It is a structured workspace with an LLM-maintained wiki that compounds knowledge over time, inspired by [Andrej Karpathy's LLM knowledge base architecture](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f).
 
 ---
 
 ## What This Is
 
-ARC is a structured workspace that turns an AI agent into a persistent operating partner for your business. Instead of re-explaining your business every time you open a chat, ARC stores your business context in structured files that the agent reads automatically.
+ARC is a structured workspace that turns an AI agent into a persistent operating partner for your business. Instead of re-explaining your business every time you open a chat, ARC builds and maintains a **wiki of interlinked articles** about your business that the agent reads automatically.
 
-After setup, your agent knows:
+After setup, your agent has a wiki covering:
 - what your business does and how it makes money
 - who you are, what you're good at, and where you need help
 - what tools and platforms you use
 - what your current priorities and pain points are
+- how all of these connect together
 
-It can then help you brainstorm what to automate, audit your tasks, explore new ideas, and execute faster than working alone.
+The wiki grows every session. Questions you ask, documents you import, explorations you run — all of it feeds back into the knowledge base. The agent handles all the bookkeeping: creating articles, maintaining cross-references, flagging contradictions, and keeping everything current.
 
-ARC is designed for both technical and non-technical founders. On first use, the agent should ask what environment you're using and how technical you want it to be, then adapt from there.
+ARC is designed for both technical and non-technical founders, and works in Claude Code, Codex, Cursor, and Claude Desktop.
 
 ### What founders usually get wrong about AI
 
@@ -36,13 +37,13 @@ Most founders use AI like a very smart intern in a blank chat:
 - they do not build any continuity
 - they never turn good outputs into reusable workflows
 
-ARC is meant to fix that. It gives the agent memory, structure, and a repeatable operating model.
+ARC fixes that. It gives the agent a compounding knowledge base, automated capture, and a repeatable operating model.
 
 ### What this is for
 
 ARC is for founders who want to:
 - get more leverage from AI without becoming deeply technical
-- capture business context once instead of re-explaining it every session
+- capture business context once and have it compound over time
 - identify what work should stay human, what should be AI-assisted, and what could become a workflow
 - start simple now and layer on more sophistication later
 
@@ -56,93 +57,86 @@ ARC is not:
 
 It is a practical starting point for building an AI operating layer around your actual business.
 
-### What you should expect from the workshop
-
-In Session 1, the goal is not to install every integration or build advanced automations.
-
-The goal is to leave with:
-- your business context loaded into ARC
-- one concrete first win completed
-- a clearer sense of where AI can actually help in your business
-- a workspace you can keep using after the workshop
-
-This starter is the base layer. Session 2 and Session 3 should extend it rather than replace it.
-
 ---
 
 ## Getting Started
 
 ### Step 1 — Clone or download this repo
 
-### Step 2 — Open it in your environment
+### Step 2 — Install Python dependencies (for automated knowledge capture)
+
+```bash
+uv sync
+```
+
+This installs the hooks that automatically capture session knowledge and compile it into wiki articles. Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+
+### Step 3 — Open it in your environment
 
 **VS Code + Claude Code extension** (recommended):
 1. Open the `arc-starter` folder in VS Code
 2. Open the Claude Code panel
-3. Start a conversation — the agent will read CLAUDE.md automatically
+3. Start a conversation — the agent reads CLAUDE.md and the wiki automatically
 
 **Cursor + Claude Code extension**:
 1. Open the `arc-starter` folder in Cursor
 2. Open the Claude Code panel
-3. Same as above — CLAUDE.md is read automatically
+3. Same as above
 
 **Codex (VS Code extension)**:
 1. Open the `arc-starter` folder in VS Code
-2. Codex reads AGENTS.md for context (included alongside CLAUDE.md with identical content)
+2. Codex reads AGENTS.md for context
 3. Start a conversation in natural language
 
 **Claude Desktop**:
 1. Create a new Project
-2. Drag the files from `context/` and `CLAUDE.md` into the Project Knowledge
+2. Drag `CLAUDE.md` and `context/` files into the Project Knowledge
 3. Start a conversation in natural language
+4. Note: automated hooks are not available in Claude Desktop — use `/reflect` manually
 
 **Terminal (Claude Code CLI)**:
 1. `cd` into the `arc-starter` folder
 2. Run `claude` to start a session
-3. Claude Code reads CLAUDE.md automatically
+3. Claude Code reads CLAUDE.md and hooks fire automatically
 
-### Step 3 — Start the conversation
+### Step 4 — Start the conversation
 
-Say **"help me get started"**, **"let's set up"**, or use `/setup` if your environment supports slash commands. The agent should first ask what environment you're using and how technical to be, then interview you about your business and populate the context files. There are two modes:
+Say **"help me get started"**, **"let's set up"**, or use `/setup`. The agent will interview you about your business and build an initial wiki with ~15-25 cross-referenced articles. There are two modes:
 
-- **Quick setup** (~15 minutes) — captures the essentials, enough to be useful immediately
-- **Deep setup** (~30 minutes) — comprehensive interview that fills in all the details
+- **Quick setup** (~15 minutes) — captures the essentials
+- **Deep setup** (~30 minutes) — comprehensive interview
 
-You can do the quick setup now and run the deep setup later when you have more time.
+**Have existing documents?** Drop pitch decks, one-pagers, business plans, or any relevant docs into the `imports/` folder before starting setup. The agent will analyze them first.
 
-**Have existing documents?** Drop pitch decks, one-pagers, business plans, or any relevant docs into the `imports/` folder before starting setup. The agent will analyze them first and only ask about what's missing.
+### Step 5 — Start using it
 
-Before you do that, read `guides/privacy-and-imports.md`. ARC works best with real context, but you should still be thoughtful about what you include.
+Once the wiki is built, you can:
 
-### Step 4 — Start using it
+- Ask it for a **quick win** so it does one useful thing immediately
+- Ask questions about your business and get answers grounded in your wiki
+- Drop documents in `imports/` and say **"ingest this"** to grow the wiki
+- Ask it to **brainstorm** what to automate or improve
+- Ask it to **audit** your tasks for a systematic inventory
+- Ask it to **explore** a specific idea and spec it out
+- Ask it to **reflect** to review recent work and compile insights
+- Ask it to **lint** the wiki to check for gaps and contradictions
 
-Once context is loaded, you can:
-
-- Ask it for a quick win so it does one useful thing immediately
-- Ask questions about your business and get answers grounded in your actual context
-- Ask it to brainstorm what to automate or improve
-- Ask it to audit your tasks
-- Ask it to explore a specific idea and research/spec it out
-- Just talk to it — ask for help with emails, reports, analysis, strategy, whatever you need
-
-The important thing is not to use every command. It is to get one useful result quickly, then build from there.
+The wiki grows automatically — sessions are captured by hooks, insights are compiled into articles, and every interaction makes the agent smarter.
 
 ---
 
 ## Commands
 
-These are workflow shortcuts. In environments that support slash commands, you can type the `/command` name. Everywhere else, just say it naturally — the agent should understand both.
-
 | Command | Or just say... | What it does |
 |---------|---------------|--------------|
-| `/setup` | "let's set up" | Interviews you and populates your business context files |
-| `/first-win` | "get me a quick win" | Recommends the fastest useful thing ARC can do right now, then does it |
-| `/reflect` | "review what we learned" | Reviews recent work and promotes durable learnings into the right context files |
-| `/brainstorm` | "what should I automate?" | Suggests automation and augmentation opportunities based on your context |
-| `/audit` | "audit my tasks" | Structured task audit — inventory what you do and identify what to automate first |
-| `/explore` | "explore this idea" | Takes an idea and researches the best way to build it |
-
-If you're not sure where to start after setup, start with `/first-win`.
+| `/setup` | "let's set up" | Interviews you and builds the initial wiki |
+| `/first-win` | "get me a quick win" | Recommends the fastest useful thing, then does it |
+| `/reflect` | "review what we learned" | Reviews recent activity and compiles knowledge into wiki |
+| `/brainstorm` | "what should I automate?" | Suggests automation opportunities from wiki knowledge |
+| `/audit` | "audit my tasks" | Structured task audit to find what to automate first |
+| `/explore` | "explore this idea" | Research and spec an idea into a buildable plan |
+| `/ingest` | "ingest this document" | Process a document from imports/ into wiki articles |
+| `/lint` | "check the wiki" | Wiki health check — contradictions, orphans, gaps |
 
 ---
 
@@ -153,83 +147,89 @@ arc-starter/
 ├── CLAUDE.md              # Agent instructions (Claude Code / Cursor)
 ├── AGENTS.md              # Same content (Codex / Hermes / other agents)
 ├── README.md              # You are here
-├── context/               # Your business context (populated by /setup)
-│   ├── workspace.md       # How you're using ARC: environment, comfort level, setup constraints
-│   ├── setup-status.md    # Setup progress so ARC can resume without starting over
-│   ├── overview.md        # One-page summary of the business and best next opportunities
-│   ├── business.md        # Business model, market, customers, strategy
-│   ├── founder.md         # Your background, role, preferences
-│   ├── stack.md           # Tools, platforms, integrations
-│   ├── priorities.md      # Current priorities and pain points
-│   ├── memory.md          # Lightweight preferences learned over time
-│   └── agent-learnings.md # Corrections — so mistakes aren't repeated
+├── context/               # Quick-scan business snapshot
+│   ├── workspace.md       # Environment, preferences, setup constraints
+│   ├── setup-status.md    # Setup progress tracker
+│   ├── overview.md        # One-page business summary (summary of the wiki)
+│   └── memory.md          # Preferences and corrections
+├── wiki/                  # LLM-maintained compounding knowledge base
+│   ├── index.md           # Master catalog — agent reads this for all queries
+│   ├── log.md             # Chronological record of wiki operations
+│   ├── concepts/          # Atomic articles: one per business concept, entity, topic
+│   └── connections/       # Cross-cutting insights linking 2+ concepts
+├── daily/                 # Session logs (auto-captured by hooks)
+├── imports/               # Drop zone for documents to ingest
+├── explorations/          # Output from /explore — specs and plans
+├── hooks/                 # Automation scripts (session capture, compilation)
+├── scripts/               # Utility scripts (compile, flush, lint)
 ├── extensions/active/     # Optional overlays from later session packs
-├── .claude/commands/      # Workflow prompts and slash commands in compatible environments
-│   ├── setup.md
-│   ├── first-win.md
-│   ├── reflect.md
-│   ├── brainstorm.md
-│   ├── audit.md
-│   └── explore.md
-├── imports/               # Drop documents here before running /setup
-├── explorations/          # Output from /explore — plans accumulate here
-└── guides/                # Reference material
-    ├── what-is-this.md    # Plain-English explanation of the workspace
-    ├── skills-explained.md # What skills are and how to create them
-    ├── mcps-explained.md  # What MCPs are and when to add them
-    ├── privacy-and-imports.md # How to think about importing business documents safely
-    ├── session-roadmap.md # How ARC grows across Session 1, 2, and 3
-    ├── troubleshooting.md # What to do when the environment or setup is confusing
-    └── next-steps.md      # Where to go after the basics
+├── .claude/               # Claude Code settings and slash commands
+│   ├── settings.json      # Hook configuration
+│   └── commands/          # Workflow prompts
+├── .codex/                # Codex configuration
+│   ├── config.toml        # Feature flags (hooks enabled)
+│   └── hooks.json         # Codex hook configuration
+└── guides/                # Reference material for founders
 ```
+
+---
+
+## How the Wiki Works
+
+The wiki is inspired by [Karpathy's LLM knowledge base pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f). Three layers:
+
+1. **Raw sources** (`imports/` + `daily/`) — Documents you drop in and automatic session logs. Immutable inputs.
+2. **The wiki** (`wiki/`) — Cross-referenced markdown articles the AI creates and maintains. This is the compounding knowledge base.
+3. **The schema** (`CLAUDE.md`) — Instructions that tell the AI how to manage the wiki.
+
+Three core operations:
+- **Ingest** — Process a new source into wiki articles, updating cross-references across 10-15 pages
+- **Query** — Ask questions; good answers get filed back into the wiki
+- **Lint** — Health-check for contradictions, orphan pages, and gaps
+
+The wiki grows through use. The agent handles all the bookkeeping. You never maintain it manually.
+
+---
+
+## Automated Knowledge Capture
+
+ARC uses hooks to automatically capture and compile knowledge:
+
+- **Session start** — Injects wiki index + business overview so the agent starts fully informed
+- **Session end** — Captures conversation insights and appends to daily logs
+- **Pre-compact** (Claude Code only) — Captures knowledge before context compression in long sessions
+- **Nightly compilation** — Promotes daily log entries into structured wiki articles
+
+This works in both Claude Code (`.claude/settings.json`) and Codex (`.codex/hooks.json`).
+
+For Claude Desktop, hooks aren't available — use `/reflect` manually after productive sessions to keep the wiki growing.
 
 ---
 
 ## Guides
 
-New to this? Start with the guides in the `guides/` folder:
-
-- **what-is-this.md** — Plain-English explanation of how this workspace works
-- **skills-explained.md** — What skills are, how they work, and how to create your own
+- **what-is-this.md** — Plain-English explanation of the workspace
+- **skills-explained.md** — What skills are and how to create your own
 - **mcps-explained.md** — What MCP integrations are and when to add them
-- **privacy-and-imports.md** — How to think about importing business documents safely
-- **session-roadmap.md** — How ARC should grow across the workshop series
-- **troubleshooting.md** — What to do if slash commands or context loading are confusing
-- **next-steps.md** — Where to go after you've got the basics set up
-
----
-
-## A Simple Way To Think About ARC
-
-There are three stages:
-
-1. **Load context**  
-Teach ARC what your business is, what matters, and how you work.
-
-2. **Get a first win**  
-Use that context to do something useful immediately.
-
-3. **Turn repeated work into workflows**  
-When something works well, make it repeatable.
-
-That is the whole model. Keep it that simple at the start.
+- **privacy-and-imports.md** — How to think about importing documents safely
+- **session-roadmap.md** — How ARC grows across Session 1, 2, and 3
+- **troubleshooting.md** — What to do when things are confusing
+- **next-steps.md** — Where to go after the basics
 
 ---
 
 ## The ARC Progression
 
-ARC is designed to grow with you in layers:
-
-**Layer 1 — Context** (start here)
-Set up your workspace and load your business context. This alone makes every AI conversation dramatically better.
+**Layer 1 — Wiki Foundation** (start here)
+Set up your workspace and build the initial wiki. This alone makes every AI conversation dramatically better — and it compounds from day one.
 
 **Layer 2 — Workflows**
-Build specific workflows that automate or augment tasks in your business. Add tool integrations. Create custom commands for your recurring work.
+Build specific workflows that automate or augment tasks. Add tool integrations. Create custom commands. The wiki gives every workflow deep business context.
 
 **Layer 3 — Systems**
-Scale from personal use to team infrastructure. Add guardrails, permissions, scheduling, and orchestration for more complex workflows.
+Scale from personal use to team infrastructure. Add guardrails, permissions, scheduling, and orchestration.
 
-Each layer builds on the previous one. You don't need to jump to Layer 3 on day one — start with context and let it grow.
+Each layer builds on the previous one. Start with the wiki and let it grow.
 
 ---
 

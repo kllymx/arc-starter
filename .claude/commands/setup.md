@@ -1,6 +1,6 @@
-# /setup — Business Context Interview
+# /setup — Business Context Interview & First Wiki Ingest
 
-You are running the ARC setup process. Your goal is to interview the founder and populate the four context files with structured, useful information about their business.
+You are running the ARC setup process. Your goal is to interview the founder, build the initial wiki, and populate the context snapshot files. This is the first ingest — the wiki starts compounding from this moment.
 
 ---
 
@@ -34,9 +34,9 @@ Save the answer to `context/workspace.md` immediately using this structure:
 ```
 
 Use that file to adapt the rest of setup:
-- If slash commands are available, you can mention `/setup`, `/brainstorm`, `/audit`, and `/explore` as optional shortcuts.
-- If slash commands are not available or unclear, use natural language throughout: "say let's set up", "ask me to brainstorm", "tell me to audit your tasks".
-- If the founder is non-technical, avoid jargon and explain any file or environment steps plainly.
+- If slash commands are available, you can mention them as optional shortcuts.
+- If slash commands are not available or unclear, use natural language throughout.
+- If the founder is non-technical, avoid jargon and explain plainly.
 
 ### Check setup status before interviewing
 
@@ -64,6 +64,7 @@ If setup has not started yet, initialize `context/setup-status.md` right away us
 - Founder: pending / complete
 - Stack: pending / complete
 - Priorities: pending / complete
+- Wiki build: pending / complete
 - Overview: pending / complete
 
 ## Resume Notes
@@ -72,11 +73,9 @@ If setup has not started yet, initialize `context/setup-status.md` right away us
 - Recommended next move: [what ARC should do next]
 ```
 
-As setup progresses, keep this file updated. It should make resuming setup obvious in a fresh conversation.
-
 ### Check for imports
 
-Look in the `imports/` folder. If there are any documents there (pitch decks, business plans, one-pagers, website copy, meeting notes, ChatGPT memory exports, or any other business documents):
+Look in the `imports/` folder. If there are any documents there (pitch decks, business plans, one-pagers, website copy, meeting notes, ChatGPT memory exports):
 
 1. Read and analyze all of them first
 2. Extract as much relevant context as you can
@@ -87,11 +86,11 @@ If the imports folder is empty, mention to the founder:
 
 > "If you have any existing documents — pitch decks, business plans, website copy — you can drop them in the `imports/` folder and I'll analyze them first.
 >
-> If you use ChatGPT, you can also export your ChatGPT memory (Settings > Personalization > Memory > Manage > Export) and drop it here — it's a fast way to bring over what AI already knows about you."
+> If you use ChatGPT, you can also export your ChatGPT memory (Settings > Personalization > Memory > Export) and drop it here — it's a fast way to bring over what AI already knows about you."
 
 Also remind them:
 
-> "Only import documents you're comfortable using in an AI-assisted working session. Avoid secrets, passwords, and highly sensitive personal data. If needed, redact or summarize first. See `guides/privacy-and-imports.md` for the rule of thumb."
+> "Only import documents you're comfortable using in an AI-assisted working session. Avoid secrets, passwords, and highly sensitive personal data. See `guides/privacy-and-imports.md` for the rule of thumb."
 
 ### Ask for company website
 
@@ -100,30 +99,17 @@ Before starting the interview, ask for quick context sources:
 > "Before we dive in, a couple of things that can speed this up:
 >
 > 1. **Company website** — drop the URL and I'll pull what I can from it
-> 2. **Your LinkedIn** — paste your profile URL or copy-paste your LinkedIn 'About' and experience sections (LinkedIn often blocks automated scraping, so pasting the text directly works best)
+> 2. **Your LinkedIn** — paste your profile URL or copy-paste your LinkedIn 'About' and experience sections
 >
 > Either, both, or neither is fine — we can do it all conversationally too."
 
-If they provide a **website URL**:
-1. Fetch and read the website content
-2. Extract: what the company does, products/services, positioning, team info, customer types, any other relevant details
-3. Use this to pre-fill your understanding
-
-If they provide **LinkedIn content** (URL or pasted text):
-1. Extract: founder background, career history, skills, education, notable achievements
-2. Use this to pre-fill the founder profile
-
-If they provide either or both, adjust the interview to **confirm what you found** rather than asking from scratch: "From your website and profile, it looks like [summary]. Is that right? Anything missing or outdated?"
-
-If they skip this step, proceed to the interview normally.
+If they provide a **website URL**, fetch and extract relevant details. If they provide **LinkedIn content**, extract founder background. Adjust the interview to confirm what you found rather than asking from scratch.
 
 ### Ask which mode
 
-Ask the founder:
-
 > "Would you like the **quick setup** (~15 minutes) or the **deep setup** (~30 minutes)?
 >
-> Quick setup captures the essentials — enough for me to be genuinely useful right away. You can always run the deep setup later to fill in the gaps.
+> Quick setup captures the essentials — enough for me to be genuinely useful right away. You can always deepen it later.
 >
 > Deep setup is more comprehensive and covers everything in detail."
 
@@ -131,9 +117,9 @@ Ask the founder:
 
 ## Quick Setup Interview
 
-Ask these questions conversationally — not as a form. Group related questions naturally and respond to what they say before moving on. If they give a long answer that covers multiple questions, don't re-ask what they already answered.
+Ask these questions conversationally — not as a form. Group related questions naturally and respond to what they say before moving on. If they give a long answer that covers multiple questions, don't re-ask.
 
-**Save each context file as you complete that section** — don't wait until the end to write all four. If the founder needs to leave mid-setup, they can resume in a new session and you'll see which files are already populated.
+**Build wiki articles as you complete each section** — don't wait until the end. If the founder needs to leave mid-setup, they can resume and you'll see which articles exist.
 
 Every time you finish a section, update `context/setup-status.md`.
 
@@ -143,41 +129,50 @@ Every time you finish a section, update `context/setup-status.md`.
 
 Save their answer to `context/memory.md`.
 
-### Business (for context/business.md)
+### Business
 
-1. What does your business do? Give me the one-sentence version. Don't assume the business is a typical software or services company — founders span every industry: hardware, biotech, robotics, manufacturing, clean energy, materials science, research, aerospace, medical devices, neurotech, climate tech, deep tech, SaaS, marketplace, and more. Let them describe it in their own terms.
-2. How do you make money? What's the business model? (e.g., product sales, licensing, contracts, grants, subscriptions, services, etc.)
-3. Who are your customers? Who do you sell to? (could be enterprises, consumers, governments, research institutions, other businesses, etc.)
+1. What does your business do? Give me the one-sentence version. Don't assume the business is a typical software company — founders span every industry.
+2. How do you make money? What's the business model?
+3. Who are your customers? Who do you sell to?
 4. How big is the business right now? (team size, rough revenue range or funding stage)
 5. What makes you different from competitors?
 
-### Founder (for context/founder.md)
+**After this section:** Create wiki articles:
+- `wiki/concepts/business-model.md` — what the business does, how it makes money, positioning
+- `wiki/concepts/customers.md` — who they serve, segments, acquisition channels
+- `wiki/concepts/competitors.md` — competitive landscape, differentiation (if discussed)
+- Update `wiki/index.md` with the new articles
+
+### Founder
 
 1. What's your role day-to-day? What do you actually spend your time on?
 2. What do you wish you had more time for?
 3. What are you best at? What do you hate doing?
 
-### Stack (for context/stack.md)
+**After this section:** Create:
+- `wiki/concepts/founder-profile.md` — role, strengths, preferences, time allocation
 
-1. What are the main tools and platforms you use to run the business? Walk me through your core stack.
+### Stack
 
-Prompt specifically for these categories if they don't mention them:
-- Communication (Slack, Teams, email provider)
-- CRM / sales (HubSpot, Salesforce, Pipedrive, etc.)
-- Project management (Asana, Linear, Notion, Monday, etc.)
-- Data / spreadsheets (Google Sheets, Airtable, Excel, etc.)
-- Finance (QuickBooks, Xero, Stripe, etc.)
-- Marketing (Mailchimp, Kit, social platforms, ads, etc.)
-- Storage / docs (Google Drive, SharePoint, Dropbox, Notion, etc.)
-- Any custom software, APIs, or databases
+1. What are the main tools and platforms you use to run the business?
+
+Prompt specifically for: communication, CRM/sales, project management, data/spreadsheets, finance, marketing, storage/docs, custom software/APIs.
 
 2. Where does the most important business data live?
 
-### Priorities (for context/priorities.md)
+**After this section:** Create:
+- `wiki/concepts/tech-stack.md` — all tools by category, how heavily used, where data lives
+- Individual entity articles for critical tools if warranted (e.g., `wiki/concepts/salesforce.md` if it's central)
+
+### Priorities
 
 1. What are your top 2-3 priorities right now?
 2. What's the single biggest bottleneck or pain point in the business?
 3. If you could automate or speed up one thing tomorrow, what would it be?
+
+**After this section:** Create:
+- `wiki/concepts/priorities.md` — current focus, bottlenecks, automation targets
+- Any connection articles that link priorities to specific tools or business areas
 
 ---
 
@@ -186,7 +181,6 @@ Prompt specifically for these categories if they don't mention them:
 Covers everything in the quick setup, plus these additional questions:
 
 ### Business (additional)
-
 - What's the current strategy for this quarter/year?
 - What are the key metrics you track?
 - Who are your main competitors?
@@ -194,68 +188,46 @@ Covers everything in the quick setup, plus these additional questions:
 - What does your sales/acquisition process look like?
 - What does your delivery/fulfillment process look like?
 
-### Founder (additional)
+**Create additional articles:** `wiki/concepts/strategy.md`, `wiki/concepts/metrics.md`, `wiki/concepts/sales-process.md`, `wiki/concepts/delivery-process.md`, plus competitor entity articles.
 
+### Founder (additional)
 - What's your background before this business?
-- How do you prefer to communicate? (tone, formality, detail level)
+- How do you prefer to communicate?
 - What decisions do you make vs delegate?
 - What does a typical week look like for you?
-- Are there specific ways you like information presented? (bullets, narrative, dashboards, etc.)
+
+**Update:** `wiki/concepts/founder-profile.md` with deeper detail.
 
 ### Stack (additional)
-
-- For each major tool: how heavily do you use it? Is it critical or could it be replaced?
+- For each major tool: how heavily do you use it? Critical or replaceable?
 - Are there tools you're paying for but barely using?
-- Are there integrations between your tools already? (e.g., Zapier, Make, native integrations)
+- Are there integrations between your tools?
 - Where do you feel your tools are failing you?
 
-### Priorities (additional)
+**Update:** `wiki/concepts/tech-stack.md` and create `wiki/connections/tool-gaps.md` if pain points emerge.
 
+### Priorities (additional)
 - What are the recurring tasks that eat the most time?
 - What processes feel broken or inefficient?
 - Are there things you know you should be doing but aren't?
 - What would change if you had 10 extra hours per week?
 
+**Update:** `wiki/concepts/priorities.md` and create `wiki/connections/time-drains.md`.
+
 ---
 
 ## After the Interview
 
-### Write the context files (if not already saved incrementally)
+### Finalize the wiki
 
-If you haven't already been saving each file as you completed its section, write them now. Populate each context file with clean, structured markdown. Use headers, bullet points, and tables where appropriate. Write in a way that is:
+1. **Review all articles created** — ensure cross-references are complete. Every article should link to related articles using `[[wikilinks]]`.
+2. **Create connection articles** for any non-obvious relationships you noticed (e.g., "the bottleneck in sales is directly related to the lack of CRM integration").
+3. **Update `wiki/index.md`** with every article, organized by category, each with a one-line summary.
+4. **Append to `wiki/log.md`** — log the setup ingest with all articles created.
 
-- **Factual** — state what is, not what could be
-- **Structured** — use consistent formatting so it's easy to scan
-- **Concise** — capture the important details, not every word they said
-- **Useful** — write it so that any AI agent reading this file would immediately understand the business
+### Create the overview
 
-### Format for each file
-
-Each context file should follow this pattern:
-
-```markdown
-# [Title]
-
-> Last updated: [date]
-
-## [Section]
-
-[Content organized with bullets, tables, or short paragraphs as appropriate]
-```
-
-### Show the founder what you created
-
-After writing the files, give the founder a brief summary of what's in each file. Ask:
-
-> "Here's what I've captured. Does anything look wrong or missing?"
-
-Make any corrections they request.
-
-### Create the one-page overview
-
-Create or update `context/overview.md`. This should be the fastest file to skim before any session.
-
-Use this structure:
+Create or update `context/overview.md` — a fast one-page summary OF the wiki:
 
 ```markdown
 # Business Overview
@@ -281,17 +253,19 @@ Use this structure:
 - [the most useful thing ARC should do next]
 ```
 
-Keep it tight. This is a summary file, not a duplicate of the full context.
+### Show the founder what you built
+
+> "Here's what I've built. Your wiki now has [X] articles covering your business, tools, priorities, and how everything connects. You can browse them in Obsidian if you have it set up, or just ask me anything — I'll pull from the wiki to answer.
+>
+> Here's a quick summary of what's in each article: [brief list]
+>
+> Does anything look wrong or missing?"
+
+Make corrections as needed.
 
 ### Deliver the first insight (the wow moment)
 
-Don't just suggest next steps — prove you understand the business by offering an unsolicited observation. Based on everything you've just learned, share 2-3 specific insights:
-
-- The biggest bottleneck or time sink you've identified
-- One thing that looks highly automatable based on their tools and tasks
-- A gap between their stated priorities and how they actually spend their time
-
-Frame it like:
+Based on everything you've learned, share 2-3 specific, non-obvious observations:
 
 > "Here's what jumps out to me from everything you've shared:
 >
@@ -301,37 +275,20 @@ Frame it like:
 >
 > Any of these feel right? I can dig deeper into whichever one matters most."
 
-This is the moment where the founder sees this is different from ChatGPT. Make it count.
-
 ### Turn insight into immediate value
 
-Don't stop at observations. Recommend one specific first win that you can do right now in this same session.
+Recommend one specific first win you can do right now. Pick something fast, tied to a real priority, and obviously useful.
 
-Pick something that is:
-- small enough to finish quickly
-- tied to a real priority or pain point
-- obviously useful to the founder today
+> "The fastest useful thing I could do for you right now is [specific action]. Want me to do that now?"
 
-Frame it like:
-
-> "The fastest useful thing I could do for you right now is [specific action].
->
-> It would help because [reason tied to their business].
->
-> Want me to do that now?"
-
-If they say yes, do it immediately. Don't send them off to another command unless it is clearly the best path.
-
-If they want alternatives, offer up to two more options or suggest `/first-win`.
+If they say yes, do it immediately. If they want alternatives, offer up to two more or suggest asking for a quick win.
 
 ### Then suggest next steps
 
-If they did the quick setup:
+> "Your knowledge base is live and will get smarter every session. Just talk to me normally — ask questions, give me tasks, or try any of these:
+> - Ask me for a **quick win** when you want immediate value
+> - Ask me to **brainstorm** when you want automation ideas
+> - Drop documents in `imports/` and tell me to **ingest** them to grow the wiki
+> - Ask me to **reflect** after a productive session to capture what we learned"
 
-> "When you have more time, you can do the deep setup to fill in the gaps. Otherwise, just start using me — ask questions, give me tasks, ask me for a quick win, or ask me to brainstorm and I'll suggest what to automate."
-
-If they did the deep setup:
-
-> "Your context is fully loaded. You can ask me anything about your business and I'll answer with specifics, not generic advice. Ask me for a quick win when you want immediate value, ask me to brainstorm when you want automation ideas, or tell me to audit your tasks for a full inventory."
-
-At the very end, update `context/setup-status.md` to mark setup complete and note the recommended next move.
+Update `context/setup-status.md` to mark setup complete.

@@ -1,5 +1,5 @@
 # Business Overview
 
-> This file is a fast, one-page summary of the business after setup.
+> Fast one-page summary of the business. The agent reads this at the start of every session for a quick snapshot before diving into the wiki for deeper knowledge.
 >
-> Once populated, this file contains: what the business is, who the founder is, the biggest bottleneck, current priorities, and the best immediate opportunities for ARC to help.
+> This file is created during /setup and updated by /reflect. It summarizes the wiki — it is not the source of truth. The wiki articles are.

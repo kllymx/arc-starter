@@ -50,8 +50,8 @@ When the founder asks for a weekly report, weekly summary, or status update.
 
 ## How to execute
 
-1. Read context/priorities.md for current focus areas
-2. Review any recent documents or notes created this week
+1. Read wiki/index.md and drill into relevant wiki articles (priorities, strategy, metrics)
+2. Review any recent documents, daily logs, or notes created this week
 3. Generate a structured report covering:
    - Progress against priorities
    - Key decisions made

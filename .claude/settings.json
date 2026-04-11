@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "uv run python hooks/session-start.py",
+        "timeout": 15000
+      }
+    ],
+    "PreCompact": [
+      {
+        "type": "command",
+        "command": "uv run python hooks/pre-compact.py",
+        "timeout": 30000
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "uv run python hooks/session-end.py",
+        "timeout": 30000
+      }
+    ]
+  }
+}
