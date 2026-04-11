@@ -38,6 +38,23 @@ MIN_TURNS_FOR_FLUSH = 3  # Minimum conversation turns before flushing
 # LLM settings
 CLAUDE_MODEL = "claude-sonnet-4-20250514"
 OPENAI_MODEL = "gpt-4o"
+CODEX_ENV_VARS = {
+    "CODEX_CLI",
+    "CODEX_THREAD_ID",
+    "CODEX_MANAGED_BY_BUN",
+    "CODEX_CI",
+}
+
+
+def _normalize_environment_label(value: str) -> str:
+    normalized = value.strip().lower()
+    if normalized in {"claude code", "claude-code", "claude code cli"}:
+        return "claude-code"
+    if normalized == "cursor":
+        return "claude-code"
+    if normalized == "codex":
+        return "codex"
+    return "unknown"
 
 
 def detect_environment() -> str:
@@ -47,30 +64,43 @@ def detect_environment() -> str:
 
     Detection order:
     1. Read context/workspace.md for explicit environment setting
-    2. Check for environment-specific markers (.claude/ vs .codex/)
-    3. Check environment variables
+    2. Check environment variables
+    3. Check for environment-specific markers when unambiguous
     """
     # 1. Check workspace.md
     if WORKSPACE_FILE.exists():
         content = WORKSPACE_FILE.read_text()
-        content_lower = content.lower()
-        if "claude code" in content_lower or "claude-code" in content_lower:
-            return "claude-code"
-        if "codex" in content_lower:
-            return "codex"
-        if "cursor" in content_lower:
-            return "claude-code"  # Cursor uses Claude under the hood
+        patterns = [
+            r"^\s*-\s*Primary environment:\s*(.+?)\s*$",
+            r"^\s*-\s*Environment:\s*(.+?)\s*$",
+            r"^\s*Primary environment:\s*(.+?)\s*$",
+            r"^\s*Environment:\s*(.+?)\s*$",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, content, re.MULTILINE)
+            if match:
+                environment = _normalize_environment_label(match.group(1))
+                if environment != "unknown":
+                    return environment
 
-    # 2. Check for environment markers
-    if (PROJECT_ROOT / ".claude").exists():
-        return "claude-code"
-    if (PROJECT_ROOT / ".codex").exists():
-        return "codex"
-
-    # 3. Check environment variables
+    # 2. Check environment variables
+    if os.environ.get("ARC_ENVIRONMENT"):
+        environment = _normalize_environment_label(os.environ["ARC_ENVIRONMENT"])
+        if environment != "unknown":
+            return environment
     if os.environ.get("CLAUDE_CODE"):
         return "claude-code"
-    if os.environ.get("CODEX_CLI"):
+    if any(os.environ.get(key) for key in CODEX_ENV_VARS):
+        return "codex"
+
+    # 3. Check for environment markers when only one integration is present.
+    # This repo ships with both .claude and .codex, so marker presence alone
+    # is not a reliable signal in a fresh clone.
+    has_claude = (PROJECT_ROOT / ".claude").exists()
+    has_codex = (PROJECT_ROOT / ".codex").exists()
+    if has_claude and not has_codex:
+        return "claude-code"
+    if has_codex and not has_claude:
         return "codex"
 
     return "unknown"
@@ -88,9 +118,11 @@ def get_llm_backend():
 
     if env == "codex":
         return {"type": "openai", "model": OPENAI_MODEL}
-    else:
-        # Default to Claude for claude-code, cursor, and unknown
+    if env == "claude-code":
         return {"type": "claude", "model": CLAUDE_MODEL}
+
+    # Conservative fallback for local debugging and direct script runs.
+    return {"type": "claude", "model": CLAUDE_MODEL}
 
 
 async def llm_summarize(text: str, system_prompt: str) -> str:

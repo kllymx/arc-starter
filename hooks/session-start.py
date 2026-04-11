@@ -26,6 +26,26 @@ from scripts.config import (
 from scripts.utils import read_wiki_index, read_recent_daily_logs
 
 
+def _has_meaningful_context(content: str, kind: str) -> bool:
+    """Filter out starter template text so blank workspaces stay blank."""
+    normalized = content.strip().lower()
+    if not normalized:
+        return False
+
+    placeholder_markers = {
+        "overview": [
+            "fast one-page summary of the business",
+            "this file is created during /setup",
+        ],
+        "memory": [
+            "lightweight preferences, corrections, and facts learned during conversations.",
+            "this file stores two types of information:",
+        ],
+    }
+
+    return not all(marker in normalized for marker in placeholder_markers[kind])
+
+
 def main():
     """Assemble and output session context."""
     parts = []
@@ -33,13 +53,13 @@ def main():
     # 1. Business overview (fast snapshot)
     if OVERVIEW_FILE.exists():
         overview = OVERVIEW_FILE.read_text().strip()
-        if overview and "populated" not in overview.lower():
+        if _has_meaningful_context(overview, "overview"):
             parts.append(f"## Business Overview\n\n{overview}")
 
     # 2. Memory (preferences + corrections)
     if MEMORY_FILE.exists():
         memory = MEMORY_FILE.read_text().strip()
-        if memory and "populated" not in memory.lower():
+        if _has_meaningful_context(memory, "memory"):
             parts.append(f"## Memory\n\n{memory}")
 
     # 3. Wiki index (navigation layer)

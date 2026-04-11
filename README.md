@@ -201,6 +201,16 @@ ARC automatically captures and compiles knowledge from every session. The agent 
 
 **If something goes wrong with setup**, you can run `./setup.sh` manually from the terminal. This installs [uv](https://docs.astral.sh/uv/) and project dependencies — it handles everything automatically.
 
+**If you want to verify the workspace health manually**, run:
+
+```bash
+uv run python scripts/smoke_test.py
+```
+
+This checks the bootstrap path, environment detection, blank-workspace hook behavior, and the structural wiki lint path.
+
+The repo also includes a GitHub Actions smoke-test workflow in `.github/workflows/smoke-tests.yml` so bootstrap regressions get caught on pushes and pull requests.
+
 ---
 
 ## Guides

@@ -9,11 +9,36 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 parts=""
 
+is_placeholder_context() {
+  local content="$1"
+  local kind="$2"
+
+  if [ -z "$(printf '%s' "$content" | tr -d '[:space:]')" ]; then
+    return 0
+  fi
+
+  if [ "$kind" = "overview" ]; then
+    if printf '%s' "$content" | grep -Fqi "Fast one-page summary of the business" \
+      && printf '%s' "$content" | grep -Fqi "This file is created during /setup"; then
+      return 0
+    fi
+  fi
+
+  if [ "$kind" = "memory" ]; then
+    if printf '%s' "$content" | grep -Fqi "Lightweight preferences, corrections, and facts learned during conversations." \
+      && printf '%s' "$content" | grep -Fqi "This file stores two types of information:"; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
 # 1. Overview
 overview_file="$PROJECT_ROOT/context/overview.md"
 if [ -f "$overview_file" ]; then
   content=$(cat "$overview_file")
-  if ! echo "$content" | grep -qi "populated\|placeholder"; then
+  if ! is_placeholder_context "$content" "overview"; then
     parts="${parts}## Business Overview\n\n${content}\n\n---\n\n"
   fi
 fi
@@ -22,7 +47,7 @@ fi
 memory_file="$PROJECT_ROOT/context/memory.md"
 if [ -f "$memory_file" ]; then
   content=$(cat "$memory_file")
-  if ! echo "$content" | grep -qi "populated\|placeholder"; then
+  if ! is_placeholder_context "$content" "memory"; then
     parts="${parts}## Memory\n\n${content}\n\n---\n\n"
   fi
 fi

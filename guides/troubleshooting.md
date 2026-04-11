@@ -44,10 +44,13 @@ ARC should install automated capture during first setup. If it didn't work:
 1. **Check if `.venv` exists** in the project root. If not, dependencies weren't installed.
 2. **Run `./setup.sh`** from the terminal. This installs everything needed.
 3. **If `./setup.sh` fails**, it will tell you what went wrong — usually a missing tool like `curl`.
+4. **Run `uv run python scripts/smoke_test.py`** to verify bootstrap, hook startup behavior, and the basic lint path.
 
 You can test if hooks are working by starting a new session — you should see your wiki context loaded automatically.
 
 If automated capture can't be installed on your machine, the wiki still works through commands like `/reflect` and `/ingest` — but you'll need to use them manually.
+
+If you're running ARC scripts manually for debugging and need to force the backend, set `ARC_ENVIRONMENT=Codex` or `ARC_ENVIRONMENT="Claude Code"` for that command.
 
 ---
 
