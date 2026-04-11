@@ -63,12 +63,12 @@ It is a practical starting point for building an AI operating layer around your 
 
 ### Step 1 — Clone or download this repo
 
-### Step 2 — Open it in your environment
+### Step 2 — Open it in your AI environment
 
 **VS Code + Claude Code extension** (recommended):
 1. Open the `arc-starter` folder in VS Code
 2. Open the Claude Code panel
-3. Start a conversation — the agent reads CLAUDE.md and the wiki automatically
+3. Say "let's set up" — the agent handles everything from here
 
 **Cursor + Claude Code extension**:
 1. Open the `arc-starter` folder in Cursor
@@ -77,30 +77,34 @@ It is a practical starting point for building an AI operating layer around your 
 
 **Codex (VS Code extension)**:
 1. Open the `arc-starter` folder in VS Code
-2. Codex reads AGENTS.md for context
-3. Start a conversation in natural language
-
-**Claude Desktop**:
-1. Create a new Project
-2. Drag `CLAUDE.md` and `context/` files into the Project Knowledge
-3. Start a conversation in natural language
-4. Note: automated hooks are not available in Claude Desktop — use `/reflect` manually
+2. Say "let's set up" in natural language
 
 **Terminal (Claude Code CLI)**:
 1. `cd` into the `arc-starter` folder
 2. Run `claude` to start a session
-3. Claude Code reads CLAUDE.md and hooks fire automatically
+3. Say "let's set up"
 
-### Step 3 — Start the conversation
+> **Note on Claude Desktop:** ARC is designed for Claude Code or Codex where automated knowledge capture runs in the background. Claude Desktop can be used for basic conversations but does not support the hooks that make the wiki grow automatically.
 
-Say **"help me get started"**, **"let's set up"**, or use `/setup`. The agent will interview you about your business and build an initial wiki with ~15-25 cross-referenced articles. There are two modes:
+### Step 3 — That's it
+
+The agent will:
+1. Install automated knowledge capture (takes ~30 seconds, happens once)
+2. Ask about your environment and how technical to be
+3. Interview you about your business (~15-30 minutes)
+4. Build your initial wiki with ~15-25 cross-referenced articles
+5. Offer you a first win immediately
+
+From that point on, the wiki grows automatically. Every session contributes knowledge. You don't need to do anything to maintain it.
+
+There are two setup modes:
 
 - **Quick setup** (~15 minutes) — captures the essentials
 - **Deep setup** (~30 minutes) — comprehensive interview
 
 **Have existing documents?** Drop pitch decks, one-pagers, business plans, or any relevant docs into the `imports/` folder before starting setup. The agent will analyze them first.
 
-### Step 5 — Start using it
+### Step 4 — Start using it
 
 Once the wiki is built, you can:
 
@@ -185,25 +189,17 @@ The wiki grows through use. The agent handles all the bookkeeping. You never mai
 
 ## Automated Knowledge Capture
 
-ARC uses hooks to automatically capture and compile knowledge. This is optional but recommended — the agent will offer to set it up during your first session.
+ARC automatically captures and compiles knowledge from every session. The agent installs this during first setup — you don't need to do anything.
 
-**How it works:**
-- **Session start** — Injects wiki index + business overview so the agent starts fully informed (works immediately, no setup needed)
-- **Session end** — Captures conversation insights and appends to daily logs
-- **Pre-compact** (Claude Code only) — Captures knowledge before context compression in long sessions
-- **Nightly compilation** — Promotes daily log entries into structured wiki articles
+**What happens behind the scenes:**
+- **Session start** — Wiki index + business overview injected so the agent starts fully informed
+- **Session end** — Conversation insights captured and appended to daily logs
+- **Pre-compact** (Claude Code only) — Knowledge captured before context compression in long sessions
+- **Nightly compilation** — Daily log entries promoted into structured wiki articles with cross-references
 
-**Setup:** The agent will offer to run `./setup.sh` during your first conversation. This installs the tools needed for automated capture. If you prefer to do it manually:
+**The result:** You just use ARC normally. The wiki grows on its own. Every conversation, every question, every decision gets captured and organized into your compounding knowledge base.
 
-```bash
-./setup.sh
-```
-
-This installs [uv](https://docs.astral.sh/uv/) (a Python package manager) and the project dependencies. It handles everything automatically.
-
-**Without automated capture:** ARC still works. The wiki grows through commands like `/setup`, `/reflect`, `/ingest`, and `/explore`. Automated capture just means it also learns from every conversation passively.
-
-**Claude Desktop users:** Hooks aren't available in Claude Desktop. Use `/reflect` manually after productive sessions.
+**If something goes wrong with setup**, you can run `./setup.sh` manually from the terminal. This installs [uv](https://docs.astral.sh/uv/) and project dependencies — it handles everything automatically.
 
 ---
 

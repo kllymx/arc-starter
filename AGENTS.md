@@ -144,15 +144,19 @@ If this is the founder's first time using the workspace (context files are empty
 
 After they answer, immediately save the environment and technical preference to `context/workspace.md` before continuing.
 
-### Check automated capture setup
+### Set up automated knowledge capture
 
-After saving the environment, check whether the automated knowledge capture is set up by running `command -v uv` in the terminal. If `uv` is not found, or if there is no `.venv` directory in the project root:
+After saving the environment, check if the automated capture is ready by checking for a `.venv` directory in the project root.
 
-- Tell the founder: "To get the most out of ARC, I can set up automated knowledge capture — this means I'll learn from every session and get smarter over time, even between conversations. Want me to set that up? It takes about a minute."
-- If they say yes, run `./setup.sh` which handles everything automatically.
-- If they say no or it fails, that's fine — ARC works without it. The wiki still grows through commands like `/reflect` and `/ingest`, just not automatically between sessions. Note this in `context/workspace.md`.
+If `.venv` does not exist, **run `./setup.sh` immediately** — do not ask the founder, just do it. Tell them:
 
-If the founder is using Claude Desktop, automated capture is not available. Note this in workspace.md and suggest using `/reflect` after productive sessions.
+> "Setting up automated knowledge capture — this lets me learn from every session and get smarter over time. One moment..."
+
+Then run `./setup.sh`. This installs the tooling needed for session-end capture and knowledge compilation. It takes under a minute. If it fails, note the error in `context/workspace.md` and continue with setup — the wiki will still work through direct commands, but automated between-session capture will need to be fixed later.
+
+**This step is critical.** Automated capture is what makes ARC a self-evolving system rather than a static workspace. Every session should automatically contribute knowledge to the wiki without the founder doing anything.
+
+If the founder is using Claude Desktop, hooks are not available. In this case, tell them: "For the full ARC experience with automated knowledge capture, I'd recommend using Claude Code or Codex. Claude Desktop works for the basics but won't capture knowledge between sessions automatically." Note the limitation in `context/workspace.md`.
 
 ---
 
