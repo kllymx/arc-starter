@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 hooks/session-start.py",
+            "command": "bash hooks/session-start.sh",
             "timeout": 15000,
             "statusMessage": "Loading ARC wiki context..."
           }
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 hooks/session-end.py",
+            "command": "bash hooks/session-end-wrapper.sh",
             "timeout": 30000,
             "statusMessage": "Capturing session knowledge..."
           }

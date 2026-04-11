@@ -3,21 +3,21 @@
     "SessionStart": [
       {
         "type": "command",
-        "command": "uv run python hooks/session-start.py",
+        "command": "bash hooks/session-start.sh",
         "timeout": 15000
       }
     ],
     "PreCompact": [
       {
         "type": "command",
-        "command": "uv run python hooks/pre-compact.py",
+        "command": "bash hooks/pre-compact-wrapper.sh",
         "timeout": 30000
       }
     ],
     "Stop": [
       {
         "type": "command",
-        "command": "uv run python hooks/session-end.py",
+        "command": "bash hooks/session-end-wrapper.sh",
         "timeout": 30000
       }
     ]

@@ -63,15 +63,7 @@ It is a practical starting point for building an AI operating layer around your 
 
 ### Step 1 — Clone or download this repo
 
-### Step 2 — Install Python dependencies (for automated knowledge capture)
-
-```bash
-uv sync
-```
-
-This installs the hooks that automatically capture session knowledge and compile it into wiki articles. Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
-
-### Step 3 — Open it in your environment
+### Step 2 — Open it in your environment
 
 **VS Code + Claude Code extension** (recommended):
 1. Open the `arc-starter` folder in VS Code
@@ -99,7 +91,7 @@ This installs the hooks that automatically capture session knowledge and compile
 2. Run `claude` to start a session
 3. Claude Code reads CLAUDE.md and hooks fire automatically
 
-### Step 4 — Start the conversation
+### Step 3 — Start the conversation
 
 Say **"help me get started"**, **"let's set up"**, or use `/setup`. The agent will interview you about your business and build an initial wiki with ~15-25 cross-referenced articles. There are two modes:
 
@@ -193,16 +185,25 @@ The wiki grows through use. The agent handles all the bookkeeping. You never mai
 
 ## Automated Knowledge Capture
 
-ARC uses hooks to automatically capture and compile knowledge:
+ARC uses hooks to automatically capture and compile knowledge. This is optional but recommended — the agent will offer to set it up during your first session.
 
-- **Session start** — Injects wiki index + business overview so the agent starts fully informed
+**How it works:**
+- **Session start** — Injects wiki index + business overview so the agent starts fully informed (works immediately, no setup needed)
 - **Session end** — Captures conversation insights and appends to daily logs
 - **Pre-compact** (Claude Code only) — Captures knowledge before context compression in long sessions
 - **Nightly compilation** — Promotes daily log entries into structured wiki articles
 
-This works in both Claude Code (`.claude/settings.json`) and Codex (`.codex/hooks.json`).
+**Setup:** The agent will offer to run `./setup.sh` during your first conversation. This installs the tools needed for automated capture. If you prefer to do it manually:
 
-For Claude Desktop, hooks aren't available — use `/reflect` manually after productive sessions to keep the wiki growing.
+```bash
+./setup.sh
+```
+
+This installs [uv](https://docs.astral.sh/uv/) (a Python package manager) and the project dependencies. It handles everything automatically.
+
+**Without automated capture:** ARC still works. The wiki grows through commands like `/setup`, `/reflect`, `/ingest`, and `/explore`. Automated capture just means it also learns from every conversation passively.
+
+**Claude Desktop users:** Hooks aren't available in Claude Desktop. Use `/reflect` manually after productive sessions.
 
 ---
 

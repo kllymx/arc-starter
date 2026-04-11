@@ -144,6 +144,16 @@ If this is the founder's first time using the workspace (context files are empty
 
 After they answer, immediately save the environment and technical preference to `context/workspace.md` before continuing.
 
+### Check automated capture setup
+
+After saving the environment, check whether the automated knowledge capture is set up by running `command -v uv` in the terminal. If `uv` is not found, or if there is no `.venv` directory in the project root:
+
+- Tell the founder: "To get the most out of ARC, I can set up automated knowledge capture — this means I'll learn from every session and get smarter over time, even between conversations. Want me to set that up? It takes about a minute."
+- If they say yes, run `./setup.sh` which handles everything automatically.
+- If they say no or it fails, that's fine — ARC works without it. The wiki still grows through commands like `/reflect` and `/ingest`, just not automatically between sessions. Note this in `context/workspace.md`.
+
+If the founder is using Claude Desktop, automated capture is not available. Note this in workspace.md and suggest using `/reflect` after productive sessions.
+
 ---
 
 ## Available Commands
