@@ -18,22 +18,36 @@ Instead, just say things naturally:
 - "Brainstorm what I should automate"
 - "Audit my tasks"
 - "Explore this idea"
+- "Ingest this document"
 
 ---
 
 ## ARC Doesn't Seem To Know My Business Yet
 
-Check the files in `context/`.
+Check the wiki. If `wiki/index.md` still says "No articles yet", setup has not been completed.
 
-- If they still contain placeholder text, setup has not been completed yet.
 - Start by saying "let's set up" or "help me get started".
 - If setup was interrupted, ARC should use `context/setup-status.md` to resume instead of starting over.
 
-If needed, ask:
+If the wiki has articles but ARC gives generic answers, ask:
 
-> "What do you already know about my business from the context files?"
+> "Check the wiki index and tell me what you know about my business."
 
-That is a quick way to verify what the agent has actually loaded.
+That verifies the agent is actually reading the wiki.
+
+---
+
+## Automated Knowledge Capture Isn't Working
+
+ARC should install automated capture during first setup. If it didn't work:
+
+1. **Check if `.venv` exists** in the project root. If not, dependencies weren't installed.
+2. **Run `./setup.sh`** from the terminal. This installs everything needed.
+3. **If `./setup.sh` fails**, it will tell you what went wrong — usually a missing tool like `curl`.
+
+You can test if hooks are working by starting a new session — you should see your wiki context loaded automatically.
+
+If automated capture can't be installed on your machine, the wiki still works through commands like `/reflect` and `/ingest` — but you'll need to use them manually.
 
 ---
 
@@ -47,23 +61,22 @@ Codex should read `AGENTS.md`.
 
 If ARC seems generic, point it back to the workspace:
 
-> "Use the instructions in AGENTS.md and the files in context/."
+> "Use the instructions in AGENTS.md and the wiki in wiki/index.md."
 
 ---
 
 ## I'm Using Claude Desktop
 
-Claude Desktop does not automatically read the whole repo the same way a coding environment does.
+Claude Desktop does not support hooks, which means automated knowledge capture won't run between sessions. For the full ARC experience with automated knowledge capture, use **Claude Code** or **Codex** instead.
 
-For best results:
+If you still want to use Claude Desktop:
 - Create a Project
 - Add `CLAUDE.md`
 - Add the files in `context/`
-- Add any relevant documents from `imports/` if you want them included
+- Add `wiki/index.md`
+- Begin by saying "Let's set up ARC"
 
-Then begin by saying:
-
-> "Let's set up ARC in this project."
+Note that the wiki will only grow through direct commands in this environment, not automatically.
 
 ---
 
@@ -90,7 +103,7 @@ Try:
 - "Explain it simply."
 - "I want the practical version, not the technical version."
 
-ARC should store that in `context/workspace.md` and `context/memory.md`.
+ARC stores that in `context/workspace.md` and `context/memory.md`.
 
 ---
 
@@ -107,17 +120,21 @@ Good prompts:
 
 ARC gets more impressive when it is asked to produce something specific, not just discuss possibilities.
 
-If you've already done a few useful things, ask:
+---
 
-> "Review what we've learned and update the workspace."
+## I Want to Add More Knowledge
 
-That should trigger `/reflect` or the natural-language equivalent so ARC promotes durable learnings instead of leaving them buried in old chats.
+Drop documents into the `imports/` folder and tell ARC to ingest them:
+
+> "Ingest the new documents in imports"
+
+This reads each document, creates wiki articles, updates cross-references, and grows the knowledge base. Meeting notes, articles, competitor research, pitch decks — anything relevant.
 
 ---
 
 ## I Installed A Later Session Pack But Nothing Changed
 
-If you extend ARC in a later session, the new files should usually land in `extensions/active/` plus any new commands or guides.
+If you extend ARC in a later session, the new files should land in `extensions/active/` plus any new commands or guides.
 
 Check:
 - that the pack was added into this workspace, not a separate folder
@@ -126,4 +143,4 @@ Check:
 
 If needed, tell ARC:
 
-> "Re-read AGENTS.md or CLAUDE.md and any files in extensions/active/ before continuing."
+> "Re-read CLAUDE.md or AGENTS.md and any files in extensions/active/ before continuing."

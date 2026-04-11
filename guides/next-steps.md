@@ -40,20 +40,14 @@ If you haven't already, run `/brainstorm` to get suggestions for what to automat
 
 For a more systematic approach, run `/audit` to do a full task inventory. This shows you exactly where your time goes and which tasks have the highest automation potential.
 
-### Keep the wiki growing
+### The wiki grows automatically
 
-When priorities change, tell ARC — it will update the relevant wiki articles. When you add a new tool, mention it and the wiki gets updated. Drop new documents in `imports/` and say "ingest this" to process them into wiki knowledge. The workspace is only as good as the knowledge it has — and it grows automatically with every session.
+Every session you have with ARC is automatically captured and compiled into wiki knowledge. You don't need to do anything — just use ARC and the wiki gets smarter.
 
-### Run /reflect
-
-After you've done a few useful tasks, ask ARC to reflect on what changed.
-
-Try:
-- "Review what we learned"
-- "Reflect on recent work"
-- "Update the workspace based on what changed"
-
-This helps ARC compile durable learnings into wiki articles instead of letting good work disappear into old chats.
+To accelerate growth, you can also:
+- Drop new documents in `imports/` and say "ingest this" to process them into wiki knowledge
+- Mention changes to your business ("we just hired a CTO", "we pivoted our pricing") and ARC updates the wiki immediately
+- Ask questions that push beyond what the wiki knows — ARC will research and file the answers back
 
 ---
 

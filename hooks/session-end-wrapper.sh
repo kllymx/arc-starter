@@ -2,7 +2,7 @@
 # ARC Session End Wrapper
 #
 # Checks if uv and Python deps are available before running session-end.py.
-# If not, silently skips — the founder can use /reflect manually instead.
+# If not, silently skips — the workspace still functions without automated capture.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"

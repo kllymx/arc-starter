@@ -45,7 +45,7 @@ You don't need to understand the technical details. The key points:
 
 ## When to Add MCPs
 
-**Not in your first session.** Get comfortable with the workspace and context files first. MCPs add power but also complexity.
+**Not in your first session.** Get comfortable with the workspace and let the wiki build up first. MCPs add power but also complexity — and they're much more effective when the agent already has deep wiki knowledge of your business.
 
 **Good time to add them:**
 - When you find yourself manually copying data from a tool into the workspace
@@ -103,4 +103,4 @@ MCPs give your AI agent real access to real systems. A few things to keep in min
 | **Skill** | A reusable workflow the agent follows | Weekly report process |
 | **Slash command** | A manual prompt template | `/brainstorm` |
 
-MCPs provide the *capabilities*. Skills and commands define *how to use them*. You might have a Gmail MCP that lets the agent access email, and a skill that tells it how to do your weekly email triage using that access.
+MCPs provide the *capabilities*. Skills and commands define *how to use them*. The wiki provides the *business knowledge*. You might have a Gmail MCP that lets the agent access email, a skill that tells it how to do your weekly email triage, and wiki knowledge that tells it who your key clients are and what tone to use.
