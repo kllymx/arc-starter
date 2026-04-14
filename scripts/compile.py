@@ -3,69 +3,130 @@
 ARC Wiki Compiler
 
 Reads daily session logs and compiles them into structured wiki articles.
-This is the "heavy" operation that promotes raw conversation knowledge into
-the cross-referenced wiki.
+Uses the Claude Agent SDK with full file tools so the agent can directly
+read existing articles, create new ones, edit, and update the index.
 
 Can be triggered:
-- Automatically by session-end.py after COMPILE_AFTER_HOUR
+- Automatically by flush.py after each session
 - Manually via: uv run python scripts/compile.py
 - With flags: --all (recompile everything), --file daily/2026-04-11.md (specific file)
 """
 
+from __future__ import annotations
+
+# Recursion prevention: set BEFORE imports that might trigger Claude
+import os
+os.environ["ARC_HOOK_INVOKED"] = "1"
+
 import argparse
 import asyncio
-import os
+import json
+import logging
 import sys
 from pathlib import Path
 
-# Recursion prevention
-os.environ["ARC_HOOK_INVOKED"] = "1"
-
-# Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.config import (
-    DAILY_DIR,
-    WIKI_DIR,
-    WIKI_INDEX,
-    WIKI_LOG,
-    CONCEPTS_DIR,
-    CONNECTIONS_DIR,
-)
-from scripts.utils import (
-    load_state,
-    save_state,
-    sha256,
-    now_str,
-    today_str,
+DAILY_DIR = PROJECT_ROOT / "daily"
+WIKI_DIR = PROJECT_ROOT / "wiki"
+SCRIPTS_DIR = PROJECT_ROOT / "scripts"
+STATE_FILE = SCRIPTS_DIR / "state.json"
+LOG_FILE = SCRIPTS_DIR / "compile.log"
+
+logging.basicConfig(
+    filename=str(LOG_FILE),
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [compile] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-GUARD_VAR = "ARC_HOOK_INVOKED"
 
-COMPILE_PROMPT = """You are an expert knowledge compiler for a founder's AI operating partner.
+def file_hash(path: Path) -> str:
+    from hashlib import sha256
+    return sha256(path.read_bytes()).hexdigest()[:16]
 
-You are given:
-1. The current wiki index (catalog of all existing articles)
-2. All existing wiki articles (so you know what's already documented)
-3. A daily session log containing summaries of conversations
 
-Your job is to extract durable knowledge from the session log and either:
-- CREATE new wiki articles for concepts, entities, or connections not yet documented
-- UPDATE existing articles with new information
-- FLAG contradictions where new info conflicts with existing articles
+def load_state() -> dict:
+    if STATE_FILE.exists():
+        try:
+            return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {}
 
-## Rules
 
-- Every article MUST use this format:
+def save_state(state: dict) -> None:
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+
+def list_daily_logs() -> list[Path]:
+    if not DAILY_DIR.exists():
+        return []
+    return sorted(DAILY_DIR.glob("*.md"))
+
+
+def now_iso() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+
+
+async def compile_daily_log(log_path: Path, state: dict) -> float:
+    """Compile a single daily log into knowledge articles.
+
+    The agent gets full file tools and multiple turns to:
+    - Read existing wiki articles
+    - Create new concept/connection articles
+    - Update existing articles with new information
+    - Update wiki/index.md
+    - Append to wiki/log.md
+    - Cross-reference everything with [[wikilinks]]
+
+    Returns the API cost of the compilation.
+    """
+    from claude_agent_sdk import (
+        AssistantMessage,
+        ClaudeAgentOptions,
+        ResultMessage,
+        TextBlock,
+        query,
+    )
+
+    log_content = log_path.read_text(encoding="utf-8")
+
+    prompt = f"""You are a knowledge compiler for an ARC workspace. Your job is to read a daily
+conversation log and compile durable knowledge into wiki articles.
+
+## Daily Log to Compile
+
+**File:** {log_path.name}
+
+{log_content}
+
+## Your Task
+
+1. Read `wiki/index.md` to see what articles already exist
+2. Read relevant existing articles to understand what's already documented
+3. Extract key concepts, decisions, lessons, and connections from the daily log
+4. For each piece of durable knowledge:
+   - If a relevant article exists: UPDATE it with new information
+   - If no article exists: CREATE a new one in `wiki/concepts/`
+   - If the log reveals non-obvious connections between 2+ concepts: CREATE a connection article in `wiki/connections/`
+5. Update `wiki/index.md` with any new articles
+6. Append a timestamped entry to `wiki/log.md`
+
+## Article Format
+
+Every wiki article must use this format:
 
 ```markdown
 ---
 title: [Name]
-type: concept | entity | connection
+type: concept | entity | connection | exploration
 created: [YYYY-MM-DD]
 updated: [YYYY-MM-DD]
-source: conversation
+source: conversation | setup | import | exploration
 tags: [comma-separated]
 ---
 
@@ -74,186 +135,117 @@ tags: [comma-separated]
 [Content with [[wikilinks]] to related articles]
 
 ## Related
-- [[Related 1]]
-- [[Related 2]]
+- [[Related Article 1]]
+- [[Related Article 2]]
 ```
 
+## Rules
 - Use [[wikilinks]] throughout — every mention of a concept that has its own article should link to it
-- Connection articles go in wiki/connections/ and must link to 2+ concept articles
-- Concept articles go in wiki/concepts/
 - Keep articles atomic — one concept per file
-- File names should be kebab-case: `business-model.md`, `sales-process.md`
+- File names: kebab-case (e.g., `business-model.md`, `sales-process.md`)
+- Only compile knowledge worth keeping long-term — skip trivial exchanges
+- If the daily log contains nothing worth compiling, just say so and stop
 
-## Output Format
-
-Return a JSON object with this structure:
-
-```json
-{
-  "created": [
-    {"path": "wiki/concepts/example.md", "content": "full markdown content"},
-  ],
-  "updated": [
-    {"path": "wiki/concepts/existing.md", "content": "full updated markdown content"},
-  ],
-  "index_update": "full updated wiki/index.md content",
-  "log_entry": "## [date] compile | Description\\n- Created: ...\\n- Updated: ...",
-  "contradictions": ["description of any contradictions found"]
-}
-```
-
-If there is nothing worth compiling from the session log, return:
-```json
-{"skip": true, "reason": "No new durable knowledge found"}
-```
+## Quality Standards
+- Every article must link to at least 2 other articles via [[wikilinks]]
+- Connection articles must reference 2+ concept articles
+- Update the Related section of any article you link TO (bidirectional linking)
 """
 
-
-async def compile_daily_log(log_path: Path, dry_run: bool = False):
-    """Compile a single daily log into wiki articles."""
-    if not log_path.exists():
-        print(f"Log file not found: {log_path}")
-        return
-
-    log_content = log_path.read_text()
-    if not log_content.strip():
-        return
-
-    # Load current wiki state
-    wiki_index = WIKI_INDEX.read_text() if WIKI_INDEX.exists() else ""
-
-    existing_articles = []
-    for article_dir in [CONCEPTS_DIR, CONNECTIONS_DIR]:
-        if article_dir.exists():
-            for article_file in article_dir.glob("*.md"):
-                existing_articles.append(
-                    f"--- {article_file.relative_to(WIKI_DIR)} ---\n{article_file.read_text()}"
-                )
-
-    existing_content = "\n\n".join(existing_articles) if existing_articles else "(no articles yet)"
-
-    # Build the prompt
-    full_prompt = f"""## Current Wiki Index
-
-{wiki_index}
-
-## Existing Wiki Articles
-
-{existing_content}
-
-## Daily Session Log to Compile
-
-{log_content}
-
----
-
-Now compile the session log into wiki articles. Return JSON as specified."""
-
-    from scripts.config import llm_summarize
-    import json
+    cost = 0.0
+    logging.info("Compiling %s...", log_path.name)
 
     try:
-        os.environ[GUARD_VAR] = "1"
-
-        result_text = await llm_summarize(full_prompt, COMPILE_PROMPT)
-
-        # Extract JSON from response (handle markdown code blocks)
-        json_text = result_text
-        if "```json" in json_text:
-            json_text = json_text.split("```json")[1].split("```")[0]
-        elif "```" in json_text:
-            json_text = json_text.split("```")[1].split("```")[0]
-
-        result = json.loads(json_text.strip())
-
-        if result.get("skip"):
-            print(f"Skipped {log_path.name}: {result.get('reason', 'no new knowledge')}")
-            return
-
-        if dry_run:
-            print(f"DRY RUN — Would create {len(result.get('created', []))} articles, "
-                  f"update {len(result.get('updated', []))}")
-            for item in result.get("created", []):
-                print(f"  CREATE: {item['path']}")
-            for item in result.get("updated", []):
-                print(f"  UPDATE: {item['path']}")
-            return
-
-        # Write created articles
-        for item in result.get("created", []):
-            file_path = PROJECT_ROOT / item["path"]
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-            file_path.write_text(item["content"])
-            print(f"  Created: {item['path']}")
-
-        # Write updated articles
-        for item in result.get("updated", []):
-            file_path = PROJECT_ROOT / item["path"]
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-            file_path.write_text(item["content"])
-            print(f"  Updated: {item['path']}")
-
-        # Update index
-        if result.get("index_update"):
-            WIKI_INDEX.write_text(result["index_update"])
-            print("  Updated: wiki/index.md")
-
-        # Append to log
-        if result.get("log_entry"):
-            with open(WIKI_LOG, "a") as f:
-                f.write(f"\n{result['log_entry']}\n")
-            print("  Appended to: wiki/log.md")
-
-        # Report contradictions
-        for contradiction in result.get("contradictions", []):
-            print(f"  CONTRADICTION: {contradiction}")
-
-        # Update state
-        state = load_state()
-        state["compiled_hashes"][log_path.name] = sha256(log_content)
-        state["last_compile_time"] = now_str()
-        save_state(state)
-
-        print(f"Compiled {log_path.name} successfully.")
-
+        async for message in query(
+            prompt=prompt,
+            options=ClaudeAgentOptions(
+                cwd=str(PROJECT_ROOT),
+                system_prompt={"type": "preset", "preset": "claude_code"},
+                allowed_tools=["Read", "Write", "Edit", "Glob", "Grep"],
+                permission_mode="acceptEdits",
+                max_turns=30,
+            ),
+        ):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        pass  # agent writes files directly
+            elif isinstance(message, ResultMessage):
+                cost = message.total_cost_usd or 0.0
+                logging.info("Compilation cost: $%.4f", cost)
     except Exception as e:
-        print(f"Compile error for {log_path.name}: {e}", file=sys.stderr)
+        import traceback
+        logging.error("Compile error: %s\n%s", e, traceback.format_exc())
+        return 0.0
+
+    # Update state
+    rel_path = log_path.name
+    state.setdefault("ingested", {})[rel_path] = {
+        "hash": file_hash(log_path),
+        "compiled_at": now_iso(),
+        "cost_usd": cost,
+    }
+    state["total_cost"] = state.get("total_cost", 0.0) + cost
+    save_state(state)
+
+    logging.info("Compiled %s successfully.", log_path.name)
+    return cost
 
 
-async def main():
+def main():
     parser = argparse.ArgumentParser(description="ARC Wiki Compiler")
-    parser.add_argument("--all", action="store_true", help="Recompile all daily logs")
+    parser.add_argument("--all", action="store_true", help="Force recompile all logs")
     parser.add_argument("--file", type=str, help="Compile a specific daily log file")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would change without writing")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be compiled")
     args = parser.parse_args()
 
-    if args.file:
-        await compile_daily_log(Path(args.file), dry_run=args.dry_run)
-        return
-
-    if not DAILY_DIR.exists():
-        print("No daily/ directory found.")
-        return
-
     state = load_state()
-    compiled_hashes = state.get("compiled_hashes", {})
 
-    log_files = sorted(DAILY_DIR.glob("*.md"))
-    if not log_files:
-        print("No daily logs to compile.")
+    # Determine which files to compile
+    if args.file:
+        target = Path(args.file)
+        if not target.is_absolute():
+            target = DAILY_DIR / target.name
+        if not target.exists():
+            target = PROJECT_ROOT / args.file
+        if not target.exists():
+            print(f"Error: {args.file} not found")
+            sys.exit(1)
+        to_compile = [target]
+    else:
+        all_logs = list_daily_logs()
+        if args.all:
+            to_compile = all_logs
+        else:
+            to_compile = []
+            for log_path in all_logs:
+                rel = log_path.name
+                prev = state.get("ingested", {}).get(rel, {})
+                if not prev or prev.get("hash") != file_hash(log_path):
+                    to_compile.append(log_path)
+
+    if not to_compile:
+        logging.info("Nothing to compile — all daily logs are up to date.")
+        print("Nothing to compile - all daily logs are up to date.")
         return
 
-    for log_file in log_files:
-        content = log_file.read_text()
-        current_hash = sha256(content)
+    if args.dry_run:
+        print(f"[DRY RUN] Files to compile ({len(to_compile)}):")
+        for f in to_compile:
+            print(f"  - {f.name}")
+        return
 
-        if not args.all and compiled_hashes.get(log_file.name) == current_hash:
-            print(f"Skipping {log_file.name} (unchanged)")
-            continue
+    logging.info("Compiling %d daily log(s)...", len(to_compile))
 
-        print(f"Compiling {log_file.name}...")
-        await compile_daily_log(log_file, dry_run=args.dry_run)
+    total_cost = 0.0
+    for i, log_path in enumerate(to_compile, 1):
+        print(f"[{i}/{len(to_compile)}] Compiling {log_path.name}...")
+        cost = asyncio.run(compile_daily_log(log_path, state))
+        total_cost += cost
+
+    logging.info("Compilation complete. Total cost: $%.2f", total_cost)
+    print(f"\nCompilation complete. Total cost: ${total_cost:.2f}")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
