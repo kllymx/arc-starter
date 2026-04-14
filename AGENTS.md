@@ -90,11 +90,13 @@ tags: [comma-separated tags]
 
 ### The Compounding Rule
 
-**Good answers get filed back.** When you synthesize an answer that connects multiple concepts in a useful way, don't let it disappear into chat history:
+**Good answers get filed back automatically.** When you synthesize an answer that references 2+ wiki articles, you MUST file the result — do not wait for the founder to ask. Choose the right place:
 
 - If it links multiple concepts → create a `wiki/connections/` article
 - If it's a standalone Q&A worth keeping → create a `wiki/qa/` article with the question as the title and the synthesized answer as the content
 - If it adds to an existing concept → update the relevant `wiki/concepts/` article
+
+After filing, briefly tell the founder: "I've filed that answer in the wiki as [[article-name]] so it's available next time."
 
 This is how the wiki grows through use — every question makes it smarter. The next time someone asks a similar question, the answer is already in the wiki.
 
