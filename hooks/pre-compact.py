@@ -24,6 +24,10 @@ from pathlib import Path
 if os.environ.get("ARC_HOOK_INVOKED"):
     sys.exit(0)
 
+# Skip for Codex — no compaction in Codex's single-turn model
+if any(os.environ.get(k) for k in ("CODEX_CLI", "CODEX_THREAD_ID", "CODEX_MANAGED_BY_BUN", "CODEX_CI")):
+    sys.exit(0)
+
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS_DIR = ROOT / "scripts"
 

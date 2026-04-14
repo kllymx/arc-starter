@@ -24,6 +24,12 @@ from pathlib import Path
 if os.environ.get("ARC_HOOK_INVOKED"):
     sys.exit(0)
 
+# Skip for Codex — it treats every message as a separate session,
+# which would spawn a flush for every single exchange.
+# Codex users capture knowledge via /reflect instead.
+if any(os.environ.get(k) for k in ("CODEX_CLI", "CODEX_THREAD_ID", "CODEX_MANAGED_BY_BUN", "CODEX_CI")):
+    sys.exit(0)
+
 ROOT = Path(__file__).resolve().parent.parent
 DAILY_DIR = ROOT / "daily"
 SCRIPTS_DIR = ROOT / "scripts"
