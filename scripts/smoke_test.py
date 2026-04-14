@@ -146,8 +146,8 @@ def test_hook_configs_export_runtime_env() -> None:
     claude_settings = json.loads((PROJECT_ROOT / ".claude" / "settings.json").read_text())
     codex_hooks = json.loads((PROJECT_ROOT / ".codex" / "hooks.json").read_text())
 
-    claude_start = claude_settings["hooks"]["SessionStart"][0]["command"]
-    claude_stop = claude_settings["hooks"]["Stop"][0]["command"]
+    claude_start = claude_settings["hooks"]["SessionStart"][0]["hooks"][0]["command"]
+    claude_stop = claude_settings["hooks"]["Stop"][0]["hooks"][0]["command"]
     codex_start = codex_hooks["hooks"]["SessionStart"][0]["hooks"][0]["command"]
     codex_stop = codex_hooks["hooks"]["Stop"][0]["hooks"][0]["command"]
 
