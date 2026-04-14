@@ -1,4 +1,7 @@
 {
   "newFileLocation": "folder",
-  "newFileFolderPath": "wiki/concepts"
+  "newFileFolderPath": "wiki/concepts",
+  "useMarkdownLinks": false,
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "relative"
 }

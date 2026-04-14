@@ -117,6 +117,8 @@ Append to `wiki/log.md` every time you perform a wiki operation. Use the format:
 
 Use `[[wikilinks]]` throughout all wiki articles. When you mention a concept that has its own article, link to it. When you create a new article, check existing articles for mentions that should now link to it. Connections between ideas are as valuable as the ideas themselves.
 
+**Wikilink format:** Always use the kebab-case filename, not the display title. Write `[[growth-bottleneck]]` not `[[Growth Bottleneck]]`. Use the pipe syntax for display names: `[[growth-bottleneck|Growth Bottleneck]]`. This ensures Obsidian can resolve links to the actual files.
+
 ### Wiki Health
 
 Periodically (during /reflect or /lint), check for:
