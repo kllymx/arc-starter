@@ -27,6 +27,7 @@ A directory of LLM-generated, interlinked markdown files. **You own this layer e
 | `wiki/log.md` | Chronological record of all wiki operations |
 | `wiki/concepts/` | Atomic knowledge articles — one per business concept, entity, or topic |
 | `wiki/connections/` | Cross-cutting insights that link two or more concepts together |
+| `wiki/qa/` | Filed answers to complex questions — the compounding loop in action |
 
 ### 3. Context Files (`context/`)
 
@@ -62,7 +63,7 @@ Every wiki article uses this structure:
 ```markdown
 ---
 title: [Article Name]
-type: concept | entity | connection
+type: concept | entity | connection | exploration | qa
 created: [YYYY-MM-DD]
 updated: [YYYY-MM-DD]
 source: setup | conversation | import | exploration | web-research
@@ -89,7 +90,13 @@ tags: [comma-separated tags]
 
 ### The Compounding Rule
 
-**Good answers get filed back.** When you synthesize an answer that connects multiple concepts in a useful way, don't let it disappear into chat history. Create a new wiki article (in `wiki/connections/` if it links multiple concepts) or update existing ones. This is how the wiki grows through use — every question makes it smarter.
+**Good answers get filed back.** When you synthesize an answer that connects multiple concepts in a useful way, don't let it disappear into chat history:
+
+- If it links multiple concepts → create a `wiki/connections/` article
+- If it's a standalone Q&A worth keeping → create a `wiki/qa/` article with the question as the title and the synthesized answer as the content
+- If it adds to an existing concept → update the relevant `wiki/concepts/` article
+
+This is how the wiki grows through use — every question makes it smarter. The next time someone asks a similar question, the answer is already in the wiki.
 
 ### Index Maintenance
 
@@ -250,7 +257,8 @@ arc-starter/
 │   ├── index.md           ← Master catalog — read this for any query
 │   ├── log.md             ← Chronological record of wiki operations
 │   ├── concepts/          ← Atomic articles: one per business concept, entity, topic
-│   └── connections/       ← Cross-cutting insights linking 2+ concepts
+│   ├── connections/       ← Cross-cutting insights linking 2+ concepts
+│   └── qa/                ← Filed answers to complex questions
 ├── daily/                 ← Session logs (auto-captured by hooks)
 ├── imports/               ← Drop zone for documents to ingest
 ├── hooks/                 ← Automation scripts (session capture, compilation)
