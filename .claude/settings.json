@@ -2,23 +2,35 @@
   "hooks": {
     "SessionStart": [
       {
-        "type": "command",
-        "command": "CLAUDE_CODE=1 bash hooks/session-start.sh",
-        "timeout": 15000
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_CODE=1 bash hooks/session-start.sh",
+            "timeout": 15000
+          }
+        ]
       }
     ],
     "PreCompact": [
       {
-        "type": "command",
-        "command": "CLAUDE_CODE=1 bash hooks/pre-compact-wrapper.sh",
-        "timeout": 30000
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_CODE=1 bash hooks/pre-compact-wrapper.sh",
+            "timeout": 30000
+          }
+        ]
       }
     ],
     "Stop": [
       {
-        "type": "command",
-        "command": "CLAUDE_CODE=1 bash hooks/session-end-wrapper.sh",
-        "timeout": 30000
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_CODE=1 bash hooks/session-end-wrapper.sh",
+            "timeout": 30000
+          }
+        ]
       }
     ]
   }
