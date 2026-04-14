@@ -37,7 +37,7 @@ logging.basicConfig(
 
 MAX_TURNS = 30
 MAX_CONTEXT_CHARS = 15_000
-MIN_TURNS_TO_FLUSH = 1
+MIN_TURNS_TO_FLUSH = 3
 
 
 def extract_conversation_context(transcript_path: Path) -> tuple[str, int]:
