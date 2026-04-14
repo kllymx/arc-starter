@@ -1,105 +1,172 @@
-#!/usr/bin/env python3
 """
-ARC Pre-Compact Hook (Claude Code only)
+PreCompact hook - captures conversation transcript before auto-compaction.
 
-Fires before Claude Code compresses the context window.
-Critical for long sessions — captures knowledge before it gets summarized away.
+When Claude Code's context window fills up, it auto-compacts (summarizes and
+discards detail). This hook fires BEFORE that happens, extracting conversation
+context and spawning flush.py to extract knowledge that would otherwise
+be lost to summarization.
 
-Same logic as session-end.py but with a higher minimum turn threshold
-to avoid redundant captures in short sessions.
+The hook itself does NO API calls - only local file I/O for speed (<10s).
 """
 
-import asyncio
+from __future__ import annotations
+
+import json
+import logging
 import os
+import re
+import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
-# Add project root to path
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+# Recursion guard
+if os.environ.get("ARC_HOOK_INVOKED"):
+    sys.exit(0)
 
-from scripts.config import MIN_TURNS_FOR_FLUSH
-from scripts.utils import (
-    read_transcript_from_stdin,
-    count_turns,
-    load_state,
-    save_state,
-    sha256,
-    now_str,
+ROOT = Path(__file__).resolve().parent.parent
+SCRIPTS_DIR = ROOT / "scripts"
+
+logging.basicConfig(
+    filename=str(SCRIPTS_DIR / "flush.log"),
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [pre-compact] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-GUARD_VAR = "ARC_HOOK_INVOKED"
-
-FLUSH_PROMPT = """You are summarizing an AI coding/business assistant conversation for a founder's knowledge base.
-
-This is a mid-session capture before context compression. Focus on what's been discussed so far.
-
-Extract ONLY what's worth remembering long-term:
-- Decisions made (and why)
-- Lessons learned
-- New business information discovered
-- Action items or next steps
-- Corrections the founder made
-
-Format as a structured session entry:
-
-## Session (mid-capture) — [brief topic description]
-
-**Context:** [one line: what was being worked on]
-
-**Key Exchanges:**
-- [important point]
-
-**Decisions Made:**
-- [decision and reasoning]
-
-**Lessons Learned:**
-- [lesson]
-
-If the conversation was trivial, respond with exactly: FLUSH_OK"""
+MAX_TURNS = 30
+MAX_CONTEXT_CHARS = 15_000
+MIN_TURNS_TO_FLUSH = 5
 
 
-async def main():
-    if os.environ.get(GUARD_VAR):
+def extract_conversation_context(transcript_path: Path) -> tuple[str, int]:
+    """Read JSONL transcript and extract last ~N conversation turns as markdown."""
+    turns: list[str] = []
+
+    with open(transcript_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            msg = entry.get("message", {})
+            if isinstance(msg, dict):
+                role = msg.get("role", "")
+                content = msg.get("content", "")
+            else:
+                role = entry.get("role", "")
+                content = entry.get("content", "")
+
+            if role not in ("user", "assistant"):
+                continue
+
+            if isinstance(content, list):
+                text_parts = []
+                for block in content:
+                    if isinstance(block, dict) and block.get("type") == "text":
+                        text_parts.append(block.get("text", ""))
+                    elif isinstance(block, str):
+                        text_parts.append(block)
+                content = "\n".join(text_parts)
+
+            if isinstance(content, str) and content.strip():
+                label = "User" if role == "user" else "Assistant"
+                turns.append(f"**{label}:** {content.strip()}\n")
+
+    recent = turns[-MAX_TURNS:]
+    context = "\n".join(recent)
+
+    if len(context) > MAX_CONTEXT_CHARS:
+        context = context[-MAX_CONTEXT_CHARS:]
+        boundary = context.find("\n**")
+        if boundary > 0:
+            context = context[boundary + 1:]
+
+    return context, len(recent)
+
+
+def main() -> None:
+    # Read hook input from stdin
+    try:
+        raw_input = sys.stdin.read()
+        try:
+            hook_input: dict = json.loads(raw_input)
+        except json.JSONDecodeError:
+            fixed_input = re.sub(r'(?<!\\)\\(?!["\\])', r'\\\\', raw_input)
+            hook_input = json.loads(fixed_input)
+    except (json.JSONDecodeError, ValueError, EOFError) as e:
+        logging.error("Failed to parse stdin: %s", e)
         return
 
-    transcript = read_transcript_from_stdin()
-    if not transcript:
+    session_id = hook_input.get("session_id", "unknown")
+    transcript_path_str = hook_input.get("transcript_path", "")
+
+    logging.info("PreCompact fired: session=%s", session_id)
+
+    # transcript_path can be empty (known Claude Code bug)
+    if not transcript_path_str or not isinstance(transcript_path_str, str):
+        logging.info("SKIP: no transcript path")
         return
 
-    # Higher threshold for pre-compact — avoid redundant captures
-    turns = count_turns(transcript)
-    if turns < max(MIN_TURNS_FOR_FLUSH, 5):
+    transcript_path = Path(transcript_path_str)
+    if not transcript_path.exists():
+        logging.info("SKIP: transcript missing: %s", transcript_path_str)
         return
 
-    state = load_state()
-    transcript_hash = sha256(transcript[:1000])
-    if state.get("last_flush_session") == transcript_hash:
+    # Extract conversation context in the hook (fast, no API calls)
+    try:
+        context, turn_count = extract_conversation_context(transcript_path)
+    except Exception as e:
+        logging.error("Context extraction failed: %s", e)
         return
 
-    from scripts.config import llm_summarize
+    if not context.strip():
+        logging.info("SKIP: empty context")
+        return
+
+    if turn_count < MIN_TURNS_TO_FLUSH:
+        logging.info("SKIP: only %d turns (min %d)", turn_count, MIN_TURNS_TO_FLUSH)
+        return
+
+    # Write context to a temp file for the background process
+    timestamp = datetime.now(timezone.utc).astimezone().strftime("%Y%m%d-%H%M%S")
+    context_file = SCRIPTS_DIR / f"flush-context-{session_id}-{timestamp}.md"
+    context_file.write_text(context, encoding="utf-8")
+
+    # Spawn flush.py as a background process (outside hook timeout)
+    flush_script = SCRIPTS_DIR / "flush.py"
+
+    cmd = [
+        "uv",
+        "run",
+        "--directory",
+        str(ROOT),
+        "python",
+        str(flush_script),
+        str(context_file),
+        session_id,
+    ]
+
+    creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
     try:
-        os.environ[GUARD_VAR] = "1"
-
-        summary = await llm_summarize(transcript, FLUSH_PROMPT)
-
-        if not summary or summary.strip() == "FLUSH_OK":
-            state["last_flush_session"] = transcript_hash
-            state["last_flush_time"] = now_str()
-            save_state(state)
-            return
-
-        from scripts.utils import append_to_daily_log
-        append_to_daily_log(summary)
-
-        state["last_flush_session"] = transcript_hash
-        state["last_flush_time"] = now_str()
-        save_state(state)
-
+        subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=creation_flags,
+        )
+        logging.info(
+            "Spawned flush.py for session %s (%d turns, %d chars)",
+            session_id, turn_count, len(context),
+        )
     except Exception as e:
-        print(f"ARC pre-compact error: {e}", file=sys.stderr)
+        logging.error("Failed to spawn flush.py: %s", e)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

@@ -1,170 +1,174 @@
-#!/usr/bin/env python3
 """
-ARC Session End Hook
+SessionEnd/Stop hook - captures conversation transcript for knowledge extraction.
 
-Fires when a Claude Code session ends (SessionEnd) or a Codex turn completes (Stop).
-Reads the conversation transcript from stdin, sends it to an LLM for summarization,
-and appends the summary to today's daily log.
+When a Claude Code session ends, this hook reads the transcript path from
+stdin, extracts conversation context, and spawns flush.py as a background
+process to extract knowledge into the daily log.
 
-If it's past COMPILE_AFTER_HOUR and the daily log has changed, spawns compile.py
-as a background process to promote knowledge into the wiki.
+The hook itself does NO API calls - only local file I/O for speed (<10s).
 """
 
-import asyncio
+from __future__ import annotations
+
+import json
+import logging
 import os
+import re
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
-# Add project root to path
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+# Recursion guard: if we were spawned by flush.py (which calls Agent SDK,
+# which runs Claude Code, which would fire this hook again), exit immediately.
+if os.environ.get("ARC_HOOK_INVOKED"):
+    sys.exit(0)
 
-from scripts.config import (
-    COMPILE_AFTER_HOUR,
-    MIN_TURNS_FOR_FLUSH,
-    SCRIPTS_DIR,
-)
-from scripts.utils import (
-    read_transcript_from_stdin,
-    count_turns,
-    load_state,
-    save_state,
-    sha256,
-    now_str,
-    get_daily_log_path,
+ROOT = Path(__file__).resolve().parent.parent
+DAILY_DIR = ROOT / "daily"
+SCRIPTS_DIR = ROOT / "scripts"
+
+logging.basicConfig(
+    filename=str(SCRIPTS_DIR / "flush.log"),
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [session-end] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# Recursion guard — prevent hooks from triggering on SDK-spawned sessions
-GUARD_VAR = "ARC_HOOK_INVOKED"
-
-# Summarization prompt
-FLUSH_PROMPT = """You are summarizing an AI coding/business assistant conversation for a founder's knowledge base.
-
-Extract ONLY what's worth remembering long-term. Focus on:
-- Decisions made (and why)
-- Lessons learned
-- New business information discovered
-- Action items or next steps
-- Corrections the founder made to the agent's understanding
-
-Format as a structured session entry:
-
-## Session — [brief topic description]
-
-**Context:** [one line: what was being worked on]
-
-**Key Exchanges:**
-- [important point 1]
-- [important point 2]
-
-**Decisions Made:**
-- [decision and reasoning]
-
-**Lessons Learned:**
-- [lesson]
-
-**Action Items:**
-- [ ] [action item]
-
-If the conversation was trivial or contained nothing worth saving, respond with exactly: FLUSH_OK"""
+MAX_TURNS = 30
+MAX_CONTEXT_CHARS = 15_000
+MIN_TURNS_TO_FLUSH = 1
 
 
-async def main():
-    # Recursion guard
-    if os.environ.get(GUARD_VAR):
-        return
+def extract_conversation_context(transcript_path: Path) -> tuple[str, int]:
+    """Read JSONL transcript and extract last ~N conversation turns as markdown."""
+    turns: list[str] = []
 
-    # Read transcript from stdin
-    transcript = read_transcript_from_stdin()
-    if not transcript:
-        return
+    with open(transcript_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue
 
-    # Minimum turns check
-    turns = count_turns(transcript)
-    if turns < MIN_TURNS_FOR_FLUSH:
-        return
+            # Handle both nested and flat message formats
+            msg = entry.get("message", {})
+            if isinstance(msg, dict):
+                role = msg.get("role", "")
+                content = msg.get("content", "")
+            else:
+                role = entry.get("role", "")
+                content = entry.get("content", "")
 
-    # Deduplication — don't flush the same session twice
-    state = load_state()
-    transcript_hash = sha256(transcript[:1000])  # Hash first 1K for dedup
-    if state.get("last_flush_session") == transcript_hash:
-        return
+            if role not in ("user", "assistant"):
+                continue
 
-    # Import here to avoid slow startup if we bail early
-    from scripts.config import llm_summarize
+            if isinstance(content, list):
+                text_parts = []
+                for block in content:
+                    if isinstance(block, dict) and block.get("type") == "text":
+                        text_parts.append(block.get("text", ""))
+                    elif isinstance(block, str):
+                        text_parts.append(block)
+                content = "\n".join(text_parts)
 
+            if isinstance(content, str) and content.strip():
+                label = "User" if role == "user" else "Assistant"
+                turns.append(f"**{label}:** {content.strip()}\n")
+
+    recent = turns[-MAX_TURNS:]
+    context = "\n".join(recent)
+
+    if len(context) > MAX_CONTEXT_CHARS:
+        context = context[-MAX_CONTEXT_CHARS:]
+        boundary = context.find("\n**")
+        if boundary > 0:
+            context = context[boundary + 1:]
+
+    return context, len(recent)
+
+
+def main() -> None:
+    # Read hook input from stdin
     try:
-        # Set recursion guard for child processes
-        os.environ[GUARD_VAR] = "1"
+        raw_input = sys.stdin.read()
+        try:
+            hook_input: dict = json.loads(raw_input)
+        except json.JSONDecodeError:
+            # Windows may pass paths with unescaped backslashes
+            fixed_input = re.sub(r'(?<!\\)\\(?!["\\])', r'\\\\', raw_input)
+            hook_input = json.loads(fixed_input)
+    except (json.JSONDecodeError, ValueError, EOFError) as e:
+        logging.error("Failed to parse stdin: %s", e)
+        return
 
-        summary = await llm_summarize(transcript, FLUSH_PROMPT)
+    session_id = hook_input.get("session_id", "unknown")
+    transcript_path_str = hook_input.get("transcript_path", "")
 
-        if not summary or summary.strip() == "FLUSH_OK":
-            # Nothing worth saving
-            state["last_flush_session"] = transcript_hash
-            state["last_flush_time"] = now_str()
-            save_state(state)
-            return
+    logging.info("Stop hook fired: session=%s", session_id)
 
-        # Append to daily log
-        from scripts.utils import append_to_daily_log
-        append_to_daily_log(summary)
+    if not transcript_path_str or not isinstance(transcript_path_str, str):
+        logging.info("SKIP: no transcript path")
+        return
 
-        # Update state
-        state["last_flush_session"] = transcript_hash
-        state["last_flush_time"] = now_str()
-        save_state(state)
+    transcript_path = Path(transcript_path_str)
+    if not transcript_path.exists():
+        logging.info("SKIP: transcript missing: %s", transcript_path_str)
+        return
 
-        # Check if we should auto-compile (past compile hour + daily log changed)
-        current_hour = datetime.now().hour
-        if current_hour >= COMPILE_AFTER_HOUR:
-            daily_log = get_daily_log_path()
-            if daily_log.exists():
-                current_hash = sha256(daily_log.read_text())
-                last_compiled_hash = state.get("compiled_hashes", {}).get(
-                    daily_log.name, ""
-                )
-                if current_hash != last_compiled_hash:
-                    # Spawn compile.py as detached background process
-                    _spawn_compile()
-
+    # Extract conversation context in the hook (fast, no API calls)
+    try:
+        context, turn_count = extract_conversation_context(transcript_path)
     except Exception as e:
-        # Don't crash the session — log error and move on
-        print(f"ARC flush error: {e}", file=sys.stderr)
-
-
-def _spawn_compile():
-    """Spawn compile.py as a fully detached background process."""
-    compile_script = SCRIPTS_DIR / "compile.py"
-    if not compile_script.exists():
+        logging.error("Context extraction failed: %s", e)
         return
 
-    env = os.environ.copy()
-    env[GUARD_VAR] = "1"
+    if not context.strip():
+        logging.info("SKIP: empty context")
+        return
+
+    if turn_count < MIN_TURNS_TO_FLUSH:
+        logging.info("SKIP: only %d turns (min %d)", turn_count, MIN_TURNS_TO_FLUSH)
+        return
+
+    # Write context to a temp file for the background process
+    timestamp = datetime.now(timezone.utc).astimezone().strftime("%Y%m%d-%H%M%S")
+    context_file = SCRIPTS_DIR / f"session-flush-{session_id}-{timestamp}.md"
+    context_file.write_text(context, encoding="utf-8")
+
+    # Spawn flush.py as a background process (outside hook timeout)
+    flush_script = SCRIPTS_DIR / "flush.py"
+
+    cmd = [
+        "uv",
+        "run",
+        "--directory",
+        str(ROOT),
+        "python",
+        str(flush_script),
+        str(context_file),
+        session_id,
+    ]
+
+    creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
     try:
-        if sys.platform == "win32":
-            CREATE_NO_WINDOW = 0x08000000
-            subprocess.Popen(
-                [sys.executable, str(compile_script)],
-                env=env,
-                creationflags=CREATE_NO_WINDOW,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-        else:
-            subprocess.Popen(
-                [sys.executable, str(compile_script)],
-                env=env,
-                start_new_session=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-    except Exception:
-        pass  # Don't crash the session
+        subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=creation_flags,
+        )
+        logging.info(
+            "Spawned flush.py for session %s (%d turns, %d chars)",
+            session_id, turn_count, len(context),
+        )
+    except Exception as e:
+        logging.error("Failed to spawn flush.py: %s", e)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

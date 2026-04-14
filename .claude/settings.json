@@ -2,6 +2,7 @@
   "hooks": {
     "SessionStart": [
       {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
@@ -13,22 +14,24 @@
     ],
     "PreCompact": [
       {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
             "command": "CLAUDE_CODE=1 bash hooks/pre-compact-wrapper.sh",
-            "timeout": 30000
+            "timeout": 10000
           }
         ]
       }
     ],
     "Stop": [
       {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
             "command": "CLAUDE_CODE=1 bash hooks/session-end-wrapper.sh",
-            "timeout": 30000
+            "timeout": 10000
           }
         ]
       }
