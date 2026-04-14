@@ -129,13 +129,18 @@ async def llm_summarize(text: str, system_prompt: str) -> str:
     """
     Send text to the appropriate LLM for summarization.
     Routes to Claude Agent SDK or OpenAI based on environment.
+    Falls back to Claude Agent SDK if OpenAI is unavailable.
     """
     backend = get_llm_backend()
 
-    if backend["type"] == "claude":
-        return await _claude_summarize(text, system_prompt, backend["model"])
+    if backend["type"] == "openai":
+        try:
+            return await _openai_summarize(text, system_prompt, backend["model"])
+        except Exception:
+            # Fallback to Claude Agent SDK if OpenAI API key isn't set
+            return await _claude_summarize(text, system_prompt, CLAUDE_MODEL)
     else:
-        return await _openai_summarize(text, system_prompt, backend["model"])
+        return await _claude_summarize(text, system_prompt, backend["model"])
 
 
 async def _claude_summarize(text: str, system_prompt: str, model: str) -> str:

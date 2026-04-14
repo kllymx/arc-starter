@@ -101,39 +101,18 @@ respond with exactly: FLUSH_OK"""
 
 
 async def run_flush(context: str) -> str:
-    """Use Claude Agent SDK to extract important knowledge from conversation context."""
-    from claude_agent_sdk import (
-        AssistantMessage,
-        ClaudeAgentOptions,
-        ResultMessage,
-        TextBlock,
-        query,
-    )
+    """Extract important knowledge using the appropriate LLM backend."""
+    sys.path.insert(0, str(SCRIPTS_DIR.parent))
+    from scripts.config import llm_summarize
 
     prompt = f"{FLUSH_PROMPT}\n\n## Conversation Context\n\n{context}"
 
-    response = ""
     try:
-        async for message in query(
-            prompt=prompt,
-            options=ClaudeAgentOptions(
-                cwd=str(ROOT),
-                allowed_tools=[],
-                max_turns=2,
-            ),
-        ):
-            if isinstance(message, AssistantMessage):
-                for block in message.content:
-                    if isinstance(block, TextBlock):
-                        response += block.text
-            elif isinstance(message, ResultMessage):
-                pass
+        return await llm_summarize(prompt, "")
     except Exception as e:
         import traceback
-        logging.error("Agent SDK error: %s\n%s", e, traceback.format_exc())
-        response = f"FLUSH_ERROR: {type(e).__name__}: {e}"
-
-    return response
+        logging.error("LLM error: %s\n%s", e, traceback.format_exc())
+        return f"FLUSH_ERROR: {type(e).__name__}: {e}"
 
 
 def maybe_trigger_compilation() -> None:
