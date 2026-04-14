@@ -72,6 +72,31 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 
 
+LOCK_FILE = SCRIPTS_DIR / "compile.lock"
+LOCK_TIMEOUT = 300  # 5 minutes — if lock is older, assume stale
+
+
+def acquire_lock() -> bool:
+    """Try to acquire the compile lock. Returns False if another compile is running."""
+    import time
+    if LOCK_FILE.exists():
+        try:
+            lock_age = time.time() - LOCK_FILE.stat().st_mtime
+            if lock_age < LOCK_TIMEOUT:
+                return False  # another compile is running
+            # Stale lock — remove it
+            logging.info("Removing stale lock (%.0fs old)", lock_age)
+        except OSError:
+            pass
+    LOCK_FILE.write_text(str(os.getpid()), encoding="utf-8")
+    return True
+
+
+def release_lock():
+    """Release the compile lock."""
+    LOCK_FILE.unlink(missing_ok=True)
+
+
 async def compile_daily_log(log_path: Path, state: dict) -> float:
     """Compile a single daily log into knowledge articles.
 
@@ -144,7 +169,10 @@ tags: [comma-separated]
 - Keep articles atomic — one concept per file
 - File names: kebab-case (e.g., `business-model.md`, `sales-process.md`)
 - Only compile knowledge worth keeping long-term — skip trivial exchanges
-- If the daily log contains nothing worth compiling, just say so and stop
+- If the daily log contains nothing NEW worth compiling, just say so and stop
+- This daily log may contain sessions that were already compiled earlier today.
+  Read existing wiki articles first — if content is already captured, skip it.
+  Only compile genuinely new knowledge that isn't already in the wiki.
 
 ## Quality Standards
 - Every article must link to at least 2 other articles via [[wikilinks]]
@@ -235,16 +263,25 @@ def main():
             print(f"  - {f.name}")
         return
 
-    logging.info("Compiling %d daily log(s)...", len(to_compile))
+    # Acquire lock to prevent concurrent compilations
+    if not acquire_lock():
+        logging.info("Another compilation is running — skipping.")
+        print("Another compilation is running — skipping.")
+        return
 
-    total_cost = 0.0
-    for i, log_path in enumerate(to_compile, 1):
-        print(f"[{i}/{len(to_compile)}] Compiling {log_path.name}...")
-        cost = asyncio.run(compile_daily_log(log_path, state))
-        total_cost += cost
+    try:
+        logging.info("Compiling %d daily log(s)...", len(to_compile))
 
-    logging.info("Compilation complete. Total cost: $%.2f", total_cost)
-    print(f"\nCompilation complete. Total cost: ${total_cost:.2f}")
+        total_cost = 0.0
+        for i, log_path in enumerate(to_compile, 1):
+            print(f"[{i}/{len(to_compile)}] Compiling {log_path.name}...")
+            cost = asyncio.run(compile_daily_log(log_path, state))
+            total_cost += cost
+
+        logging.info("Compilation complete. Total cost: $%.2f", total_cost)
+        print(f"\nCompilation complete. Total cost: ${total_cost:.2f}")
+    finally:
+        release_lock()
 
 
 if __name__ == "__main__":
