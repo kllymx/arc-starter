@@ -53,7 +53,6 @@ Recommended additions:
 Session 2 preserves the founder's existing:
 - `wiki/` (all articles, index, log)
 - `context/` (overview, memory, workspace)
-- `explorations/`
 - `imports/`
 - `daily/` (session logs)
 
@@ -87,7 +86,7 @@ To keep ARC compatible with both Claude Code and Codex:
 4. Additive files are copied in; founder's state is preserved
 
 Packs add: new commands, guides, templates, scripts, extension instructions.
-Packs preserve: wiki, context, explorations, imports, daily logs, founder-created commands.
+Packs preserve: wiki, context, imports, daily logs, founder-created commands.
 
 ---
 

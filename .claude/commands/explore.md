@@ -17,7 +17,7 @@ Read the wiki:
 If the wiki has no articles, stop and tell the founder to run setup first.
 
 Check for prior work:
-- relevant prior files in `explorations/`
+- wiki articles with `type: exploration` in the index
 - recent files in `imports/`
 
 If a similar idea has already been explored, build from that work unless the founder wants a fresh take.
@@ -55,12 +55,20 @@ Search the web if needed for APIs, best practices, existing solutions.
 
 ## Phase 3 — Spec
 
-Save as `explorations/[short-name].md`:
+Save as a wiki article `wiki/concepts/[short-name].md`:
 
 ```markdown
+---
+title: Exploration: [Name of the idea]
+type: exploration
+created: [YYYY-MM-DD]
+updated: [YYYY-MM-DD]
+source: exploration
+tags: exploration, [relevant tags]
+---
+
 # Exploration: [Name of the idea]
 
-> Explored: [date]
 > Status: Ready to build / Needs more research / Blocked by [X]
 
 ## What
@@ -94,6 +102,9 @@ Save as `explorations/[short-name].md`:
 ## Next Steps
 
 [Exactly what to do next]
+
+## Related
+- [[relevant wiki articles]]
 ```
 
 **Save progress incrementally** if the research is extensive.
@@ -112,7 +123,7 @@ Every exploration produces knowledge worth keeping:
 - **New concepts** discovered during research → create `wiki/concepts/` articles
 - **New tools or APIs** identified → create entity articles
 - **Connections** between the exploration and existing wiki content → create `wiki/connections/` articles
-- **Update `wiki/index.md`** with new articles
+- **Update `wiki/index.md`** with all new articles (including the exploration itself)
 - **Append to `wiki/log.md`** with what was explored and what was learned
 
-The exploration file stays in `explorations/` as the spec. The knowledge it produced enters the wiki for future use.
+Everything lives in the wiki. No orphan files.

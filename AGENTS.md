@@ -82,7 +82,7 @@ tags: [comma-separated tags]
 
 - **During /setup** — The setup interview is the first ingest. Each major topic (business model, founder profile, tech stack, priorities, customers, competitors) becomes its own wiki article. Cross-link everything.
 - **When answering a synthesis question** — If your answer required pulling from multiple wiki articles and produced a useful synthesis, file the answer back as a new article or update existing ones.
-- **During /explore** — New concepts, tools, strategies, or approaches discovered during exploration become wiki articles. The exploration spec stays in `explorations/`, but the knowledge it produces enters the wiki.
+- **During /explore** — The exploration itself is a wiki article (`type: exploration`). New concepts, tools, strategies, or approaches discovered during exploration also become their own wiki articles. Everything is indexed.
 - **During /reflect** — Review recent conversations and daily logs. Extract durable knowledge and compile it into wiki articles. Update existing articles with new information. Flag stale content.
 - **During /ingest** — When the founder drops a new document in `imports/` and asks you to ingest it. Read the source, create summary and concept pages, update existing articles, cross-link everything.
 - **When the founder shares new information** — A new hire, a pivot, a new tool, a changed strategy. Update the relevant wiki articles and the index.
@@ -253,7 +253,6 @@ arc-starter/
 │   └── connections/       ← Cross-cutting insights linking 2+ concepts
 ├── daily/                 ← Session logs (auto-captured by hooks)
 ├── imports/               ← Drop zone for documents to ingest
-├── explorations/          ← Output from /explore — specs and plans
 ├── hooks/                 ← Automation scripts (session capture, compilation)
 ├── scripts/               ← Utility scripts (compile, flush, lint, query)
 ├── extensions/active/     ← Optional Session 2 / Session 3 instruction overlays
@@ -265,7 +264,7 @@ arc-starter/
 
 Read installed extension instructions if they exist. If `extensions/active/` contains `.md` files, treat them as additive instructions layered on top of this starter.
 
-Treat prior artifacts as workspace memory too. When relevant, consult `explorations/`, `daily/` logs, and documents in `imports/`. Use them as supporting context, and promote durable learnings into the wiki.
+Treat prior artifacts as workspace memory too. When relevant, consult `daily/` logs and documents in `imports/`. Use them as supporting context, and promote durable learnings into the wiki.
 
 ## Adapting to the Environment
 

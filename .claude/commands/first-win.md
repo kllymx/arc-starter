@@ -20,7 +20,7 @@ Read the wiki:
 If the wiki has no articles, stop and tell the founder to set up ARC first.
 
 Then check for supporting artifacts:
-- relevant files in `explorations/`
+- wiki articles with `type: exploration` for prior research
 - recent files in `imports/`
 - recent `daily/` logs
 

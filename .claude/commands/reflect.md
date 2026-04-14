@@ -16,7 +16,7 @@ Read the wiki:
 
 Then check for recent material to review:
 - `daily/` — recent session logs (the richest source of new knowledge)
-- relevant files in `explorations/`
+- wiki articles with `type: exploration` that may have new insights
 - recent files in `imports/` that may not have been ingested yet
 - the current conversation itself
 

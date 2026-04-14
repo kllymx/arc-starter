@@ -25,7 +25,7 @@ After setup, your agent has a wiki covering:
 - what your current priorities and pain points are
 - how all of these connect together
 
-The wiki grows every session. Questions you ask, documents you import, explorations you run — all of it feeds back into the knowledge base. The agent handles all the bookkeeping: creating articles, maintaining cross-references, flagging contradictions, and keeping everything current.
+The wiki grows every session. Questions you ask, documents you import, ideas you explore — all of it feeds back into the knowledge base. The agent handles all the bookkeeping: creating articles, maintaining cross-references, flagging contradictions, and keeping everything current.
 
 ARC is designed for both technical and non-technical founders, and works in Claude Code, Codex, Cursor, and Claude Desktop.
 
@@ -155,7 +155,6 @@ arc-starter/
 │   └── connections/       # Cross-cutting insights linking 2+ concepts
 ├── daily/                 # Session logs (auto-captured by hooks)
 ├── imports/               # Drop zone for documents to ingest
-├── explorations/          # Output from /explore — specs and plans
 ├── hooks/                 # Automation scripts (session capture, compilation)
 ├── scripts/               # Utility scripts (compile, flush, lint)
 ├── extensions/active/     # Optional overlays from later session packs
