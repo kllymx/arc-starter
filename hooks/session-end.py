@@ -54,8 +54,12 @@ def extract_conversation_context(transcript_path: Path) -> tuple[str, int]:
             except json.JSONDecodeError:
                 continue
 
-            # Handle both nested and flat message formats
-            msg = entry.get("message", {})
+            # Handle three transcript formats:
+            # 1. Claude Code CLI: {"role": "user", "content": [...]}
+            # 2. Claude Code VS Code: {"message": {"role": "user", "content": [...]}}
+            # 3. Codex: {"type": "response_item", "payload": {"role": "user", "content": [...]}}
+            payload = entry.get("payload", {})
+            msg = entry.get("message", payload if isinstance(payload, dict) else {})
             if isinstance(msg, dict):
                 role = msg.get("role", "")
                 content = msg.get("content", "")
@@ -69,8 +73,15 @@ def extract_conversation_context(transcript_path: Path) -> tuple[str, int]:
             if isinstance(content, list):
                 text_parts = []
                 for block in content:
-                    if isinstance(block, dict) and block.get("type") == "text":
-                        text_parts.append(block.get("text", ""))
+                    if isinstance(block, dict):
+                        # Claude uses "text", Codex uses "input_text" and "output_text"
+                        text = (
+                            block.get("text", "")
+                            or block.get("input_text", "")
+                            or block.get("output_text", "")
+                        )
+                        if text:
+                            text_parts.append(text)
                     elif isinstance(block, str):
                         text_parts.append(block)
                 content = "\n".join(text_parts)
