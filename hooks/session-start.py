@@ -83,7 +83,10 @@ def main():
 
     # Output as JSON for the hook system
     output = {
-        "message": combined
+        "hookSpecificOutput": {
+            "hookEventName": "SessionStart",
+            "additionalContext": combined,
+        }
     }
     print(json.dumps(output))
 

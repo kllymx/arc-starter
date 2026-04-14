@@ -81,5 +81,5 @@ fi
 if [ -n "$parts" ]; then
   # Escape for JSON
   escaped=$(printf '%s' "$parts" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '%s' "$parts" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' | tr '\n' ' ')
-  echo "{\"message\": ${escaped}}"
+  echo "{\"hookSpecificOutput\": {\"hookEventName\": \"SessionStart\", \"additionalContext\": ${escaped}}}"
 fi
