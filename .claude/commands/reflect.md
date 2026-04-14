@@ -38,13 +38,19 @@ Look for:
 - **New connections** — relationships between concepts that weren't previously documented
 - **Stale content** — wiki articles that are now outdated
 
-### 2. Compile into the Wiki
+### 2. Strengthen the Wiki
 
 For each piece of durable knowledge:
-- **Create new articles** in `wiki/concepts/` or `wiki/connections/` if the knowledge is substantial enough
+- **Create new articles** in `wiki/concepts/`, `wiki/connections/`, or `wiki/qa/` if the knowledge is substantial enough
 - **Update existing articles** if the new information refines or extends what's already there
 - **Flag contradictions** if new information conflicts with existing wiki content
 - **Add cross-references** — update `[[wikilinks]]` in both new and existing articles
+
+Then look at the wiki itself for gaps:
+- **Thin articles** — under 200 words, likely stubs. Flesh them out with what you know or can research.
+- **Missing connections** — concepts that clearly relate but have no connection article linking them.
+- **Referenced but undocumented** — topics mentioned in articles that don't have their own page yet.
+- **Research opportunities** — areas where a web search could add genuine value (competitor updates, market data, tool comparisons). Do the research and file the results.
 
 ### 3. Update Supporting Files
 
