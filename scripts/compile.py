@@ -165,6 +165,7 @@ tags: [comma-separated]
 ```
 
 ## Rules
+- **NEVER modify files in `daily/` — they are immutable inputs. Only write to `wiki/`.**
 - Use [[wikilinks]] throughout — every mention of a concept that has its own article should link to it
 - Keep articles atomic — one concept per file
 - File names: kebab-case (e.g., `business-model.md`, `sales-process.md`)
