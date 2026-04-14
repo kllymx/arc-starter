@@ -63,24 +63,49 @@ def save_state(state: dict):
 
 def read_transcript_from_stdin(max_chars: int = 15_000) -> str:
     """
-    Read JSONL transcript from stdin (provided by Claude Code hooks).
-    Extract the last N characters worth of conversation turns.
+    Read conversation transcript from stdin.
+
+    Supports two formats:
+    - VS Code extension: a single JSON object with a transcript_path field
+      pointing to a JSONL file on disk.
+    - CLI: JSONL piped directly to stdin with role/content entries.
+
+    Returns the last N characters of conversation turns.
     """
-    lines = []
+    raw_lines = []
     try:
         for line in sys.stdin:
             line = line.strip()
             if line:
-                lines.append(line)
+                raw_lines.append(line)
     except Exception:
         pass
 
-    if not lines:
+    if not raw_lines:
         return ""
+
+    # Check if this is a VS Code-style metadata object with transcript_path
+    transcript_lines = []
+    if len(raw_lines) == 1:
+        try:
+            metadata = json.loads(raw_lines[0])
+            transcript_path = metadata.get("transcript_path")
+            if transcript_path:
+                tp = Path(transcript_path)
+                if tp.exists():
+                    transcript_lines = [
+                        l.strip() for l in tp.read_text().splitlines() if l.strip()
+                    ]
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # Fallback: treat stdin lines as direct JSONL (CLI format)
+    if not transcript_lines:
+        transcript_lines = raw_lines
 
     # Parse JSONL and extract message content
     messages = []
-    for line in lines:
+    for line in transcript_lines:
         try:
             entry = json.loads(line)
             role = entry.get("role", "")
