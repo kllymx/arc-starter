@@ -140,16 +140,25 @@ async def llm_summarize(text: str, system_prompt: str) -> str:
 
 async def _claude_summarize(text: str, system_prompt: str, model: str) -> str:
     """Summarize using Claude Agent SDK."""
-    from claude_agent_sdk import query
+    import tempfile
+    from claude_agent_sdk import query, ClaudeAgentOptions
 
-    result = await query(
-        prompt=text,
-        system=system_prompt,
-        model=model,
-        allowed_tools=[],
-        max_turns=2,
-    )
-    return result.text
+    messages = []
+    async for msg in query(
+        prompt=f"{system_prompt}\n\n---\n\n{text}",
+        options=ClaudeAgentOptions(
+            model=model,
+            allowed_tools=[],
+            max_turns=1,
+            permission_mode="acceptEdits",
+            cwd=tempfile.gettempdir(),
+        ),
+    ):
+        if hasattr(msg, "content"):
+            for block in (msg.content if isinstance(msg.content, list) else [msg.content]):
+                if hasattr(block, "text"):
+                    messages.append(block.text)
+    return "\n".join(messages)
 
 
 async def _openai_summarize(text: str, system_prompt: str, model: str) -> str:

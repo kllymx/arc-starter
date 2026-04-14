@@ -63,53 +63,56 @@ def save_state(state: dict):
 
 def read_transcript_from_stdin(max_chars: int = 15_000) -> str:
     """
-    Read conversation transcript from stdin.
+    Read conversation transcript via Claude Code hook stdin.
 
     Supports two formats:
-    - VS Code extension: a single JSON object with a transcript_path field
-      pointing to a JSONL file on disk.
+    - VS Code extension: a single JSON metadata object with a
+      transcript_path field pointing to a JSONL file on disk.
     - CLI: JSONL piped directly to stdin with role/content entries.
 
     Returns the last N characters of conversation turns.
     """
-    raw_lines = []
+    raw = ""
     try:
-        for line in sys.stdin:
-            line = line.strip()
-            if line:
-                raw_lines.append(line)
+        raw = sys.stdin.read()
     except Exception:
         pass
 
-    if not raw_lines:
+    if not raw.strip():
         return ""
 
-    # Check if this is a VS Code-style metadata object with transcript_path
-    transcript_lines = []
-    if len(raw_lines) == 1:
-        try:
-            metadata = json.loads(raw_lines[0])
-            transcript_path = metadata.get("transcript_path")
-            if transcript_path:
-                tp = Path(transcript_path)
-                if tp.exists():
-                    transcript_lines = [
-                        l.strip() for l in tp.read_text().splitlines() if l.strip()
-                    ]
-        except (json.JSONDecodeError, TypeError):
-            pass
+    # Try parsing as hook metadata (single JSON object with transcript_path)
+    lines = []
+    try:
+        metadata = json.loads(raw)
+        if isinstance(metadata, dict) and "transcript_path" in metadata:
+            transcript_file = Path(metadata["transcript_path"])
+            if transcript_file.exists():
+                with open(transcript_file) as f:
+                    lines = [line.strip() for line in f if line.strip()]
+    except (json.JSONDecodeError, TypeError):
+        pass
 
-    # Fallback: treat stdin lines as direct JSONL (CLI format)
-    if not transcript_lines:
-        transcript_lines = raw_lines
+    # Fallback: treat stdin as JSONL directly
+    if not lines:
+        lines = [line.strip() for line in raw.splitlines() if line.strip()]
+
+    if not lines:
+        return ""
 
     # Parse JSONL and extract message content
+    # Claude Code transcript format nests messages:
+    #   {"type": "user", "message": {"role": "user", "content": [...]}}
     messages = []
-    for line in transcript_lines:
+    for line in lines:
         try:
             entry = json.loads(line)
-            role = entry.get("role", "")
-            content = entry.get("content", "")
+
+            # Extract role and content — handle both nested and flat formats
+            msg = entry.get("message", entry)
+            role = msg.get("role", "") or entry.get("type", "")
+            content = msg.get("content", "")
+
             if isinstance(content, list):
                 # Handle structured content blocks
                 text_parts = []
