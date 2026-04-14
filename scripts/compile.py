@@ -18,6 +18,9 @@ import os
 import sys
 from pathlib import Path
 
+# Recursion prevention
+os.environ["ARC_HOOK_INVOKED"] = "1"
+
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))

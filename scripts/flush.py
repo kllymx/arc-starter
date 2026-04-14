@@ -140,10 +140,6 @@ def maybe_trigger_compilation() -> None:
     """If it's past the compile hour and today's log hasn't been compiled, run compile.py."""
     import subprocess as _sp
 
-    now = datetime.now(timezone.utc).astimezone()
-    if now.hour < COMPILE_AFTER_HOUR:
-        return
-
     compile_script = SCRIPTS_DIR / "compile.py"
     if not compile_script.exists():
         return
@@ -234,7 +230,7 @@ def main():
     # Clean up context file
     context_file.unlink(missing_ok=True)
 
-    # End-of-day auto-compilation
+    # Trigger compilation to promote daily log into wiki articles
     maybe_trigger_compilation()
 
     logging.info("Flush complete for session %s", session_id)
