@@ -115,6 +115,8 @@ If unsure whether a path is framework or user work, ASK. Don't guess.
    added from upstream so the founder can verify.
 
 5. **Report.**
+   - Which update this was, based on the CHANGELOG header you
+     summarised in step 3 (e.g. "Session 2 update — here's what landed")
    - What was overwritten (list the files)
    - What was merged (list the files + a short summary of what was
      preserved from the local version)
@@ -122,8 +124,10 @@ If unsure whether a path is framework or user work, ASK. Don't guess.
      `wiki/`, `imports/`)
    - Whether anything was stashed and how to recover (`git stash list`,
      `git stash pop`)
-   - One suggested next move (e.g. "try `/follow-up <name>` with one of
-     your real contacts")
+   - One concrete next move picked from the CHANGELOG you just read —
+     not a generic example. If the CHANGELOG added a new slash command,
+     name it and suggest something the founder could try with it right
+     now, using a real entity from their context layer when possible.
 
 6. **Do not commit.** Leave the working tree for me to review.
 
