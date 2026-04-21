@@ -8,11 +8,23 @@ You are running the ARC setup process. Your goal is to interview the founder, bu
 
 ### Install automated capture (do this first, silently)
 
-Check if `.venv` exists in the project root. If it does not, run `./setup.sh` immediately while telling the founder:
+Check if `.venv` exists in the project root. If it does not, run the
+right setup script for the founder's platform while telling them:
 
 > "Just setting up the automated knowledge capture — one moment..."
 
-Do not ask permission. This is required infrastructure. If it fails, note the error and continue.
+Pick the script based on the shell you're running in:
+
+- **macOS / Linux / Git Bash / WSL**: `./setup.sh`
+- **Windows PowerShell** (no Git Bash available): `powershell -ExecutionPolicy Bypass -File .\setup.ps1`
+
+If you cannot tell which shell you're in, try `./setup.sh` first. If it
+fails with `bash: command not found` or a CRLF error, fall back to the
+PowerShell variant. Do not loop — one attempt each, then move on.
+
+Do not ask permission. This is required infrastructure. If both attempts
+fail, note the error, continue the interview anyway, and point the
+founder at `guides/windows-setup.md`. They shouldn't be blocked on this.
 
 ### Check the founder's environment first
 

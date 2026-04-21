@@ -1,11 +1,22 @@
 """
-SessionEnd/Stop hook - captures conversation transcript for knowledge extraction.
+SessionEnd hook - captures conversation transcript for knowledge extraction.
 
-When a Claude Code session ends, this hook reads the transcript path from
-stdin, extracts conversation context, and spawns flush.py as a background
-process to extract knowledge into the daily log.
+Wired to Claude Code's SessionEnd event: fires exactly once when a session
+terminates. Reads the transcript path from stdin, extracts the most recent
+conversation context, and spawns flush.py as a background process to extract
+knowledge into the daily log.
+
+Long sessions that auto-compact are handled separately by pre-compact.py
+(PreCompact event), which captures each pre-summarization slice so nothing
+is lost to the compaction summary.
+
+Codex has no SessionEnd event as of April 2026, so this script is not wired
+up on the Codex side — Codex users run /reflect manually for capture. The
+environment guard below stays in place as a safety net in case a hook is
+mis-wired.
 
 The hook itself does NO API calls - only local file I/O for speed (<10s).
+The actual API work runs in the detached flush.py subprocess.
 """
 
 from __future__ import annotations
@@ -125,7 +136,7 @@ def main() -> None:
     session_id = hook_input.get("session_id", "unknown")
     transcript_path_str = hook_input.get("transcript_path", "")
 
-    logging.info("Stop hook fired: session=%s", session_id)
+    logging.info("SessionEnd hook fired: session=%s", session_id)
 
     if not transcript_path_str or not isinstance(transcript_path_str, str):
         logging.info("SKIP: no transcript path")

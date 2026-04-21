@@ -246,6 +246,45 @@ If you think you can't do something, try first. You are more capable than you mi
 
 ---
 
+## Harness Notes (Codex vs Claude Code)
+
+arc-starter's automated knowledge capture is wired up differently depending
+on the harness, because the two harnesses expose different lifecycle events.
+
+**Claude Code** fires three lifecycle hooks we use:
+- `SessionStart` — injects the wiki index and context into every new session
+- `PreCompact` — captures the conversation slice before the context is
+  compacted (protects long sessions from losing early content to the
+  auto-summary)
+- `SessionEnd` — fires once at session termination, captures the final
+  transcript tail, spawns the background knowledge-extraction flush
+
+On Claude Code, capture is fully automatic. The founder doesn't need to
+do anything.
+
+**Codex CLI** currently only exposes `SessionStart` and `Stop`. There is
+no `SessionEnd` or `PreCompact` event as of April 2026 (OpenAI feature
+request is tracked at openai/codex#17148). Because `Stop` fires after
+every turn rather than at session termination, arc-starter deliberately
+does not wire up end-of-session capture on Codex — it would either spawn
+useless work every turn or require complex turn-count debouncing we'd
+rather not ship.
+
+On Codex, capture is manual:
+- Session-start context injection still works automatically (via SessionStart)
+- To flush knowledge from the current session into the daily log, the
+  founder should run `/reflect` at the end of each working session
+- When OpenAI ships `SessionEnd` or `PreCompact` for Codex, we'll wire
+  them up and auto-capture will match Claude Code
+
+If the founder is on Codex, mention this once during setup, then remind
+them at the end of long sessions:
+> "Quick reminder — on Codex, run `/reflect` at the end of each session
+> to capture today's work into your daily log. On Claude Code this
+> happens automatically."
+
+---
+
 ## Workspace Structure
 
 ```

@@ -61,6 +61,10 @@ It is a practical starting point for building an AI operating layer around your 
 
 ## Getting Started
 
+> **On Windows?** Install Git for Windows first (includes Git Bash), then
+> your agent harness. See [`guides/windows-setup.md`](guides/windows-setup.md)
+> for the full path including PowerShell setup and common gotchas.
+
 ### Step 1 — Clone or download this repo
 
 ### Step 2 — Open it in your AI environment

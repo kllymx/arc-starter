@@ -7,20 +7,8 @@
           {
             "type": "command",
             "command": "CODEX_CLI=1 bash hooks/session-start.sh",
-            "timeout": 15000,
+            "timeout": 15,
             "statusMessage": "Loading ARC wiki context..."
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "CODEX_CLI=1 bash hooks/session-end-wrapper.sh",
-            "timeout": 30000,
-            "statusMessage": "Capturing session knowledge..."
           }
         ]
       }

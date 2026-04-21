@@ -1,0 +1,18 @@
+# Force LF line endings on shell scripts and Python so they run correctly
+# on Windows (Git Bash / WSL) after a `git clone` that would otherwise
+# convert them to CRLF based on core.autocrlf.
+#
+# Without this, Windows attendees hit `/bin/bash^M: bad interpreter` when
+# their hooks fire, with no obvious signal that line endings are the cause.
+
+*.sh        text eol=lf
+*.py        text eol=lf
+*.ps1       text eol=crlf
+
+# Binary assets that must never be touched
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
