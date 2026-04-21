@@ -143,18 +143,67 @@ def test_structural_lint_blank_wiki() -> None:
 
 
 def test_hook_configs_export_runtime_env() -> None:
+    """Hook wiring uses the right lifecycle events and exports the
+    harness-identifying env var every hook downstream relies on.
+
+    Expected shape after Session 2 (2026-04-25) framework update:
+      .claude/settings.json → SessionStart, PreCompact, SessionEnd
+        (NOT Stop — Stop fires per-turn, SessionEnd fires once at terminate)
+      .codex/hooks.json → SessionStart only
+        (Stop was removed; session-end.py short-circuits on CODEX_CLI and
+         Codex has no SessionEnd event yet, tracked at openai/codex#17148)
+    """
     claude_settings = json.loads((PROJECT_ROOT / ".claude" / "settings.json").read_text())
     codex_hooks = json.loads((PROJECT_ROOT / ".codex" / "hooks.json").read_text())
 
-    claude_start = claude_settings["hooks"]["SessionStart"][0]["hooks"][0]["command"]
-    claude_stop = claude_settings["hooks"]["Stop"][0]["hooks"][0]["command"]
-    codex_start = codex_hooks["hooks"]["SessionStart"][0]["hooks"][0]["command"]
-    codex_stop = codex_hooks["hooks"]["Stop"][0]["hooks"][0]["command"]
+    # Claude Code: SessionStart, PreCompact, SessionEnd — all must carry CLAUDE_CODE=1
+    claude_events = claude_settings["hooks"]
+    assert "SessionStart" in claude_events, "Claude must have SessionStart hook"
+    assert "PreCompact" in claude_events, "Claude must have PreCompact hook"
+    assert "SessionEnd" in claude_events, "Claude must have SessionEnd hook (migrated from Stop)"
+    assert "Stop" not in claude_events, (
+        "Claude Stop hook was removed in favour of SessionEnd. "
+        "Stop fires per-turn and was wasteful."
+    )
+    for event in ("SessionStart", "PreCompact", "SessionEnd"):
+        cmd = claude_events[event][0]["hooks"][0]["command"]
+        assert "CLAUDE_CODE=1" in cmd, f"Claude {event} missing CLAUDE_CODE=1"
 
-    assert "CLAUDE_CODE=1" in claude_start
-    assert "CLAUDE_CODE=1" in claude_stop
-    assert "CODEX_CLI=1" in codex_start
-    assert "CODEX_CLI=1" in codex_stop
+    # Codex: SessionStart only — Stop was removed
+    codex_events = codex_hooks["hooks"]
+    assert "SessionStart" in codex_events, "Codex must have SessionStart hook"
+    assert "Stop" not in codex_events, (
+        "Codex Stop hook was removed: session-end.py short-circuits on "
+        "CODEX_CLI anyway, and firing per-turn was wasted work."
+    )
+    codex_start = codex_events["SessionStart"][0]["hooks"][0]["command"]
+    assert "CODEX_CLI=1" in codex_start, "Codex SessionStart missing CODEX_CLI=1"
+
+
+def test_hook_timeouts_are_seconds_not_milliseconds() -> None:
+    """Claude Code and Codex hook timeouts are in seconds, defaults ~60s.
+
+    The old config used 15000/10000, which meant 15000 seconds (4+ hours)
+    of potential hang on a stuck hook. Corrected to 15/10. This test
+    enforces the correct unit by asserting every timeout is <= 300s.
+    """
+    claude_settings = json.loads((PROJECT_ROOT / ".claude" / "settings.json").read_text())
+    codex_hooks = json.loads((PROJECT_ROOT / ".codex" / "hooks.json").read_text())
+
+    def collect_timeouts(hooks_root: dict) -> list[tuple[str, int]]:
+        timeouts = []
+        for event, entries in hooks_root.get("hooks", {}).items():
+            for entry in entries:
+                for hook in entry.get("hooks", []):
+                    if "timeout" in hook:
+                        timeouts.append((event, int(hook["timeout"])))
+        return timeouts
+
+    for event, t in collect_timeouts(claude_settings) + collect_timeouts(codex_hooks):
+        assert t <= 300, (
+            f"{event} timeout is {t}s — suspiciously long, likely meant to be in "
+            f"seconds not ms. Correct range is typically 10-60s."
+        )
 
 
 def main() -> None:
@@ -167,6 +216,7 @@ def main() -> None:
         test_session_start_hook_skips_placeholder_context,
         test_structural_lint_blank_wiki,
         test_hook_configs_export_runtime_env,
+        test_hook_timeouts_are_seconds_not_milliseconds,
     ]
 
     for test in tests:
