@@ -90,8 +90,11 @@ When unsure, ASK. Don't guess.
 
 ## Guardrails
 
-- If local modifications to framework files exist pre-update, STOP.
-  List them. Ask: keep (abort), overwrite (proceed), or move (stash first).
+- **Pre-flight.** Run `git status`. Dirty framework files split into:
+  - Dirty OVERWRITE paths → unexpected. STOP, list, ask: keep / overwrite / move-to-backup.
+  - Dirty MERGE CAREFULLY paths (`AGENTS.md`, `CLAUDE.md`, `README.md`)
+    → expected. Continue; merge protocol at step 4 handles them.
+  - Dirty files outside the allowlist → user-owned, leave alone.
 - If fetch fails, STOP. Report exactly what went wrong.
 - If CHANGELOG diff is empty: "already on latest."
 - NEVER `git reset --hard`, `git clean -fd`, or `git push`.

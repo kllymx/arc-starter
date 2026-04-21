@@ -97,13 +97,17 @@ If unsure whether a path is framework or user, ASK. Don't guess.
 
 ## Guardrails
 
-- If `git status` shows local modifications to framework files before
-  we start, STOP. List them. Ask whether I want to keep them (abort),
-  overwrite (proceed), or move them somewhere safe first.
+- **Pre-flight check.** Run `git status`. Dirty framework files split
+  into two groups:
+  - Dirty files in **OVERWRITE** paths are unexpected. STOP, list them,
+    and ask: keep (abort), overwrite, or move-to-backup.
+  - Dirty files in **MERGE CAREFULLY** paths (`AGENTS.md`, `CLAUDE.md`,
+    `README.md`) are expected — founders and their agents extend these.
+    Do NOT stop. Continue; the merge protocol at step 4 handles them.
+  - Dirty files outside the allowlist (`context/`, `daily/`, `wiki/`,
+    `imports/`, `.obsidian/`) are user-owned. Leave alone.
 - If fetch fails (no network, no remote, auth issue), STOP and tell me
   exactly what went wrong. Do not attempt offline guesses.
 - If the CHANGELOG diff is empty, exit early: "already on latest."
-- NEVER run `git reset --hard`, `git clean -fd`, or `git push`. Not part
-  of this job.
-- NEVER touch paths outside the framework allowlist, even if they look
-  like they should be framework. When in doubt, ask.
+- NEVER run `git reset --hard`, `git clean -fd`, or `git push`.
+- NEVER touch paths outside the framework allowlist.

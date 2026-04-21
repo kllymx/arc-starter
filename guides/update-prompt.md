@@ -129,9 +129,26 @@ If unsure whether a path is framework or user work, ASK. Don't guess.
 
 ## Guardrails
 
-- If `git status` shows local modifications to framework files before we
-  start, STOP. List them. Ask: keep (abort), overwrite (proceed), or
-  move them somewhere safe first.
+- **Pre-flight check for dirty framework files.** Run `git status` and
+  split any dirty framework files into two groups based on the
+  allowlist:
+
+  - Dirty files in **OVERWRITE** paths are unexpected (these aren't
+    files founders usually edit). For these, STOP, list them, and ask:
+    keep (abort update), overwrite (proceed and replace from upstream),
+    or move-to-backup (copy to `*.backup-<timestamp>` before
+    overwriting). Show a short diff summary when you ask so the
+    founder can decide.
+
+  - Dirty files in **MERGE CAREFULLY** paths are *expected* — these are
+    the files founders and their agents naturally customize. Do NOT
+    stop for these. Continue to step 1, and handle them via the merge
+    protocol at step 4.
+
+  - Dirty files outside the allowlist (e.g. `context/`, `daily/`,
+    `wiki/`, `imports/`, `.obsidian/`) are user-owned. Leave them
+    alone and don't mention them in the pre-flight report.
+
 - If fetch fails (network, auth, missing remote), STOP and report
   exactly what went wrong. Do not attempt offline guesses.
 - If the CHANGELOG diff is empty, exit early: "already on latest."

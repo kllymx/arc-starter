@@ -93,7 +93,9 @@ the safe-update contract.
   update). The update agent reads both local + upstream, keeps
   local-only sections, adds upstream-only sections, and stops to ask
   when the same section differs in ways that look like founder
-  customization rather than upstream rewording.
+  customization rather than upstream rewording. The pre-flight check
+  respects this split: dirty MERGE-CAREFULLY files proceed without a
+  prompt (they're expected), dirty OVERWRITE files still stop and ask.
 
 ### Notes
 
