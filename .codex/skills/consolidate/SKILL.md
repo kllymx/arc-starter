@@ -28,9 +28,45 @@ during `/reflect` if you notice:
 If the wiki has fewer than 10 articles, decline gracefully — not enough
 to consolidate yet.
 
+## Use sub-agents for large wikis
+
+**If the wiki has more than ~30 articles, use sub-agents.** A single
+turn can't hold 100+ articles in context without quality loss, and the
+window will be exhausted before reaching the Judge phase.
+
+The pattern:
+
+- **Phase 1 (Proposer)** — spawn parallel reader sub-agents, one per
+  ~10–15 article batch. Each reads a slice of `wiki/concepts/` +
+  `wiki/connections/` and returns a structured summary: list of
+  `(title, last-updated, key-claims, references, candidate-flags)`.
+  Main agent collects results and identifies cross-batch patterns.
+  Codex's `spawn_agent` (or `spawn_agents_on_csv` for batch lists)
+  works well here.
+- **Phase 2 (Adversary)** — spawn ONE adversary sub-agent with fresh
+  context. Pass Phase 1's proposals with no prior conversation. Its
+  job: challenge each independently. Returns `keep / modify / drop`
+  with reason. Fresh context is the point — it can't get talked into
+  a bad merge by Phase 1's reasoning. Optionally use a cheaper model
+  here (Haiku/Sonnet equivalent) — adversaries don't need full
+  reasoning depth.
+- **Phase 3 (Judge)** — run in the main conversation. The main agent
+  has both proposals and challenges; it adjudicates and writes the
+  draft.
+
+If sub-agents aren't available, fall back to processing in chunks
+within the main conversation: read 20 articles, summarize, clear, read
+next 20. Slower and rougher, but works.
+
+For wikis under ~30 articles, sub-agents are overkill — run all three
+phases in one cohesive pass.
+
+---
+
 ## Phase 1 — Proposer
 
-Read the wiki end to end:
+Read the wiki end to end (directly, or via reader sub-agents per
+above):
 
 1. `wiki/index.md` — full catalog
 2. `wiki/log.md` — recent operations and flagged contradictions
