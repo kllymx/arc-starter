@@ -31,32 +31,55 @@ to consolidate yet.
 ## Use sub-agents for large wikis
 
 **If the wiki has more than ~30 articles, use sub-agents.** A single
-turn can't hold 100+ articles in context without quality loss, and the
-window will be exhausted before reaching the Judge phase.
+turn can't hold 100+ articles in context without quality loss.
 
-The pattern:
+### Critical: keep spawn prompts small
 
-- **Phase 1 (Proposer)** — spawn parallel reader sub-agents, one per
-  ~10–15 article batch. Each reads a slice of `wiki/concepts/` +
-  `wiki/connections/` and returns a structured summary: list of
-  `(title, last-updated, key-claims, references, candidate-flags)`.
-  Main agent collects results and identifies cross-batch patterns.
-  Codex's `spawn_agent` (or `spawn_agents_on_csv` for batch lists)
-  works well here.
-- **Phase 2 (Adversary)** — spawn ONE adversary sub-agent with fresh
-  context. Pass Phase 1's proposals with no prior conversation. Its
-  job: challenge each independently. Returns `keep / modify / drop`
-  with reason. Fresh context is the point — it can't get talked into
-  a bad merge by Phase 1's reasoning. Optionally use a cheaper model
-  here (Haiku/Sonnet equivalent) — adversaries don't need full
-  reasoning depth.
-- **Phase 3 (Judge)** — run in the main conversation. The main agent
-  has both proposals and challenges; it adjudicates and writes the
-  draft.
+The most common failure mode is "prompt is too long" when spawning a
+sub-agent. This happens when the parent embeds article CONTENT in the
+spawn prompt instead of just paths. **Don't do that.**
 
-If sub-agents aren't available, fall back to processing in chunks
-within the main conversation: read 20 articles, summarize, clear, read
-next 20. Slower and rougher, but works.
+- The parent does NOT read articles itself in Phase 1. Read only
+  `wiki/index.md`, `wiki/log.md`, and recent `daily/` logs to scope
+  the work and identify which paths to assign.
+- Pass each sub-agent only **file paths**, not file contents. Each
+  sub-agent uses its own tools to load files inside its own context.
+- Each sub-agent returns a **small structured summary** (a few
+  hundred tokens), not full article content.
+
+If the parent has somehow already loaded article content into context,
+clear that context (or omit it from the spawn prompt) before spawning.
+
+### The pattern
+
+- **Phase 1 (Proposer)** — split article paths into batches of 10–15.
+  Use `spawn_agent` (or `spawn_agents_on_csv` for batch lists) with
+  each sub-agent given:
+  - the list of file paths for its batch (paths only, no content)
+  - instructions to read each file with its own tools
+  - the structured-summary format to return
+  Each sub-agent returns: list of `(title, last-updated, key-claims,
+  references, candidate-flags)` — small. Main agent collects the
+  summaries (NOT the article content) and identifies cross-batch
+  patterns.
+- **Phase 2 (Adversary)** — spawn ONE adversary with fresh context.
+  Pass it ONLY the proposals from Phase 1 (a few KB of structured
+  text, not article content). Its job: challenge each independently.
+  Returns `keep / modify / drop` with reason. If a proposal needs
+  deeper context, the adversary reads the relevant articles itself.
+  Optionally use a cheaper model here (e.g., GPT-5.3-codex-spark) —
+  adversaries don't need full reasoning depth.
+- **Phase 3 (Judge)** — runs in the main conversation. Main agent has
+  proposals + challenges (small structured payloads), reads any
+  specific articles needed for final wording, writes the draft.
+
+### Fallback if sub-agents aren't available
+
+If `spawn_agent` isn't available, process in chunks within the main
+turn: read 20 articles → summarize to a small structured note → clear
+that context → read next 20. Slower and rougher, but works.
+
+### Skip for small wikis
 
 For wikis under ~30 articles, sub-agents are overkill — run all three
 phases in one cohesive pass.

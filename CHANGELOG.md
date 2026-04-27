@@ -7,6 +7,23 @@ the safe-update contract.
 
 ---
 
+## [Session 3 patch 3 / 2026-04-27]
+
+### Fixed
+
+- **`/consolidate` sub-agent guidance: keep spawn prompts small.** The
+  patch-2 sub-agent guidance worked architecturally but failed in
+  practice — agents were embedding full article CONTENT in the spawn
+  prompt and tripping "prompt is too long" errors. The fix: explicit
+  instructions that the parent passes only file PATHS to sub-agents
+  (not contents), and each sub-agent reads files inside its own
+  context window using its own tools. Same applies to the Adversary
+  phase — pass only the structured proposals, not article content.
+  Both `.claude/commands/consolidate.md` and
+  `.codex/skills/consolidate/SKILL.md` updated.
+
+---
+
 ## [Session 3 patch 2 / 2026-04-27]
 
 ### Changed
