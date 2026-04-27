@@ -7,6 +7,20 @@ the safe-update contract.
 
 ---
 
+## [Session 3 patch / 2026-04-27]
+
+### Fixed
+
+- **Safe-update OVERWRITE list extended** to include
+  `extensions/active/**` and `.claude/settings.json`. Without this fix,
+  re-running `/update-starter` (or the canonical `update-prompt.md`)
+  silently skipped the Session 3 overlay file and the new hook
+  registrations on Claude. Both `.claude/commands/update-starter.md`,
+  `.codex/skills/update-starter/SKILL.md`, and
+  `guides/update-prompt.md` updated to match.
+
+---
+
 ## [Session 3 / 2026-04-27]
 
 ### Added

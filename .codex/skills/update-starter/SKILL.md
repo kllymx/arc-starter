@@ -23,9 +23,11 @@ Preserve all user-authored context. Overwrite only framework files.
 **OVERWRITE these (safe, no founder customization expected):**
 
 - `.claude/commands/**`
+- `.claude/settings.json`
 - `.claude/skills/**`
 - `.codex/skills/**`
 - `.codex/hooks.json`
+- `extensions/active/**`
 - `scripts/**`
 - `hooks/**`
 - `guides/**`
