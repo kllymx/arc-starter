@@ -185,6 +185,8 @@ These can be triggered by typing the `/command` name in compatible environments 
 | `/explore` | "explore this idea", "research this", "how would I build" | Research and spec an idea. New knowledge enters the wiki. |
 | `/ingest` | "ingest this", "process this document", "add this to the wiki" | Process a document from `imports/` into wiki articles. |
 | `/lint` | "health check", "check the wiki", "find gaps" | Wiki health check — contradictions, orphans, stale content, gaps. |
+| `/consolidate` | "consolidate the wiki", "merge duplicates", "clean up knowledge" | Three-phase wiki cleanup pipeline. Drafts proposed merges, edits, prunes for your review before applying. |
+| `/sync` | "push my changes", "sync to github", "save to github" | Pull, commit, and push ARC changes. Auto-runs at session end on Claude — manual on Codex. |
 
 When a founder seems unsure what to do next, suggest the most appropriate action in plain language — don't just say "run /setup". Describe what it does and let them say yes:
 - No wiki built → "I don't know your business yet. Want me to interview you? Takes about 15 minutes and I'll build a knowledge base that gets smarter every session."

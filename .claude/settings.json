@@ -8,6 +8,11 @@
             "type": "command",
             "command": "CLAUDE_CODE=1 bash hooks/session-start.sh",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "CLAUDE_CODE=1 bash hooks/git-pull.sh",
+            "timeout": 30
           }
         ]
       }
@@ -32,6 +37,11 @@
             "type": "command",
             "command": "CLAUDE_CODE=1 bash hooks/session-end-wrapper.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "CLAUDE_CODE=1 bash hooks/git-push.sh",
+            "timeout": 30
           }
         ]
       }

@@ -7,6 +7,54 @@ the safe-update contract.
 
 ---
 
+## [Session 3 / 2026-04-27]
+
+### Added
+
+- **`/consolidate` command + Codex skill.** Three-phase wiki
+  consolidation pipeline (proposer → adversary → judge). Drafts
+  proposed merges, edits, prunes, promotions, and cross-links to
+  `wiki/consolidation-{date}.md` for founder review. Never auto-applies.
+  Run periodically (every 2–4 weeks) once your wiki has 10+ articles.
+- **`/sync` command + Codex skill.** Manual git pull / commit / push
+  for the founder's ARC. The primary git-sync path for Codex users
+  (since Codex's `Stop` event fires per-turn and isn't suitable for
+  auto-push). Claude users have an auto-push hook on `SessionEnd` —
+  `/sync` is still useful mid-session.
+- **`hooks/git-pull.sh`.** Quietly pulls main from `origin` on session
+  start. Skipped if not a git repo, no remote, or working tree dirty.
+  Failure modes (auth, network) are logged to `.claude/last-sync.log`
+  and silently ignored — never blocks the session.
+- **`hooks/git-push.sh`.** Auto-commits + pushes on session end
+  (Claude only — registered on `SessionEnd`). Same defensive failure
+  handling as git-pull. Founders without GitHub are unaffected — the
+  hook gracefully no-ops.
+- **`extensions/active/03-consolidate.md`.** Behavior overlay covering
+  tier-thinking (no folder changes — agent infers tier from metadata),
+  capture-on-request from cloud sessions, sub-agent stance, Routines
+  awareness, and the auto-pull/push trust model.
+
+### Changed
+
+- **`.claude/settings.json`** registers `git-pull.sh` on `SessionStart`
+  alongside the existing wiki-context loader, and `git-push.sh` on
+  `SessionEnd` alongside the existing capture wrapper.
+- **`.codex/hooks.json`** registers `git-pull.sh` on `SessionStart`.
+  Auto-push is intentionally not registered on Codex — its `Stop`
+  event fires per-turn, which would commit after every message.
+
+### Session 3 themes
+
+The Session 3 framework is "always-on systems": cloud sessions,
+Routines, mobile reach, and the trust gradient that separates draft
+from autonomous. The new commands and hooks are the layer that makes
+ARC keep working when the founder isn't actively at it.
+
+The full Session 3 deck and module spec live in the workshop planning
+folder. The capstone showcase is the next milestone.
+
+---
+
 ## [Session 2 / 2026-04-25]
 
 ### Added

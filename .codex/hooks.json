@@ -9,6 +9,12 @@
             "command": "CODEX_CLI=1 bash hooks/session-start.sh",
             "timeout": 15,
             "statusMessage": "Loading ARC wiki context..."
+          },
+          {
+            "type": "command",
+            "command": "CODEX_CLI=1 bash hooks/git-pull.sh",
+            "timeout": 30,
+            "statusMessage": "Pulling latest from GitHub..."
           }
         ]
       }
