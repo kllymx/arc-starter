@@ -7,6 +7,44 @@ the safe-update contract.
 
 ---
 
+## [Session 3 patch 4 / 2026-04-27]
+
+### Fixed
+
+- **`/consolidate` sub-agent spawn failure: dedicated named agents
+  with restricted toolsets.** Generic Task / `spawn_agent` calls
+  inherit the parent session's full MCP toolset as part of the
+  sub-agent's system prompt, which can blow past the prompt budget at
+  startup before the sub-agent's instructions even load. Symptom:
+  sub-agents fail with "prompt is too long" in <3s and 0 tokens used.
+  Caught on Max's arc-demo run, where the parent had Granola, Gmail,
+  and other MCPs loaded.
+
+  Fix: ship dedicated sub-agent definitions with `tools: Read, Glob,
+  Grep` only. The system prompt is tiny — no MCP tool descriptions —
+  so spawning is reliable regardless of parent session state.
+
+  New files:
+  - `.claude/agents/wiki-reader.md` — Phase 1 batch reader
+  - `.claude/agents/wiki-adversary.md` — Phase 2 fresh-context reviewer
+  - `.codex/agents/wiki-reader.toml`
+  - `.codex/agents/wiki-adversary.toml`
+
+  Both `/consolidate` files now invoke these by name (Claude:
+  `subagent_type: "wiki-reader"` via Task; Codex: `agent_name:
+  "wiki_reader"` via `spawn_agent` / `spawn_agents_on_csv`) instead of
+  generic spawns.
+
+### Changed
+
+- **Safe-update OVERWRITE list extended** to include
+  `.claude/agents/**` and `.codex/agents/**`. Required so future
+  updates pick up new sub-agent definitions automatically. Updated in
+  `guides/update-prompt.md`, `.claude/commands/update-starter.md`,
+  and `.codex/skills/update-starter/SKILL.md`.
+
+---
+
 ## [Session 3 patch 3 / 2026-04-27]
 
 ### Fixed

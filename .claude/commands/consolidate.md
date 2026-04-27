@@ -49,26 +49,40 @@ spawn prompt instead of just paths. **Don't do that.**
 If the parent has somehow already loaded article content into context,
 clear that context (or drop it from the spawn prompt) before spawning.
 
+### Use the named sub-agents (not generic Task)
+
+Spawn the dedicated sub-agents shipped with the starter:
+
+- `.claude/agents/wiki-reader.md` — restricted to `Read, Glob, Grep`.
+  No MCPs in its system prompt. Spawns reliably even in MCP-heavy
+  sessions (the most common failure mode for generic Task spawns is
+  the parent's MCP toolset bloating the sub-agent's system prompt
+  past the budget at startup).
+- `.claude/agents/wiki-adversary.md` — same restricted toolset.
+
+Invoke via the Task tool with `subagent_type: "wiki-reader"` and
+`subagent_type: "wiki-adversary"` respectively. Don't use generic Task
+spawns — they inherit the full session toolset and will fail with
+"prompt is too long" before processing.
+
 ### The pattern
 
 - **Phase 1 (Proposer)** — split article paths into batches of 10–15.
-  Spawn parallel reader sub-agents (Task tool / `spawn_agent`), each
-  given:
+  Spawn parallel `wiki-reader` sub-agents, each given:
   - the list of file paths for its batch (paths only, no content)
-  - instructions to read each file with its own tools
   - the structured-summary format to return
-  Each sub-agent returns: list of `(title, last-updated, key-claims,
-  references, candidate-flags)` — small. Main agent collects the
-  summaries (NOT the article content) and identifies cross-batch
+  Each returns a small JSON array of `(title, type, updated,
+  key_claims, references, candidate_flags)` per article. Main agent
+  collects summaries (NOT article content) and identifies cross-batch
   patterns (duplicates, contradictions, orphans).
-- **Phase 2 (Adversary)** — spawn ONE adversary sub-agent with a
-  fresh context. Pass it ONLY the proposals from Phase 1 (a few KB of
-  structured text, not article content). Its job: challenge each
-  proposal independently. Returns `keep / modify / drop` with reason.
-  Fresh context is the point — it can't get talked into a bad merge
-  by the Proposer's reasoning. If a specific proposal needs deeper
-  context, the adversary can read the relevant articles itself with
-  its own tools.
+- **Phase 2 (Adversary)** — spawn ONE `wiki-adversary` sub-agent.
+  Pass it ONLY the proposals from Phase 1 (a few KB of structured
+  text, not article content). Its job: challenge each proposal
+  independently. Returns JSON array with `keep / modify / drop`
+  verdict per proposal and reason. Fresh context is the point — it
+  can't get talked into a bad merge by the Proposer's reasoning. If
+  a proposal needs deeper context, the adversary reads articles
+  itself with its restricted file tools.
 - **Phase 3 (Judge)** — run in the main conversation. The main agent
   now holds proposals and challenges (both small structured payloads),
   reads any specific articles needed for final wording, and writes

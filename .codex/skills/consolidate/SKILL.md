@@ -50,25 +50,39 @@ spawn prompt instead of just paths. **Don't do that.**
 If the parent has somehow already loaded article content into context,
 clear that context (or omit it from the spawn prompt) before spawning.
 
+### Use the named sub-agents (not generic spawn_agent)
+
+Spawn the dedicated sub-agents shipped with the starter:
+
+- `.codex/agents/wiki-reader.toml` — sandbox `read-only`, restricted
+  toolset. Spawns reliably even in MCP-heavy sessions (generic
+  `spawn_agent` calls inherit the full session toolset and fail with
+  "prompt is too long" at startup).
+- `.codex/agents/wiki-adversary.toml` — same restricted setup.
+
+Invoke via `spawn_agent` (or `spawn_agents_on_csv` for batch lists)
+naming `wiki_reader` or `wiki_adversary` as the agent name. Don't use
+generic spawns.
+
 ### The pattern
 
 - **Phase 1 (Proposer)** — split article paths into batches of 10–15.
-  Use `spawn_agent` (or `spawn_agents_on_csv` for batch lists) with
-  each sub-agent given:
+  Use `spawn_agents_on_csv` (or repeated `spawn_agent`) calling
+  `wiki_reader`, each given:
   - the list of file paths for its batch (paths only, no content)
-  - instructions to read each file with its own tools
   - the structured-summary format to return
-  Each sub-agent returns: list of `(title, last-updated, key-claims,
-  references, candidate-flags)` — small. Main agent collects the
-  summaries (NOT the article content) and identifies cross-batch
+  Each returns a small JSON array of `(title, type, updated,
+  key_claims, references, candidate_flags)` per article. Main agent
+  collects summaries (NOT article content) and identifies cross-batch
   patterns.
-- **Phase 2 (Adversary)** — spawn ONE adversary with fresh context.
-  Pass it ONLY the proposals from Phase 1 (a few KB of structured
-  text, not article content). Its job: challenge each independently.
-  Returns `keep / modify / drop` with reason. If a proposal needs
-  deeper context, the adversary reads the relevant articles itself.
-  Optionally use a cheaper model here (e.g., GPT-5.3-codex-spark) —
-  adversaries don't need full reasoning depth.
+- **Phase 2 (Adversary)** — spawn ONE `wiki_adversary`. Pass it ONLY
+  the proposals from Phase 1 (a few KB of structured text, not
+  article content). Its job: challenge each independently. Returns
+  JSON array with `keep / modify / drop` verdict + reason. If a
+  proposal needs deeper context, the adversary reads articles itself.
+  Optionally configure the agent with a cheaper model
+  (e.g., gpt-5.3-codex-spark) — adversaries don't need full reasoning
+  depth.
 - **Phase 3 (Judge)** — runs in the main conversation. Main agent has
   proposals + challenges (small structured payloads), reads any
   specific articles needed for final wording, writes the draft.

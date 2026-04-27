@@ -20,8 +20,10 @@ Preserve all of my context work. Overwrite only framework files.
 **OVERWRITE these (safe, no founder customization expected):**
 
 - `.claude/commands/**`
+- `.claude/agents/**`
 - `.claude/settings.json`
 - `.claude/skills/**`
+- `.codex/agents/**`
 - `.codex/skills/**`
 - `.codex/hooks.json`
 - `extensions/active/**`
