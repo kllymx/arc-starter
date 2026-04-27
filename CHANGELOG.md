@@ -7,6 +7,24 @@ the safe-update contract.
 
 ---
 
+## [Session 3 patch 2 / 2026-04-27]
+
+### Changed
+
+- **`/consolidate` teaches the agent to use sub-agents on large wikis.**
+  Both the Claude command and the Codex skill now instruct: spawn
+  parallel reader sub-agents per ~10–15 article batch for the Proposer
+  phase, spawn ONE adversary sub-agent with fresh context for the
+  Adversary phase, run Judge in the main conversation. Falls back to
+  in-conversation chunked reading if sub-agents aren't available.
+  Skipped entirely for wikis under ~30 articles. Triggered by an
+  arc-demo test run on a 99-article wiki — the original single-context
+  run produced a thoughtful but light draft; sub-agents should let the
+  pipeline read more thoroughly and let the adversary phase actually
+  challenge proposals from a fresh perspective.
+
+---
+
 ## [Session 3 patch / 2026-04-27]
 
 ### Fixed
