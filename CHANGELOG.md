@@ -23,12 +23,18 @@ the safe-update contract.
   believable interaction or interface for the selected AI system:
   Slack/Teams/iMessage mockup, simple internal web app, dashboard, or
   product spec.
+- **`/skill-audit` command + Codex skill.** Reviews ARC context, wiki,
+  and recent daily logs for repeated workflows that should become
+  reusable skills. Defaults to proposal mode and saves a skill backlog;
+  when the founder approves a candidate, it builds the correct Claude
+  command and/or Codex skill files in the workspace.
 
 ### Changed
 
 - **Available command lists updated** in `CLAUDE.md`, `AGENTS.md`, and
   `README.md` so agents and founders can find the Session 3 capstone
-  path naturally: snapshot -> leverage brief -> prototype.
+  path naturally: snapshot -> leverage brief -> prototype, with
+  skill-audit as the Session 2 bridge for repeated workflows.
 
 ### Session 3 themes
 

@@ -142,6 +142,7 @@ The wiki grows automatically — sessions are captured by hooks, insights are co
 | `/business-snapshot` | "show me what ARC knows" | Creates a visual HTML report from ARC context and wiki |
 | `/ai-leverage-brief` | "what AI system should I build next?" | Classifies the next path: personal, one collaborator, shared knowledge, internal tool, or defer |
 | `/prototype-system` | "prototype this system" | Builds the first believable interaction or interface for a proposed AI system |
+| `/skill-audit` | "what should become a skill?" | Finds repeated workflows and can build an approved reusable Claude command / Codex skill |
 
 ---
 
