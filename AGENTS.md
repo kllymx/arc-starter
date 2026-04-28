@@ -187,6 +187,9 @@ These can be triggered by typing the `/command` name in compatible environments 
 | `/lint` | "health check", "check the wiki", "find gaps" | Wiki health check — contradictions, orphans, stale content, gaps. |
 | `/consolidate` | "consolidate the wiki", "merge duplicates", "clean up knowledge" | Three-phase wiki cleanup pipeline. Drafts proposed merges, edits, prunes for your review before applying. |
 | `/sync` | "push my changes", "sync to github", "save to github" | Pull, commit, and push ARC changes. Auto-runs at session end on Claude — manual on Codex. |
+| `/business-snapshot` | "show me what ARC knows", "make a business snapshot", "generate an HTML summary" | Creates a visual HTML report from ARC context, separating founder/operator context from company-relevant signals. |
+| `/ai-leverage-brief` | "what AI system should I build next", "how should we use AI internally", "company AI brief" | Classifies the next path: personal leverage, one collaborator, shared knowledge, internal tool, or defer. |
+| `/prototype-system` | "prototype this system", "make a Slack mockup", "make an internal tool mockup" | Builds the first believable interaction or interface for a proposed AI system. |
 
 When a founder seems unsure what to do next, suggest the most appropriate action in plain language — don't just say "run /setup". Describe what it does and let them say yes:
 - No wiki built → "I don't know your business yet. Want me to interview you? Takes about 15 minutes and I'll build a knowledge base that gets smarter every session."

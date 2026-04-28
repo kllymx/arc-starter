@@ -7,6 +7,39 @@ the safe-update contract.
 
 ---
 
+## [Session 3 capstone / 2026-04-28]
+
+### Added
+
+- **`/business-snapshot` command + Codex skill.** Generates a polished
+  local HTML report from the founder's ARC context and wiki, separating
+  founder/operator context from company-relevant signals. Supports
+  sanitized demo context via `--demo <path>`.
+- **`/ai-leverage-brief` command + Codex skill.** Classifies the next
+  AI leverage path as personal, one-collaborator, shared knowledge,
+  internal tool, or defer. Produces an internal champion brief without
+  forcing company rollout from a personal ARC.
+- **`/prototype-system` command + Codex skill.** Creates the first
+  believable interaction or interface for the selected AI system:
+  Slack/Teams/iMessage mockup, simple internal web app, dashboard, or
+  product spec.
+
+### Changed
+
+- **Available command lists updated** in `CLAUDE.md`, `AGENTS.md`, and
+  `README.md` so agents and founders can find the Session 3 capstone
+  path naturally: snapshot -> leverage brief -> prototype.
+
+### Session 3 themes
+
+The revised Session 3 framework is "from personal leverage to AI
+systems." ARC remains the personal lab and reference architecture. The
+capstone commands help founders decide what should stay personal, what
+could become shared knowledge, and what deserves to become an internal
+tool.
+
+---
+
 ## [Session 3 patch 4 / 2026-04-27]
 
 ### Fixed

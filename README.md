@@ -137,6 +137,11 @@ The wiki grows automatically — sessions are captured by hooks, insights are co
 | `/explore` | "explore this idea" | Research and spec an idea into a buildable plan |
 | `/ingest` | "ingest this document" | Process a document from imports/ into wiki articles |
 | `/lint` | "check the wiki" | Wiki health check — contradictions, orphans, gaps |
+| `/consolidate` | "clean up the wiki" | Drafts proposed wiki merges, edits, prunes, and promotions for review |
+| `/sync` | "push my changes" | Pulls, commits, and pushes ARC changes to GitHub |
+| `/business-snapshot` | "show me what ARC knows" | Creates a visual HTML report from ARC context and wiki |
+| `/ai-leverage-brief` | "what AI system should I build next?" | Classifies the next path: personal, one collaborator, shared knowledge, internal tool, or defer |
+| `/prototype-system` | "prototype this system" | Builds the first believable interaction or interface for a proposed AI system |
 
 ---
 
