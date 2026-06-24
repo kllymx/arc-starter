@@ -1,0 +1,26 @@
+scripts/garden.py
+  s_03829a0313b0a3::t_a6aa2eb26f6d03 85,87
+  s_03829a0313b0a3::t_369419967d89c0 75-78
+hooks/session-start.py
+  s_03829a0313b0a3::t_779a7ee1f7947c 41
+hooks/session-start.sh
+  s_03829a0313b0a3::t_779a7ee1f7947c 219
+scripts/lint.py
+  s_03829a0313b0a3::t_aab0c878cb7461 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "e2a0be34f3cd1ff165b469361cd8548dfe59c7ea",
+  "prompts": {},
+  "sessions": {
+    "s_03829a0313b0a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f89362bf-12d5-44de-8fe1-67996634a42a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
