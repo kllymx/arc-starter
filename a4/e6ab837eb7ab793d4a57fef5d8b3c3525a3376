@@ -1,0 +1,42 @@
+.codex/config.toml
+  s_03829a0313b0a3::t_6bb7d182050cf7 1-2,4
+AGENTS.md
+  s_03829a0313b0a3::t_887bfb0cea9a07 194-201
+  s_03829a0313b0a3::t_1e3a6155017083 280-299,302-305
+README.md
+  s_03829a0313b0a3::t_bb93d2df4c4da1 141-142
+  s_03829a0313b0a3::t_1b2a88a8b777da 236-237
+scripts/smoke_test.py
+  s_03829a0313b0a3::t_1288708d604ace 149,152-155
+  s_03829a0313b0a3::t_8f5d237f9b747f 219-245,257-258
+  s_03829a0313b0a3::t_1825b0ae992e5d 173-174,177-180,182-186,188-190
+.codex/hooks.json
+  s_03829a0313b0a3::t_8cc900b480c1d3 21-33
+hooks/pre-compact.py
+  s_03829a0313b0a3::t_83ebfc71d42bdd 32-34
+  s_03829a0313b0a3::t_927b0264c3f06a 4,9-12
+hooks/pre-compact-wrapper.sh
+  s_03829a0313b0a3::t_4d4b666cff0a97 2,4-5
+CLAUDE.md
+  s_03829a0313b0a3::t_cf4e41cf989d48 194-201
+  s_03829a0313b0a3::t_eb9b5f32aad06e 280-299,302-305
+CHANGELOG.md
+  s_03829a0313b0a3::t_9c043842c8c65c 10-54
+  s_03829a0313b0a3::t_14ac67bc46af4f 55-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "a4e6ab837eb7ab793d4a57fef5d8b3c3525a3376",
+  "prompts": {},
+  "sessions": {
+    "s_03829a0313b0a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f89362bf-12d5-44de-8fe1-67996634a42a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
