@@ -1,0 +1,31 @@
+hooks/pre-compact.py
+  s_03829a0313b0a3::t_4f52fe223b2789 172-173
+scripts/test_flush_distill.py
+  s_03829a0313b0a3::t_af753743cdbbd7 95
+  s_03829a0313b0a3::t_26b2721e68e5d2 48-63
+hooks/session-end.py
+  s_03829a0313b0a3::t_c4fe365f2d1796 182-183
+scripts/flush.py
+  s_03829a0313b0a3::t_90ffec53a2a87c 149-160,169
+  s_03829a0313b0a3::t_b4f26be10140c1 225-231
+  s_03829a0313b0a3::t_1d4ec2b5a544bb 240
+  s_03829a0313b0a3::t_ff70ac7f37ab39 290
+  s_03829a0313b0a3::t_5ab02dd4fd17b8 170-171
+  s_03829a0313b0a3::t_29d987a29b4d45 301
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "6833088026614ec2edc98aed5fb37850221b3a52",
+  "prompts": {},
+  "sessions": {
+    "s_03829a0313b0a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f89362bf-12d5-44de-8fe1-67996634a42a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
