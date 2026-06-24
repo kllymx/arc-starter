@@ -1,10 +1,15 @@
 """
 PreCompact hook - captures conversation transcript before auto-compaction.
 
-When Claude Code's context window fills up, it auto-compacts (summarizes and
+When the context window fills up, the harness auto-compacts (summarizes and
 discards detail). This hook fires BEFORE that happens, extracting conversation
 context and spawning flush.py to extract knowledge that would otherwise
 be lost to summarization.
+
+Wired on BOTH harnesses: Claude Code's `PreCompact` and Codex's `PreCompact`
+(Codex shipped compaction hooks after this framework was first written;
+openai/codex#17148). The transcript parser below handles both the Claude and
+Codex transcript formats.
 
 The hook itself does NO API calls - only local file I/O for speed (<10s).
 """
@@ -24,9 +29,9 @@ from pathlib import Path
 if os.environ.get("ARC_HOOK_INVOKED"):
     sys.exit(0)
 
-# Skip for Codex — no compaction in Codex's single-turn model
-if any(os.environ.get(k) for k in ("CODEX_CLI", "CODEX_THREAD_ID", "CODEX_MANAGED_BY_BUN", "CODEX_CI")):
-    sys.exit(0)
+# NOTE: Codex now supports PreCompact (openai/codex#17148), so this hook runs
+# on Codex too. No harness skip here — the recursion guard above is the only
+# gate. (session-end.py still skips Codex because Codex has no SessionEnd.)
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS_DIR = ROOT / "scripts"
@@ -164,16 +169,25 @@ def main() -> None:
         str(flush_script),
         str(context_file),
         session_id,
+        "--trigger",
+        "precompact",
     ]
 
-    creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    # Detach the background flush from the hook's process group so it survives
+    # if the harness kills the hook (e.g. on timeout). Mirrors flush.py's
+    # maybe_trigger_compilation.
+    popen_kwargs: dict = {}
+    if sys.platform == "win32":
+        popen_kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+    else:
+        popen_kwargs["start_new_session"] = True
 
     try:
         subprocess.Popen(
             cmd,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            creationflags=creation_flags,
+            **popen_kwargs,
         )
         logging.info(
             "Spawned flush.py for session %s (%d turns, %d chars)",

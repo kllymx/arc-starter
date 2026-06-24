@@ -7,6 +7,7 @@ to decide what's worth saving, and appends the result to today's daily log.
 
 Usage:
     uv run python scripts/flush.py <context_file.md> <session_id>
+    uv run python scripts/flush.py <context_file.md> <session_id> --distill-only
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from __future__ import annotations
 import os
 os.environ["ARC_HOOK_INVOKED"] = "1"
 
+import argparse
 import asyncio
 import json
 import logging
@@ -52,20 +54,32 @@ def save_flush_state(state: dict) -> None:
     STATE_FILE.write_text(json.dumps(state), encoding="utf-8")
 
 
-def append_to_daily_log(content: str, section: str = "Session") -> None:
-    """Append content to today's daily log."""
+def append_to_daily_log(
+    content: str,
+    section: str = "Session",
+    *,
+    session_id: str | None = None,
+    daily_dir: Path | None = None,
+) -> None:
+    """Append content to today's daily log with a provenance footer."""
+    target_dir = daily_dir if daily_dir is not None else DAILY_DIR
     today = datetime.now(timezone.utc).astimezone()
-    log_path = DAILY_DIR / f"{today.strftime('%Y-%m-%d')}.md"
+    log_path = target_dir / f"{today.strftime('%Y-%m-%d')}.md"
 
     if not log_path.exists():
-        DAILY_DIR.mkdir(parents=True, exist_ok=True)
+        target_dir.mkdir(parents=True, exist_ok=True)
         log_path.write_text(
             f"# Daily Log — {today.strftime('%Y-%m-%d')}\n\n",
             encoding="utf-8",
         )
 
     time_str = today.strftime("%H:%M")
-    entry = f"\n## {section} ({time_str})\n\n{content}\n"
+    provenance_parts: list[str] = []
+    if session_id:
+        provenance_parts.append(f"session={session_id}")
+    provenance_parts.append(f"captured={today.isoformat(timespec='seconds')}")
+    footer = f"\n_provenance: {', '.join(provenance_parts)}_\n"
+    entry = f"\n## {section} ({time_str})\n\n{content}{footer}\n"
 
     with open(log_path, "a", encoding="utf-8") as f:
         f.write(entry)
@@ -75,26 +89,43 @@ FLUSH_PROMPT = """Review the conversation context below and respond with a conci
 of important items that should be preserved in the daily log.
 Do NOT use any tools — just return plain text.
 
+## Signal vs noise
+Save only high-signal knowledge. SKIP (noise):
+- Routine tool calls, file reads, directory listings, or command output
+- Restated context already present in wiki/context files
+- Trivial confirmations ("ok", "sounds good", "yes", "got it")
+- Back-and-forth clarification with no lasting insight
+- Obvious or redundant restatements of known facts
+
+INCLUDE (signal):
+- Decisions with rationale
+- Non-obvious lessons, gotchas, and patterns
+- Action items and concrete follow-ups
+- Meaningful Q&A that changes how work is done
+
+## Durability tagging
+Tag every bullet or item with either [durable] or [ephemeral]:
+- [durable] — worth promoting to the wiki (decisions, lessons, strategic context, commitments)
+- [ephemeral] — useful short-term only (in-progress status, temporary blockers, session-only notes)
+
 Format your response as a structured daily log entry with these sections:
 
-**Context:** [One line about what the user was working on]
+**Context:** [One line about what the user was working on] [durable] or [ephemeral]
 
 **Key Exchanges:**
-- [Important Q&A or discussions]
+- [durable] or [ephemeral] [Important Q&A or discussions]
 
 **Decisions Made:**
-- [Any decisions with rationale]
+- [durable] or [ephemeral] [Any decisions with rationale]
 
 **Lessons Learned:**
-- [Gotchas, patterns, or insights discovered]
+- [durable] or [ephemeral] [Gotchas, patterns, or insights discovered]
 
 **Action Items:**
-- [Follow-ups or TODOs mentioned]
+- [durable] or [ephemeral] [Follow-ups or TODOs mentioned]
 
-Skip anything that is:
-- Routine tool calls or file reads
-- Content that's trivial or obvious
-- Trivial back-and-forth or clarification exchanges
+**Sources:**
+- [Key files, imports, or wiki articles referenced — list paths or [[wikilinks]] if known]
 
 Only include sections that have actual content. If nothing is worth saving,
 respond with exactly: FLUSH_OK"""
@@ -115,12 +146,27 @@ async def run_flush(context: str) -> str:
         return f"FLUSH_ERROR: {type(e).__name__}: {e}"
 
 
-def maybe_trigger_compilation() -> None:
-    """If it's past the compile hour and today's log hasn't been compiled, run compile.py."""
+def _should_compile(trigger: str, hour: int) -> bool:
+    """End-of-day gate.
+
+    A ``session_end`` flush is itself the end of a work session, so it compiles
+    at any hour. Mid-session ``precompact`` (and ``manual``) flushes batch until
+    ``COMPILE_AFTER_HOUR`` to avoid repeatedly compiling during an active day.
+    """
+    return trigger == "session_end" or hour >= COMPILE_AFTER_HOUR
+
+
+def maybe_trigger_compilation(trigger: str = "manual") -> None:
+    """Compile today's log if the end-of-day gate allows and it has changed."""
     import subprocess as _sp
 
     compile_script = SCRIPTS_DIR / "compile.py"
     if not compile_script.exists():
+        return
+
+    now = datetime.now(timezone.utc).astimezone()
+
+    if not _should_compile(trigger, now.hour):
         return
 
     # Check if today's log has already been compiled
@@ -158,61 +204,104 @@ def maybe_trigger_compilation() -> None:
         logging.error("Failed to spawn compile.py: %s", e)
 
 
-def main():
-    if len(sys.argv) < 3:
-        logging.error("Usage: %s <context_file.md> <session_id>", sys.argv[0])
-        sys.exit(1)
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Distill conversation context into the daily log.",
+    )
+    parser.add_argument(
+        "context_file",
+        type=Path,
+        help="Pre-extracted conversation context (.md)",
+    )
+    parser.add_argument(
+        "session_id",
+        help="Session identifier for deduplication and provenance",
+    )
+    parser.add_argument(
+        "--distill-only",
+        action="store_true",
+        help="Print distillation result without writing daily log or triggering compilation",
+    )
+    parser.add_argument(
+        "--trigger",
+        choices=["precompact", "session_end", "manual"],
+        default="manual",
+        help="What invoked this flush. 'session_end' compiles at any hour; "
+        "'precompact'/'manual' only compile after COMPILE_AFTER_HOUR.",
+    )
+    return parser.parse_args(argv)
 
-    context_file = Path(sys.argv[1])
-    session_id = sys.argv[2]
 
-    logging.info("flush.py started for session %s, context: %s", session_id, context_file)
+def run_flush_pipeline(
+    context_file: Path,
+    session_id: str,
+    *,
+    distill_only: bool = False,
+    trigger: str = "manual",
+) -> int:
+    """Run distillation; write daily log and trigger compilation unless distill_only."""
+    logging.info(
+        "flush.py started for session %s, context: %s, distill_only=%s",
+        session_id,
+        context_file,
+        distill_only,
+    )
 
     if not context_file.exists():
         logging.error("Context file not found: %s", context_file)
-        return
+        return 1
 
-    # Deduplication: skip if same session was flushed within 60 seconds
-    state = load_flush_state()
-    if (
-        state.get("session_id") == session_id
-        and time.time() - state.get("timestamp", 0) < 60
-    ):
-        logging.info("Skipping duplicate flush for session %s", session_id)
-        context_file.unlink(missing_ok=True)
-        return
+    if not distill_only:
+        state = load_flush_state()
+        if (
+            state.get("session_id") == session_id
+            and time.time() - state.get("timestamp", 0) < 60
+        ):
+            logging.info("Skipping duplicate flush for session %s", session_id)
+            context_file.unlink(missing_ok=True)
+            return 0
 
-    # Read pre-extracted context
     context = context_file.read_text(encoding="utf-8").strip()
     if not context:
         logging.info("Context file is empty, skipping")
-        context_file.unlink(missing_ok=True)
-        return
+        if not distill_only:
+            context_file.unlink(missing_ok=True)
+        return 0
 
     logging.info("Flushing session %s: %d chars", session_id, len(context))
 
-    # Run the LLM extraction
     response = asyncio.run(run_flush(context))
 
-    # Append to daily log
+    if distill_only:
+        print(response)
+        logging.info("Distill-only complete for session %s", session_id)
+        return 0
+
     if "FLUSH_OK" in response:
         logging.info("Result: FLUSH_OK — nothing worth saving")
     elif "FLUSH_ERROR" in response:
         logging.error("Result: %s", response)
     else:
         logging.info("Result: saved to daily log (%d chars)", len(response))
-        append_to_daily_log(response, "Session")
+        append_to_daily_log(response, "Session", session_id=session_id)
 
-    # Update dedup state
     save_flush_state({"session_id": session_id, "timestamp": time.time()})
-
-    # Clean up context file
     context_file.unlink(missing_ok=True)
-
-    # Trigger compilation to promote daily log into wiki articles
-    maybe_trigger_compilation()
-
+    maybe_trigger_compilation(trigger)
     logging.info("Flush complete for session %s", session_id)
+    return 0
+
+
+def main() -> None:
+    args = parse_args()
+    exit_code = run_flush_pipeline(
+        args.context_file,
+        args.session_id,
+        distill_only=args.distill_only,
+        trigger=args.trigger,
+    )
+    if exit_code:
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":

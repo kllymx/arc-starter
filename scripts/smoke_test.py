@@ -146,12 +146,13 @@ def test_hook_configs_export_runtime_env() -> None:
     """Hook wiring uses the right lifecycle events and exports the
     harness-identifying env var every hook downstream relies on.
 
-    Expected shape after Session 2 (2026-04-25) framework update:
+    Expected shape:
       .claude/settings.json → SessionStart, PreCompact, SessionEnd
         (NOT Stop — Stop fires per-turn, SessionEnd fires once at terminate)
-      .codex/hooks.json → SessionStart only
-        (Stop was removed; session-end.py short-circuits on CODEX_CLI and
-         Codex has no SessionEnd event yet, tracked at openai/codex#17148)
+      .codex/hooks.json → SessionStart, PreCompact
+        (Codex shipped PreCompact since the original framework — openai/codex#17148.
+         Still NO Stop: it fires per-turn and would be wasted work.
+         Still NO SessionEnd: Codex has no such event yet, openai/codex#20603.)
     """
     claude_settings = json.loads((PROJECT_ROOT / ".claude" / "settings.json").read_text())
     codex_hooks = json.loads((PROJECT_ROOT / ".codex" / "hooks.json").read_text())
@@ -169,15 +170,24 @@ def test_hook_configs_export_runtime_env() -> None:
         cmd = claude_events[event][0]["hooks"][0]["command"]
         assert "CLAUDE_CODE=1" in cmd, f"Claude {event} missing CLAUDE_CODE=1"
 
-    # Codex: SessionStart only — Stop was removed
+    # Codex: SessionStart + PreCompact. Still NO Stop (fires per-turn),
+    # still NO SessionEnd (no such event in Codex yet, openai/codex#20603).
     codex_events = codex_hooks["hooks"]
     assert "SessionStart" in codex_events, "Codex must have SessionStart hook"
-    assert "Stop" not in codex_events, (
-        "Codex Stop hook was removed: session-end.py short-circuits on "
-        "CODEX_CLI anyway, and firing per-turn was wasted work."
+    assert "PreCompact" in codex_events, (
+        "Codex must have PreCompact hook — Codex shipped compaction hooks "
+        "(openai/codex#17148) so long-session capture now matches Claude Code."
     )
-    codex_start = codex_events["SessionStart"][0]["hooks"][0]["command"]
-    assert "CODEX_CLI=1" in codex_start, "Codex SessionStart missing CODEX_CLI=1"
+    assert "Stop" not in codex_events, (
+        "Codex must NOT have a Stop hook: Stop fires per-turn, so using it for "
+        "capture is wasted work. Auto-capture rides PreCompact instead."
+    )
+    assert "SessionEnd" not in codex_events, (
+        "Codex has no SessionEnd event yet (openai/codex#20603); don't wire one."
+    )
+    for event in ("SessionStart", "PreCompact"):
+        cmd = codex_events[event][0]["hooks"][0]["command"]
+        assert "CODEX_CLI=1" in cmd, f"Codex {event} missing CODEX_CLI=1"
 
 
 def test_hook_timeouts_are_seconds_not_milliseconds() -> None:
@@ -206,6 +216,33 @@ def test_hook_timeouts_are_seconds_not_milliseconds() -> None:
         )
 
 
+def test_maintenance_commands_have_skill_parity() -> None:
+    """New maintenance commands ship as BOTH a Claude command and a Codex skill,
+    so capture/maintenance works on either harness (added 2026-06-24)."""
+    for name in ("garden", "link"):
+        assert (PROJECT_ROOT / ".claude" / "commands" / f"{name}.md").exists(), (
+            f"/{name} missing its Claude command (.claude/commands/{name}.md)"
+        )
+        assert (PROJECT_ROOT / ".codex" / "skills" / name / "SKILL.md").exists(), (
+            f"/{name} missing its Codex skill (.codex/skills/{name}/SKILL.md)"
+        )
+
+
+def test_new_scripts_importable() -> None:
+    """The new retrieval/maintenance modules import cleanly (no syntax/import
+    errors) and are import-side-effect-free. Behavior is covered by each
+    module's own test_*.py; this is just a fast wiring guard."""
+    import importlib
+
+    for mod in (
+        "scripts.context_select",
+        "scripts.wiki_query",
+        "scripts.garden",
+        "scripts.link_pass",
+    ):
+        importlib.import_module(mod)
+
+
 def main() -> None:
     tests = [
         test_detect_environment_placeholder_is_unknown,
@@ -217,6 +254,8 @@ def main() -> None:
         test_structural_lint_blank_wiki,
         test_hook_configs_export_runtime_env,
         test_hook_timeouts_are_seconds_not_milliseconds,
+        test_maintenance_commands_have_skill_parity,
+        test_new_scripts_importable,
     ]
 
     for test in tests:

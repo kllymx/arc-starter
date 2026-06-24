@@ -1,0 +1,58 @@
+# Memory — TEMPLATE (copy to `context/memory.md`)
+
+> **This is a template, not a live memory file.** Copy to `context/memory.md` and replace
+> the examples below. Keep this file **short and scannable** — under ~100 lines is ideal.
+> Business knowledge belongs in the **wiki**, not here.
+
+Lightweight preferences, corrections, and operational notes the agent should remember across sessions. Updated when the founder states a preference, corrects a mistake, or shares something about *how* to work together.
+
+---
+
+## Communication Preferences
+
+- **Tone:** [e.g. Direct and concise — no filler, lead with the answer]
+- **Technical depth:** [e.g. Somewhat technical — explain jargon when first used]
+- **Formatting:** [e.g. Use markdown tables for comparisons; avoid walls of bold]
+
+---
+
+## Corrections (mistakes to avoid)
+
+| Date | What went wrong | Do this instead |
+|------|-----------------|-----------------|
+| YYYY-MM-DD | [e.g. Drafted email without checking wiki tone guide] | Read `[[client-comms-style]]` before drafting outbound email |
+| YYYY-MM-DD | [e.g. Put pricing facts in memory.md] | Pricing lives in `[[pricing-model]]` — update the wiki article |
+
+---
+
+## Operational Notes
+
+- **Environment:** [e.g. Cursor — slash commands work as shortcuts]
+- **Session hygiene:** [e.g. Spawn sub-agent for multi-file research; don't bulk-read wiki]
+- **End of session:** [e.g. Run `/reflect` on Codex before closing]
+
+---
+
+## NOT for Memory (put these in the wiki)
+
+Do **not** store the following in memory.md — create or update wiki articles instead:
+
+- Company strategy, positioning, or priorities
+- Customer names, deal stages, or revenue figures
+- Competitor analysis or market sizing
+- Product roadmap or feature decisions
+- Anything another team member would need to know about the *business*
+
+**Rule of thumb:** If it's about the business, it's a wiki article. If it's about how the agent should behave with *you*, it stays in memory.
+
+---
+
+## Review Cadence
+
+Every few weeks (or during `/reflect`):
+
+1. Delete entries that are now habit — the agent doesn't need them forever
+2. Promote any "facts" that crept in → wiki articles
+3. Keep the file under one screen of scrolling
+
+See `guides/context-hygiene.md` for why short memory files matter.

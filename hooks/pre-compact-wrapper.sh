@@ -1,7 +1,8 @@
 #!/bin/bash
-# ARC Pre-Compact Wrapper (Claude Code only)
+# ARC Pre-Compact Wrapper (Claude Code + Codex)
 #
-# Same guard as session-end-wrapper.sh
+# Same guard as session-end-wrapper.sh. Wired to the PreCompact event on
+# both harnesses; pre-compact.py handles each harness's transcript format.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"

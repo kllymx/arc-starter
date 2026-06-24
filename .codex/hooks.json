@@ -18,6 +18,19 @@
           }
         ]
       }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CODEX_CLI=1 bash hooks/pre-compact-wrapper.sh",
+            "timeout": 10,
+            "statusMessage": "Capturing context before compaction..."
+          }
+        ]
+      }
     ]
   }
 }
