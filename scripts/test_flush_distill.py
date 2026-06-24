@@ -45,6 +45,22 @@ def test_parse_args_preserves_positional_and_distill_only() -> None:
     distill_args = flush.parse_args(["ctx.md", "sess-abc", "--distill-only"])
     assert distill_args.distill_only is True
 
+    # trigger defaults to manual and accepts the hook triggers
+    assert default_args.trigger == "manual"
+    assert flush.parse_args(["ctx.md", "s", "--trigger", "session_end"]).trigger == "session_end"
+    assert flush.parse_args(["ctx.md", "s", "--trigger", "precompact"]).trigger == "precompact"
+
+
+def test_compile_gate_session_end_any_hour_else_after_hour() -> None:
+    cutoff = flush.COMPILE_AFTER_HOUR
+    # session_end compiles at any hour (covers cubic's pre-6PM gap)
+    assert flush._should_compile("session_end", 9) is True
+    assert flush._should_compile("session_end", cutoff - 1) is True
+    # precompact / manual batch until the cutoff hour
+    assert flush._should_compile("precompact", cutoff - 1) is False
+    assert flush._should_compile("manual", cutoff - 1) is False
+    assert flush._should_compile("precompact", cutoff) is True
+
 
 def test_distill_only_skips_daily_log_and_compilation() -> None:
     with tempfile.TemporaryDirectory() as tmp:
@@ -76,6 +92,7 @@ def main() -> None:
         test_flush_prompt_has_durability_signal_noise_and_sources,
         test_append_to_daily_log_writes_provenance_footer,
         test_parse_args_preserves_positional_and_distill_only,
+        test_compile_gate_session_end_any_hour_else_after_hour,
         test_distill_only_skips_daily_log_and_compilation,
     ]
     for test in tests:

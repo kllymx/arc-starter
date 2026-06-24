@@ -169,6 +169,8 @@ def main() -> None:
         str(flush_script),
         str(context_file),
         session_id,
+        "--trigger",
+        "precompact",
     ]
 
     # Detach the background flush from the hook's process group so it survives

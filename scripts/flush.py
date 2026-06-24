@@ -146,8 +146,18 @@ async def run_flush(context: str) -> str:
         return f"FLUSH_ERROR: {type(e).__name__}: {e}"
 
 
-def maybe_trigger_compilation() -> None:
-    """If it's past the compile hour and today's log hasn't been compiled, run compile.py."""
+def _should_compile(trigger: str, hour: int) -> bool:
+    """End-of-day gate.
+
+    A ``session_end`` flush is itself the end of a work session, so it compiles
+    at any hour. Mid-session ``precompact`` (and ``manual``) flushes batch until
+    ``COMPILE_AFTER_HOUR`` to avoid repeatedly compiling during an active day.
+    """
+    return trigger == "session_end" or hour >= COMPILE_AFTER_HOUR
+
+
+def maybe_trigger_compilation(trigger: str = "manual") -> None:
+    """Compile today's log if the end-of-day gate allows and it has changed."""
     import subprocess as _sp
 
     compile_script = SCRIPTS_DIR / "compile.py"
@@ -155,6 +165,9 @@ def maybe_trigger_compilation() -> None:
         return
 
     now = datetime.now(timezone.utc).astimezone()
+
+    if not _should_compile(trigger, now.hour):
+        return
 
     # Check if today's log has already been compiled
     today_log = f"{now.strftime('%Y-%m-%d')}.md"
@@ -209,6 +222,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Print distillation result without writing daily log or triggering compilation",
     )
+    parser.add_argument(
+        "--trigger",
+        choices=["precompact", "session_end", "manual"],
+        default="manual",
+        help="What invoked this flush. 'session_end' compiles at any hour; "
+        "'precompact'/'manual' only compile after COMPILE_AFTER_HOUR.",
+    )
     return parser.parse_args(argv)
 
 
@@ -217,6 +237,7 @@ def run_flush_pipeline(
     session_id: str,
     *,
     distill_only: bool = False,
+    trigger: str = "manual",
 ) -> int:
     """Run distillation; write daily log and trigger compilation unless distill_only."""
     logging.info(
@@ -266,7 +287,7 @@ def run_flush_pipeline(
 
     save_flush_state({"session_id": session_id, "timestamp": time.time()})
     context_file.unlink(missing_ok=True)
-    maybe_trigger_compilation()
+    maybe_trigger_compilation(trigger)
     logging.info("Flush complete for session %s", session_id)
     return 0
 
@@ -277,6 +298,7 @@ def main() -> None:
         args.context_file,
         args.session_id,
         distill_only=args.distill_only,
+        trigger=args.trigger,
     )
     if exit_code:
         sys.exit(exit_code)
