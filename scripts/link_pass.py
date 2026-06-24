@@ -206,11 +206,12 @@ def scan_text_for_links(
 
     cleaned = strip_frontmatter(text)
     cleaned = WIKILINK_PATTERN.sub(" ", cleaned)
+    existing_links = set(extract_wikilinks(text))
 
     for target_slug, target in articles.items():
         if target_slug == source_slug:
             continue
-        if target_slug in extract_wikilinks(text):
+        if target_slug in existing_links:
             continue
 
         context = find_mention_context(cleaned, target)

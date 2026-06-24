@@ -93,7 +93,7 @@ def _parse_date(value: str) -> date | None:
         return None
 
 
-def article_last_updated(path: Path, *, today: date | None = None) -> date | None:
+def article_last_updated(path: Path) -> date | None:
     """Return the best available updated/created date from frontmatter."""
     content = path.read_text(encoding="utf-8")
     updated_match = UPDATED_RE.search(content)
@@ -115,7 +115,7 @@ def find_stale_articles(
     reference = today or date.today()
     stale: list[tuple[str, Path, int]] = []
     for title, path in sorted(articles.items()):
-        last_updated = article_last_updated(path, today=reference)
+        last_updated = article_last_updated(path)
         if last_updated is None:
             continue
         age_days = (reference - last_updated).days
@@ -124,7 +124,9 @@ def find_stale_articles(
     return stale
 
 
-def find_promote_candidates(paths: GardenPaths) -> list[str]:
+def find_promote_candidates(
+    paths: GardenPaths, *, today: date | None = None
+) -> list[str]:
     """Surface recent daily logs not yet compiled into the wiki."""
     candidates: list[str] = []
     if not paths.daily_dir.exists():
@@ -132,7 +134,7 @@ def find_promote_candidates(paths: GardenPaths) -> list[str]:
 
     state = load_state()
     compiled_hashes = state.get("compiled_hashes", {})
-    cutoff = date.today() - timedelta(days=RECENT_DAILY_DAYS)
+    cutoff = (today or date.today()) - timedelta(days=RECENT_DAILY_DAYS)
 
     for daily_path in sorted(paths.daily_dir.glob("*.md")):
         try:
@@ -206,7 +208,7 @@ def build_draft_content(
         )
 
     promote_items: list[str] = []
-    for daily_ref in find_promote_candidates(paths):
+    for daily_ref in find_promote_candidates(paths, today=reference):
         promote_items.append(
             f"- [ ] **{daily_ref}** — recent daily log not yet compiled; "
             "review for durable insights worth promoting to the wiki"
