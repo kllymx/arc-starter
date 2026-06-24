@@ -8,11 +8,14 @@ and proper cross-referencing.
 Usage: uv run python scripts/lint.py [--structural-only]
 """
 
+from __future__ import annotations
+
 import argparse
 import re
 import sys
-from pathlib import Path
 from collections import defaultdict
+from datetime import date, timedelta
+from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -30,6 +33,7 @@ from scripts.utils import today_str
 
 
 WIKILINK_PATTERN = re.compile(r"\[\[([^\]]+)\]\]")
+STALE_DAYS_THRESHOLD = 90
 
 
 def get_all_articles() -> dict[str, Path]:
@@ -47,6 +51,21 @@ def get_all_articles() -> dict[str, Path]:
 def extract_wikilinks(content: str) -> list[str]:
     """Extract all [[wikilink]] targets from content."""
     return WIKILINK_PATTERN.findall(content)
+
+
+def parse_frontmatter(content: str) -> dict[str, str]:
+    """Extract simple key: value pairs from YAML frontmatter."""
+    if not content.startswith("---"):
+        return {}
+    end = content.find("\n---", 3)
+    if end == -1:
+        return {}
+    result: dict[str, str] = {}
+    for line in content[3:end].strip().splitlines():
+        if ":" in line:
+            key, _, value = line.partition(":")
+            result[key.strip()] = value.strip()
+    return result
 
 
 def check_broken_links(articles: dict[str, Path]) -> list[str]:
@@ -148,6 +167,77 @@ def check_missing_backlinks(articles: dict[str, Path]) -> list[str]:
     return issues
 
 
+def check_stale_articles(articles: dict[str, Path]) -> list[str]:
+    """Flag articles whose updated: frontmatter is older than the threshold."""
+    issues = []
+    cutoff = date.today() - timedelta(days=STALE_DAYS_THRESHOLD)
+
+    for title, path in articles.items():
+        fm = parse_frontmatter(path.read_text())
+        updated_str = fm.get("updated")
+        if not updated_str:
+            continue
+        try:
+            updated = date.fromisoformat(updated_str)
+        except ValueError:
+            continue
+        if updated < cutoff:
+            days_old = (date.today() - updated).days
+            issues.append(
+                f"Stale article (updated {updated_str}, {days_old} days ago): {title}"
+            )
+
+    return issues
+
+
+def check_missing_provenance(articles: dict[str, Path]) -> list[str]:
+    """Flag articles missing a source: frontmatter field."""
+    issues = []
+    for title, path in articles.items():
+        fm = parse_frontmatter(path.read_text())
+        if not fm.get("source"):
+            issues.append(f"Missing provenance (no source:): {title}")
+    return issues
+
+
+def check_superseded(articles: dict[str, Path]) -> list[str]:
+    """Best-effort heuristic: flag articles possibly superseded by later daily logs."""
+    issues = []
+    if not DAILY_DIR.exists():
+        return issues
+
+    for title, path in articles.items():
+        fm = parse_frontmatter(path.read_text())
+        updated_str = fm.get("updated")
+        if not updated_str:
+            continue
+        try:
+            updated = date.fromisoformat(updated_str)
+        except ValueError:
+            continue
+
+        display_title = fm.get("title", title.replace("-", " "))
+        search_terms = {title, title.replace("-", " "), display_title}
+
+        for daily_path in sorted(DAILY_DIR.glob("*.md")):
+            try:
+                daily_date = date.fromisoformat(daily_path.stem)
+            except ValueError:
+                continue
+            if daily_date <= updated:
+                continue
+
+            content_lower = daily_path.read_text().lower()
+            if any(term.lower() in content_lower for term in search_terms if term):
+                issues.append(
+                    f"Candidate superseded: {title} — mentioned in daily/{daily_path.name} "
+                    f"after last update ({updated_str})"
+                )
+                break
+
+    return issues
+
+
 def main():
     parser = argparse.ArgumentParser(description="ARC Wiki Linter")
     parser.add_argument(
@@ -171,6 +261,9 @@ def main():
         "unprocessed": check_unprocessed_sources(),
         "sparse": check_sparse_articles(articles),
         "missing_backlinks": check_missing_backlinks(articles),
+        "stale_articles": check_stale_articles(articles),
+        "missing_provenance": check_missing_provenance(articles),
+        "superseded": check_superseded(articles),
     }
 
     # Print report
@@ -184,6 +277,9 @@ def main():
     print(f"- Unprocessed sources: {len(all_issues['unprocessed'])}")
     print(f"- Sparse articles: {len(all_issues['sparse'])}")
     print(f"- Missing backlinks: {len(all_issues['missing_backlinks'])}")
+    print(f"- Stale articles: {len(all_issues['stale_articles'])}")
+    print(f"- Missing provenance: {len(all_issues['missing_provenance'])}")
+    print(f"- Candidate superseded: {len(all_issues['superseded'])}")
     print()
 
     if total_issues == 0:

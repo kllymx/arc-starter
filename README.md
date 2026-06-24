@@ -138,6 +138,8 @@ The wiki grows automatically — sessions are captured by hooks, insights are co
 | `/ingest` | "ingest this document" | Process a document from imports/ into wiki articles |
 | `/lint` | "check the wiki" | Wiki health check — contradictions, orphans, gaps |
 | `/consolidate` | "clean up the wiki" | Drafts proposed wiki merges, edits, prunes, and promotions for review |
+| `/garden` | "tidy the wiki" | Lightweight daily hygiene pass; drafts changes for review (lighter than `/consolidate`) |
+| `/link` | "add wikilinks" | Proposes verified wikilinks and Maps of Content for review |
 | `/sync` | "push my changes" | Pulls, commits, and pushes ARC changes to GitHub |
 | `/business-snapshot` | "show me what ARC knows" | Creates a visual HTML report from ARC context and wiki |
 | `/ai-leverage-brief` | "what AI system should I build next?" | Classifies the next path: personal, one collaborator, shared knowledge, internal tool, or defer |
@@ -187,10 +189,11 @@ The wiki is inspired by [Karpathy's LLM knowledge base pattern](https://gist.git
 2. **The wiki** (`wiki/`) — Cross-referenced markdown articles the AI creates and maintains. This is the compounding knowledge base.
 3. **The schema** (`CLAUDE.md`) — Instructions that tell the AI how to manage the wiki.
 
-Three core operations:
+Core operations:
 - **Ingest** — Process a new source into wiki articles, updating cross-references across 10-15 pages
-- **Query** — Ask questions; good answers get filed back into the wiki
-- **Lint** — Health-check for contradictions, orphan pages, and gaps
+- **Query** — Ask questions; good answers get filed back into the wiki. Find relevant articles on demand with `scripts/wiki_query.py` instead of loading the whole index
+- **Maintain** — Lightweight `/garden` hygiene and `/link` graph-building between heavier `/consolidate` passes; all propose drafts for your review
+- **Lint** — Health-check for contradictions, orphan pages, staleness, and gaps
 
 The wiki grows through use. The agent handles all the bookkeeping. You never maintain it manually.
 
@@ -201,9 +204,9 @@ The wiki grows through use. The agent handles all the bookkeeping. You never mai
 ARC automatically captures and compiles knowledge from every session. The agent installs this during first setup — you don't need to do anything.
 
 **What happens behind the scenes:**
-- **Session start** — Wiki index + business overview injected so the agent starts fully informed
-- **Session end** — Conversation insights captured and appended to daily logs
-- **Pre-compact** (Claude Code only) — Knowledge captured before context compression in long sessions
+- **Session start** — A lean navigation layer (business overview, memory, wiki index headings/summaries, recent daily-log heads) is injected so the agent starts oriented without context bloat; full articles are pulled on demand
+- **Pre-compact** (Claude Code + Codex) — Knowledge captured before context compaction in long sessions, so nothing is lost to the summary
+- **Session end** (Claude Code) — Conversation insights captured and appended to daily logs. On Codex (no SessionEnd event yet) run `/reflect` to capture the final stretch
 - **Nightly compilation** — Daily log entries promoted into structured wiki articles with cross-references
 
 **The result:** You just use ARC normally. The wiki grows on its own. Every conversation, every question, every decision gets captured and organized into your compounding knowledge base.
@@ -231,6 +234,8 @@ The repo also includes a GitHub Actions smoke-test workflow in `.github/workflow
 - **session-roadmap.md** — How ARC grows across Session 1, 2, and 3
 - **troubleshooting.md** — What to do when things are confusing
 - **next-steps.md** — Where to go after the basics
+- **context-hygiene.md** — Avoiding context rot; keeping instruction files lean (plus `guides/templates/`)
+- **wiki-retrieval.md** — Finding wiki articles on demand (CLI + optional MCP)
 
 ---
 

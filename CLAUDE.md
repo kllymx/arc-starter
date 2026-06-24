@@ -191,6 +191,14 @@ These can be triggered by typing the `/command` name in compatible environments 
 | `/ai-leverage-brief` | "what AI system should I build next", "how should we use AI internally", "company AI brief" | Classifies the next path: personal leverage, one collaborator, shared knowledge, internal tool, or defer. |
 | `/prototype-system` | "prototype this system", "make a Slack mockup", "make an internal tool mockup" | Builds the first believable interaction or interface for a proposed AI system. |
 | `/skill-audit` | "what should become a skill", "audit repeated workflows", "turn this into a skill" | Finds repeated ARC workflows and can build an approved reusable Claude command / Codex skill. |
+| `/garden` | "garden the wiki", "daily declutter", "tidy the wiki" | Lightweight daily/periodic hygiene pass. Drafts `wiki/garden-{date}.md` (stale, orphaned, promote-from-daily candidates) for your review — lighter and faster than `/consolidate`. |
+| `/link` | "link the wiki", "add wikilinks", "build MOCs" | Proposes verified `[[wikilinks]]` and Maps of Content as a draft for review. Only ever links to articles that exist. |
+
+### Wiki retrieval & context hygiene
+
+To keep sessions lean (avoid context rot), arc-starter injects only a **navigation layer** at session start — business overview, memory, wiki index headings/summaries, and the last couple of daily-log heads — not full article bodies. Pull full context **on demand**:
+- To find relevant wiki articles, run `uv run python scripts/wiki_query.py "<terms>"` (or the `wiki_query` MCP tool if registered) instead of reading all of `wiki/index.md`, then read only the articles you need.
+- See `guides/context-hygiene.md` for context-rot symptoms and fixes (short scoped instruction files, sub-agent delegation, dump-and-clear), and `guides/templates/` for scoped `CLAUDE.md` / `memory.md` / `AGENTS.md` examples (kept under ~200 lines).
 
 When a founder seems unsure what to do next, suggest the most appropriate action in plain language — don't just say "run /setup". Describe what it does and let them say yes:
 - No wiki built → "I don't know your business yet. Want me to interview you? Takes about 15 minutes and I'll build a knowledge base that gets smarter every session."
@@ -269,26 +277,32 @@ on the harness, because the two harnesses expose different lifecycle events.
 On Claude Code, capture is fully automatic. The founder doesn't need to
 do anything.
 
-**Codex CLI** currently only exposes `SessionStart` and `Stop`. There is
-no `SessionEnd` or `PreCompact` event as of April 2026 (OpenAI feature
-request is tracked at openai/codex#17148). Because `Stop` fires after
-every turn rather than at session termination, arc-starter deliberately
-does not wire up end-of-session capture on Codex — it would either spawn
-useless work every turn or require complex turn-count debouncing we'd
-rather not ship.
+**Codex CLI** now exposes a full hooks system (added since this framework
+was first written — OpenAI feature request openai/codex#17148 has shipped).
+The lifecycle events we care about — `SessionStart`, `PreCompact`, and
+`PostCompact` — are now available, alongside `PreToolUse`/`PostToolUse`/
+`UserPromptSubmit`/`Stop`. arc-starter wires Codex's `PreCompact` to the
+same capture path as Claude Code, so long sessions auto-capture each
+pre-summarization slice on both harnesses.
 
-On Codex, capture is manual:
-- Session-start context injection still works automatically (via SessionStart)
-- To flush knowledge from the current session into the daily log, the
-  founder should run `/reflect` at the end of each working session
-- When OpenAI ships `SessionEnd` or `PreCompact` for Codex, we'll wire
-  them up and auto-capture will match Claude Code
+Two Codex-specific gaps remain:
+- **No `SessionEnd` event yet** (tracked at openai/codex#20603). Claude Code
+  captures the final transcript tail at `SessionEnd`; Codex cannot. So on
+  Codex the post-last-compaction tail of a session is not auto-captured.
+- **`Stop` fires after every turn**, not at session termination, so we
+  deliberately do NOT use `Stop` for capture — it would spawn useless work
+  every turn or require turn-count debouncing we'd rather not ship.
+
+On Codex, capture is therefore automatic for long sessions (via `PreCompact`),
+but the founder should still run `/reflect` at the end of a working session
+to flush the final stretch into the daily log. On Claude Code, `SessionEnd`
+handles that automatically.
 
 If the founder is on Codex, mention this once during setup, then remind
-them at the end of long sessions:
-> "Quick reminder — on Codex, run `/reflect` at the end of each session
-> to capture today's work into your daily log. On Claude Code this
-> happens automatically."
+them at the end of a session:
+> "Quick reminder — on Codex, run `/reflect` at the end of a session to
+> capture the final stretch into your daily log. Long sessions auto-capture
+> as the context compacts; on Claude Code the whole thing is automatic."
 
 ---
 

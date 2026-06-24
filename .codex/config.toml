@@ -1,2 +1,4 @@
+# `hooks` is the canonical feature key (Codex enables hooks by default;
+# `codex_hooks` is a deprecated alias). Kept explicit for clarity.
 [features]
-codex_hooks = true
+hooks = true

@@ -7,6 +7,80 @@ the safe-update contract.
 
 ---
 
+## [2026-06-24] — Second-brain improvements (context hygiene, retrieval, maintenance)
+
+Implemented from a research pass on PKM/second-brain patterns for AI coding agents.
+Seven independent lanes; all new wiki-mutating tools write DRAFTS for founder review
+and never auto-apply.
+
+### Added
+
+- **Leaner SessionStart injection (Lane A).** `hooks/session-start.{py,sh}` now inject
+  a high-signal *navigation layer* (overview + memory caps, wiki index headings/
+  summaries, last ~2 daily-log heads) under a ~7k-char budget instead of dumping the
+  full index + 7 daily logs — directly targets "context rot". New
+  `scripts/context_select.py` holds the tiered assembly; the JSON hook contract is
+  unchanged. Full articles are now pull-on-demand.
+- **Targeted wiki retrieval (Lane B).** `scripts/wiki_query.py` — deterministic,
+  no-vector keyword retrieval that returns ranked article excerpts + paths so agents
+  stop reading the whole index. Optional opt-in stdio MCP server
+  `scripts/wiki_query_mcp.py` (+ `extensions/wiki-query-mcp.example.json`,
+  `guides/wiki-retrieval.md`).
+- **`/garden` daily maintenance (Lane C).** New command + Codex skill +
+  `scripts/garden.py` — a lightweight hygiene pass (stale/orphan/promote candidates)
+  that drafts `wiki/garden-{date}.md` for review. Lighter than `/consolidate`.
+- **`/link` verified linking + MOCs (Lane D).** New command + Codex skill +
+  `scripts/link_pass.py` — proposes `[[wikilinks]]` and Maps of Content as a draft,
+  validating every link against articles that actually exist (no hallucinated links).
+  Adds `wiki/mocs/` with a template.
+- **Context-hygiene guide & templates (Lane F).** `guides/context-hygiene.md` plus
+  scoped `guides/templates/{CLAUDE.md,memory.md,agents-fragment}.example` (<200 lines).
+
+### Changed
+
+- **Flush distillation + provenance (Lane E).** `scripts/flush.py` — sharper
+  signal/noise rules, `[durable]`/`[ephemeral]` tagging, a Sources section, a
+  `_provenance:` footer on daily entries, and a `--distill-only` mode. Positional
+  invocation (`flush.py <context_file> <session_id>`) preserved for the hooks.
+- **Lint staleness/provenance (Lane G).** `scripts/lint.py` — new
+  `check_stale_articles`, `check_missing_provenance`, and best-effort
+  `check_superseded` checks wired into the report.
+- Registered `/garden` and `/link` and a "Wiki retrieval & context hygiene" note in
+  `CLAUDE.md` / `AGENTS.md` / `README.md`; added smoke tests for command/skill parity
+  and new-module import wiring.
+
+---
+
+## [2026-06-24] — Codex auto-capture via `PreCompact`
+
+### Added — Codex auto-capture via `PreCompact`
+
+- **Codex now auto-captures long sessions.** OpenAI shipped compaction
+  hooks for Codex (openai/codex#17148 — `PreCompact`/`PostCompact`), so
+  `.codex/hooks.json` now wires `PreCompact` to the same capture path as
+  Claude Code (`hooks/pre-compact-wrapper.sh` → `pre-compact.py`). The
+  Codex short-circuit in `pre-compact.py` was removed; its transcript
+  parser already handled the Codex format. Long sessions now auto-capture
+  on Codex as the context compacts, instead of relying solely on manual
+  `/reflect`.
+- **`Stop` deliberately still NOT used on Codex.** `Stop` fires per turn,
+  so capturing via it would be wasted work — auto-capture rides
+  `PreCompact` instead. `SessionEnd` is still unavailable on Codex
+  (openai/codex#20603), so `/reflect` remains the way to flush the final
+  post-compaction stretch of a session.
+
+### Fixed
+
+- **`.codex/config.toml` feature flag.** `codex_hooks = true` is a
+  deprecated alias and hooks are enabled by default; switched to the
+  canonical `hooks = true`.
+- **Stale harness notes.** `CLAUDE.md` / `AGENTS.md` said "Codex only
+  exposes `SessionStart` and `Stop`" — updated to reflect Codex's current
+  hooks system. `scripts/smoke_test.py` updated to assert Codex has both
+  `SessionStart` and `PreCompact`.
+
+---
+
 ## [Session 3 capstone / 2026-04-28]
 
 ### Added

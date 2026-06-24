@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "arc-wiki-query": {
+      "command": "uv",
+      "args": ["run", "python", "scripts/wiki_query_mcp.py"],
+      "cwd": "/absolute/path/to/arc-starter"
+    }
+  }
+}
