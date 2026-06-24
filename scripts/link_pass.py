@@ -76,6 +76,7 @@ class BacklinkProposal:
     source_path: Path
     target_slug: str
     target_title: str
+    target_path: Path
 
 
 @dataclass
@@ -320,6 +321,7 @@ def find_backlink_fixes(articles: dict[str, Article]) -> list[BacklinkProposal]:
                     source_path=source.path,
                     target_slug=target.slug,
                     target_title=target.title,
+                    target_path=target.path,
                 )
             )
 
@@ -446,10 +448,14 @@ _None — insufficient articles._
     lines.extend(["## Backlink-fix proposals", ""])
     if backlink_proposals:
         for index, proposal in enumerate(backlink_proposals, start=1):
+            try:
+                target_display = proposal.target_path.relative_to(PROJECT_ROOT)
+            except ValueError:
+                target_display = proposal.target_path
             lines.extend(
                 [
                     f"### Backlink {index}",
-                    f"**Target:** `wiki/concepts/{proposal.target_slug}.md` (or connections/)",
+                    f"**Target:** `{target_display}`",
                     f"**Add to `## Related`:** `[[{proposal.source_slug}]]`",
                     f"**Because:** `{proposal.source_path}` already links to [[{proposal.target_title}]]",
                     "",

@@ -49,11 +49,6 @@ STALE_THRESHOLD_DAYS = 60
 SPARSE_WORD_THRESHOLD = 200
 RECENT_DAILY_DAYS = 30
 
-FRONTMATTER_DATE_RE = re.compile(
-    r"^---\s*\n(?:.*\n)*?"
-    r"(?:updated|created):\s*(\d{4}-\d{2}-\d{2})",
-    re.MULTILINE,
-)
 UPDATED_RE = re.compile(r"^updated:\s*(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
 CREATED_RE = re.compile(r"^created:\s*(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
 
