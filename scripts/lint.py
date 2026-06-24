@@ -39,7 +39,7 @@ STALE_DAYS_THRESHOLD = 90
 def get_all_articles() -> dict[str, Path]:
     """Get all wiki articles as {title: path} mapping."""
     articles = {}
-    for article_dir in [CONCEPTS_DIR, CONNECTIONS_DIR]:
+    for article_dir in [CONCEPTS_DIR, CONNECTIONS_DIR, WIKI_DIR / "qa"]:
         if article_dir.exists():
             for f in article_dir.glob("*.md"):
                 # Title is the filename without extension

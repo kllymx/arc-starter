@@ -72,15 +72,19 @@ class GardenPaths:
     def connections_dir(self) -> Path:
         return self.wiki_dir / "connections"
 
+    @property
+    def qa_dir(self) -> Path:
+        return self.wiki_dir / "qa"
+
 
 def default_paths() -> GardenPaths:
     return GardenPaths(wiki_dir=WIKI_DIR, daily_dir=DAILY_DIR, wiki_log=WIKI_LOG)
 
 
 def collect_articles(paths: GardenPaths) -> dict[str, Path]:
-    """Collect wiki articles as {stem: path} from concepts/ and connections/."""
+    """Collect wiki articles as {stem: path} from concepts/, connections/, and qa/."""
     articles: dict[str, Path] = {}
-    for article_dir in (paths.concepts_dir, paths.connections_dir):
+    for article_dir in (paths.concepts_dir, paths.connections_dir, paths.qa_dir):
         if article_dir.exists():
             for path in article_dir.glob("*.md"):
                 articles[path.stem] = path
