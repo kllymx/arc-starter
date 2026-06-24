@@ -1,0 +1,24 @@
+scripts/link_pass.py
+  s_03829a0313b0a3::t_11e289e4cdb31d 209,214
+scripts/garden.py
+  s_03829a0313b0a3::t_1d537226a64bef 118
+  s_03829a0313b0a3::t_d48286e51fbf48 127-129,137
+  s_03829a0313b0a3::t_c060eb9f5b4d25 211
+  s_03829a0313b0a3::t_565dda98591781 96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "2c553ee516b9966966cbba8090bae04148091bca",
+  "prompts": {},
+  "sessions": {
+    "s_03829a0313b0a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f89362bf-12d5-44de-8fe1-67996634a42a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
