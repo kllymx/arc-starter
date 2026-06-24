@@ -1,0 +1,31 @@
+.codex/skills/garden/SKILL.md
+  s_03829a0313b0a3::t_64d24dcd870dd9 90
+.claude/commands/link.md
+  s_03829a0313b0a3::t_64d24dcd870dd9 179
+.codex/skills/link/SKILL.md
+  s_03829a0313b0a3::t_64d24dcd870dd9 101
+hooks/pre-compact.py
+  s_03829a0313b0a3::t_7b1f6385133c38 174-181,188
+scripts/link_pass.py
+  s_03829a0313b0a3::t_9e6f9fcb7841c5 79
+  s_03829a0313b0a3::t_e1f2fe744e2e57 451-454,458
+  s_03829a0313b0a3::t_744471213cc6c8 324
+.claude/commands/garden.md
+  s_03829a0313b0a3::t_64d24dcd870dd9 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "d921ca4ba5b4cc21f133e3856581413f1b5ef6b2",
+  "prompts": {},
+  "sessions": {
+    "s_03829a0313b0a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f89362bf-12d5-44de-8fe1-67996634a42a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
