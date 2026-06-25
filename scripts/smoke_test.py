@@ -273,6 +273,7 @@ def test_new_scripts_importable() -> None:
         "scripts.link_pass",
         "scripts.sync_status",
         "scripts.conflicts",
+        "scripts.scaffold_private",
     ):
         importlib.import_module(mod)
 

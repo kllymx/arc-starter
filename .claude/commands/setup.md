@@ -26,6 +26,18 @@ Do not ask permission. This is required infrastructure. If both attempts
 fail, note the error, continue the interview anyway, and point the
 founder at `guides/windows-setup.md`. They shouldn't be blocked on this.
 
+`setup.sh` also creates the local-only `private/` tier. If `.venv` already
+existed (so you skipped `setup.sh`), ensure the tier exists by running it
+directly — it is idempotent and silent:
+
+```bash
+uv run python scripts/scaffold_private.py
+```
+
+The `private/` folder is gitignored: it's the founder's personal layer and
+never reaches a shared remote. It exists from day one so a later
+`/upgrade-to-company` is a move-into-an-existing-folder, not a retrofit.
+
 ### Check the founder's environment first
 
 Look at `context/workspace.md`. If it is empty or still contains placeholder text, ask this before anything else:
@@ -49,9 +61,15 @@ Save the answer to `context/workspace.md` immediately using this structure:
 - Technical comfort: [non-technical / somewhat technical / technical]
 - Preferred guidance style: [plain language / mixed / technical]
 
+## Sharing
+- Mode: personal
+
 ## Notes
 - [Any setup constraints or helpful notes about how ARC should behave in this environment]
 ```
+
+Leave `- Mode: personal` as-is. It only changes to `company` via
+`/upgrade-to-company`; never set it to `company` by hand during setup.
 
 Use that file to adapt the rest of setup:
 - If slash commands are available, you can mention them as optional shortcuts.

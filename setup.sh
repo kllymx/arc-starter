@@ -37,3 +37,10 @@ fi
 echo "Installing dependencies..."
 uv sync --quiet 2>&1
 echo "Automated knowledge capture is ready."
+
+# Step 3: Create the local-only private tier (idempotent; gitignored).
+# Gives the founder a private layer from day one and makes a later
+# personal→company upgrade a move, not a retrofit.
+uv run python scripts/scaffold_private.py 2>/dev/null \
+  || python3 scripts/scaffold_private.py 2>/dev/null \
+  || true

@@ -26,11 +26,13 @@ boundary is therefore **structural and fail-closed**.
 
 ## Flow
 
-1. **Preconditions** — `/setup` has run; pick a target (recommend a fresh private
-   company repo); verify the remote is private.
-2. **Create the private tier** if absent: `private/wiki/{concepts,connections,qa}/`,
-   `private/context/`, `private/wiki/index.md` + `log.md`. Confirm `.gitignore`
-   excludes `private/`.
+1. **Preconditions** — `/setup` has run. Decide where the shared brain lives: a fresh
+   **private** repo under a **GitHub Organization** (best — each teammate joins with
+   their own account), or a private repo with the other person added as a collaborator
+   (fine for two). NEVER a shared GitHub login, and never a teammate's existing personal
+   repo. Verify the remote is private (`gh repo view --json visibility`).
+2. **Create the private tier** if absent: `uv run python scripts/scaffold_private.py`
+   (idempotent). Confirm `.gitignore` excludes `private/`.
 3. **Classify** every `wiki/` article and `context/` file as shared / private /
    ambiguous, reusing the `ai-leverage-brief` taxonomy and `business-snapshot`
    keep-personal labels. Private-by-default: personal finance / comp / equity, health,
@@ -43,8 +45,11 @@ boundary is therefore **structural and fail-closed**.
    compile to write new captures into `private/wiki/` by default; see
    `scripts/config.py:get_mode`). Add `team-roster.md`, `roles.md`, `access-tiers.md`,
    `ways-of-working.md`. Reframe `context/overview.md` for a team audience.
-6. **Shared remote** — point at the fresh private repo; push only the shareable tree
-   (everything except `private/` and gitignored paths); print teammate onboarding.
+6. **Shared remote** — point `origin` at the org/private repo; push only the shareable
+   tree (except `private/` and gitignored paths). Teammate onboarding, each with THEIR
+   OWN account: founder adds them as org member/collaborator → they `gh auth login` as
+   themselves → `git clone` → run `setup.sh` (creates their own local `private/`) → read
+   `SHARING.md` → work on `arc/<their-slug>` and `/sync`. No shared credentials.
 7. **Govern** — write/refresh `SHARING.md`; summarize what is shared vs private and how
    to `promote`/`sync`; note that deeper rollout is a separate engagement.
 

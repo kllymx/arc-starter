@@ -35,14 +35,30 @@ this with my team", "upgrade to company", "set up the team version".
 ### Step 0 — Preconditions
 
 1. Confirm `/setup` has run (a populated `wiki/` exists). If not, stop and run setup.
-2. Confirm the target: recommend a **fresh private company repo** so the personal
-   git history never ships. Alternatively designate this repo as the shared one.
-3. Verify the company remote. `gh repo view --json visibility`; abort if PUBLIC.
+2. **Decide where the shared brain will live (this matters — get it right).** The
+   company repo must NOT be a teammate's personal repo, and you must NOT create a
+   shared GitHub login. Each person keeps their own GitHub account. Recommend, in order:
+   - **A GitHub Organization (best).** Create a free org and put a fresh **private**
+     repo under it: `gh repo create <org>/arc-brain --private`. Add each teammate as an
+     org member; they authenticate as themselves (`gh auth login` / their own SSH key
+     or token). Clean ownership, real access control, survives anyone leaving.
+   - **Collaborators on a private repo (fine for two people, quick).** One private repo;
+     add the other person under the repo's Settings → Collaborators by their GitHub
+     username. They push with their own account. Downside: ownership is tied to one
+     individual — migrate to an org later.
+   - **Never:** a shared "company account" both log into (shared password, broken 2FA,
+     lost attribution), or pointing the shared remote at someone's existing personal
+     repo.
+3. Verify the company remote is private: `gh repo view --json visibility`; abort if
+   PUBLIC.
 
 ### Step 1 — Create the private tier (if absent)
 
-1. Create `private/`, `private/wiki/{concepts,connections,qa}/`, `private/context/`,
-   and `private/wiki/index.md` + `private/wiki/log.md` (mirror the shared layout).
+1. Run the idempotent scaffold helper (creates `private/wiki/{concepts,connections,qa}/`,
+   `private/context/`, `private/wiki/index.md` + `log.md`, and `private/README.md`):
+   ```bash
+   uv run python scripts/scaffold_private.py
+   ```
 2. Confirm `.gitignore` excludes `private/` (it ships excluded by default).
 
 ### Step 2 — Classify (the privacy gate)
@@ -75,9 +91,15 @@ this with my team", "upgrade to company", "set up the team version".
 
 ### Step 5 — Establish the shared remote
 
-1. Point the company remote at the fresh private repo.
+1. Point `origin` at the org/private repo from Step 0.
 2. Push only the shareable tree (everything except `private/` and gitignored paths).
-3. Print teammate onboarding: clone, run `setup.sh`, read `SHARING.md`.
+3. Print teammate onboarding, and be explicit that **each person uses their own GitHub
+   account**:
+   - Founder adds them as an org member (or repo collaborator).
+   - They run `gh auth login` as themselves, then `git clone` the repo.
+   - They run `setup.sh` (installs capture + creates their own local `private/` tier).
+   - They read `SHARING.md`, then work on their own branch `arc/<their-slug>` and sync
+     via `/sync`. No shared credentials, ever.
 
 ### Step 6 — Govern and close out
 

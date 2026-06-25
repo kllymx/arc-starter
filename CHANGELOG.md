@@ -44,6 +44,14 @@ only the compile target and retrieval scope become mode-aware.
   stages (base/ours/theirs); new `/reconcile` command (+ Codex skill) unions additive
   wiki knowledge, flags genuine contradictions for the founder, and fails closed on
   `visibility: private`.
+- **Private tier scaffold (`scripts/scaffold_private.py`).** Idempotent; run by
+  `setup.sh` and `/setup`, so the gitignored `private/` tier exists from day one even
+  in personal mode (a later upgrade is a move, not a retrofit). `/setup` now writes the
+  `Mode: personal` knob into `context/workspace.md`.
+- **GitHub access model documented.** `/upgrade-to-company` and `SHARING.md` are now
+  explicit: the shared brain is one private repo accessed via a **GitHub Org** (or repo
+  collaborators), with each person using their **own** GitHub account — never a shared
+  login and never a teammate's personal repo.
 
 ### Changed
 

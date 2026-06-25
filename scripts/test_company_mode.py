@@ -260,6 +260,57 @@ def test_conflicts_detection_and_stages() -> None:
         conflicts.PROJECT_ROOT = original_root
 
 
+def test_scaffold_private_idempotent() -> None:
+    """scaffold_private creates the tier and never overwrites existing files."""
+    import scripts.scaffold_private as sp
+
+    saved = {
+        name: getattr(sp, name)
+        for name in (
+            "PROJECT_ROOT",
+            "PRIVATE_DIR",
+            "PRIVATE_WIKI_DIR",
+            "PRIVATE_CONCEPTS_DIR",
+            "PRIVATE_CONNECTIONS_DIR",
+            "PRIVATE_QA_DIR",
+            "PRIVATE_CONTEXT_DIR",
+            "PRIVATE_WIKI_INDEX",
+        )
+    }
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            priv = root / "private"
+            wiki = priv / "wiki"
+            sp.PROJECT_ROOT = root
+            sp.PRIVATE_DIR = priv
+            sp.PRIVATE_WIKI_DIR = wiki
+            sp.PRIVATE_CONCEPTS_DIR = wiki / "concepts"
+            sp.PRIVATE_CONNECTIONS_DIR = wiki / "connections"
+            sp.PRIVATE_QA_DIR = wiki / "qa"
+            sp.PRIVATE_CONTEXT_DIR = priv / "context"
+            sp.PRIVATE_WIKI_INDEX = wiki / "index.md"
+
+            created = sp.scaffold_private()
+            assert_true(len(created) > 0, "first run creates files")
+            assert_true((priv / "README.md").exists(), "README created")
+            assert_true((wiki / "concepts" / ".gitkeep").exists(), "concepts gitkeep")
+            assert_true((priv / "context" / ".gitkeep").exists(), "context gitkeep")
+
+            # Mutate a file, then re-run: must not overwrite.
+            (wiki / "index.md").write_text("CUSTOM\n")
+            created_again = sp.scaffold_private()
+            assert_equal(created_again, [], "second run creates nothing")
+            assert_equal(
+                (wiki / "index.md").read_text(),
+                "CUSTOM\n",
+                "existing files are never overwritten",
+            )
+    finally:
+        for name, value in saved.items():
+            setattr(sp, name, value)
+
+
 def main() -> int:
     test_default_mode_is_personal()
     test_workspace_mode_company()
@@ -269,6 +320,7 @@ def main() -> int:
     test_user_branch_shape()
     test_sync_status_empty_in_personal_mode()
     test_conflicts_detection_and_stages()
+    test_scaffold_private_idempotent()
     print("All company_mode tests passed.")
     return 0
 

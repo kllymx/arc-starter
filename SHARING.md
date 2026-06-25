@@ -75,13 +75,33 @@ When several people use the brain at once, nobody pushes straight to `main`:
 This works the same on Claude Code, Cursor, and Codex — the commands are identical; only
 the automatic session-end push is Claude-only, and Codex covers it with `/sync`.
 
+## Where the shared repo lives (and how people access it)
+
+The company brain is **one private repo that everyone accesses with their own GitHub
+account**. You do not need — and should not create — a shared "company login".
+
+- **Best: a GitHub Organization.** Create a free org and put a private repo under it
+  (`gh repo create <org>/arc-brain --private`). Add each person as an org member. The
+  org owns the repo, so it survives anyone leaving, and you get real access control.
+- **Quick (two people): collaborators.** One private repo with the second person added
+  under Settings → Collaborators by their GitHub username. Fine to start; move to an org
+  as the team grows.
+- **Never:** a shared account both log into (shared password, broken 2FA, lost
+  attribution), or using one person's existing personal repo as the shared home.
+
+Each person authenticates as themselves (`gh auth login`, or their own SSH key / token).
+GitHub grants access based on org membership or collaborator status — no one logs in as
+anyone else.
+
 ## Onboarding a teammate
 
-1. Give them access to the private company repo.
-2. They clone it and run `setup.sh` (installs the capture tooling).
-3. They read this file. They do **not** get your `private/` folder; it isn't in the
-   repo.
-4. Optional: non-technical teammates can open the repo as an Obsidian vault to browse
+1. Add them to the org (or as a repo collaborator) by their GitHub username.
+2. They `gh auth login` **as themselves**, then `git clone` the repo.
+3. They run `setup.sh` — installs the capture tooling and creates their own local
+   `private/` tier.
+4. They read this file, then work on their own branch `arc/<their-name>` and `/sync`.
+5. They do **not** get your `private/` folder; it isn't in the repo.
+6. Optional: non-technical teammates can open the repo as an Obsidian vault to browse
    the wiki without touching git.
 
 ## Keep credentials out of the brain
