@@ -228,6 +228,56 @@ def test_maintenance_commands_have_skill_parity() -> None:
         )
 
 
+def test_company_mode_wiring() -> None:
+    """Company mode (2026-06-25): mode resolver defaults to personal, the
+    private tier is gitignored, and the new commands ship with Codex parity."""
+    # Mode resolver exists and defaults to personal in a clean env.
+    result = run_python_with_clean_agent_env(
+        "import os; os.environ.pop('ARC_MODE', None)\n"
+        "from scripts.config import get_mode; print(get_mode())\n"
+    )
+    assert_equal(
+        result.stdout.strip(),
+        "personal",
+        "get_mode must default to personal",
+    )
+
+    # The private tier and research scrapes must be gitignored.
+    gitignore = (PROJECT_ROOT / ".gitignore").read_text()
+    assert "private/" in gitignore, "private/ must be gitignored (company-mode boundary)"
+    assert ".firecrawl/" in gitignore, ".firecrawl/ must be gitignored"
+
+    # New commands ship as BOTH a Claude command and a Codex skill.
+    for name in ("upgrade-to-company", "promote", "reconcile", "join-company"):
+        assert (PROJECT_ROOT / ".claude" / "commands" / f"{name}.md").exists(), (
+            f"/{name} missing its Claude command (.claude/commands/{name}.md)"
+        )
+        assert (PROJECT_ROOT / ".codex" / "skills" / name / "SKILL.md").exists(), (
+            f"/{name} missing its Codex skill (.codex/skills/{name}/SKILL.md)"
+        )
+
+    # The shared-brain governance doc must exist.
+    assert (PROJECT_ROOT / "SHARING.md").exists(), "SHARING.md must exist at repo root"
+
+
+def test_document_types_sync_intact() -> None:
+    """Office/PDF documents dropped in imports/ are marked binary so git never
+    applies line-ending conversion (which corrupts ZIP-based Office files), and
+    imports/ itself is not gitignored — so documents sync to the team intact."""
+    for name in ("deck.pptx", "plan.docx", "model.xlsx", "report.pdf"):
+        result = run_command("git", "check-attr", "binary", "--", f"imports/{name}")
+        assert "binary: set" in result.stdout, (
+            f"imports/{name} must be marked binary in .gitattributes (else it can be "
+            f"corrupted on a Windows clone)"
+        )
+
+    ignored = subprocess.run(
+        ["git", "check-ignore", "imports/example.pdf"],
+        cwd=PROJECT_ROOT, capture_output=True, text=True,
+    )
+    assert ignored.returncode != 0, "imports/ must not be gitignored — documents must sync"
+
+
 def test_new_scripts_importable() -> None:
     """The new retrieval/maintenance modules import cleanly (no syntax/import
     errors) and are import-side-effect-free. Behavior is covered by each
@@ -239,6 +289,11 @@ def test_new_scripts_importable() -> None:
         "scripts.wiki_query",
         "scripts.garden",
         "scripts.link_pass",
+        "scripts.sync_status",
+        "scripts.conflicts",
+        "scripts.scaffold_private",
+        "scripts.github_status",
+        "scripts.config_get",
     ):
         importlib.import_module(mod)
 
@@ -255,6 +310,8 @@ def main() -> None:
         test_hook_configs_export_runtime_env,
         test_hook_timeouts_are_seconds_not_milliseconds,
         test_maintenance_commands_have_skill_parity,
+        test_company_mode_wiring,
+        test_document_types_sync_intact,
         test_new_scripts_importable,
     ]
 

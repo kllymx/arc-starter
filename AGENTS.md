@@ -193,6 +193,33 @@ These can be triggered by typing the `/command` name in compatible environments 
 | `/skill-audit` | "what should become a skill", "audit repeated workflows", "turn this into a skill" | Finds repeated ARC workflows and can build an approved reusable Claude command / Codex skill. |
 | `/garden` | "garden the wiki", "daily declutter", "tidy the wiki" | Lightweight daily/periodic hygiene pass. Drafts `wiki/garden-{date}.md` (stale, orphaned, promote-from-daily candidates) for your review — lighter and faster than `/consolidate`. |
 | `/link` | "link the wiki", "add wikilinks", "build MOCs" | Proposes verified `[[wikilinks]]` and Maps of Content as a draft for review. Only ever links to articles that exist. |
+| `/upgrade-to-company` | "make this a company brain", "share this with my team", "upgrade to company" | Converts a personal brain into a shared company brain. A deliberate, reviewed, default-deny ritual — classifies what is shareable vs private, never auto-shares. |
+| `/promote` | "share this with the team", "promote this to the company wiki", "this should be company knowledge" | Company mode only. Moves a `private/wiki/` article into the shared `wiki/` after a sensitive-content re-check and your confirmation. |
+| `/reconcile` | "fix the conflicts", "reconcile", "merge these changes" | Resolves git merge/rebase conflicts in the wiki. Unions additive knowledge, flags real contradictions for you. Usually called by `/sync`. |
+| `/join-company` | "join the company brain", "join an existing company", "I was added to the team brain" | For a teammate who cloned an existing company brain. Sets up THEM (environment, private tier, personal branch) without re-interviewing the business. |
+
+### Sharing modes (personal vs company)
+
+ARC runs in one of two modes, set by `- Mode:` in the committed, shared `context/sharing.md` (default `personal`; `workspace.md` is honored as a back-compat fallback). The automation reads it via `scripts/config.py:get_mode()`. `sharing.md` also holds `- Sync:` (`pr` default, or `direct`), read via `get_sync_strategy()`. These are shared team settings, separate from the per-person `workspace.md`.
+
+- **Personal** — a single founder's brain. Captured knowledge compiles straight into the shared `wiki/`.
+- **Company** — a shared/team brain. New auto-captured knowledge compiles into the **local-only `private/wiki/`** first and only reaches the shared `wiki/` through `/promote`. The `private/` tier is gitignored, so personal context never reaches teammates. Your own retrieval and session-start context still span both tiers locally, so connections keep surfacing for you. See `SHARING.md`.
+
+Never flip `Mode` by hand — run `/upgrade-to-company`, which also handles the privacy classification, the `private/` scaffold, and the shared remote. Treat anything personal (comp, equity, health, candid opinions about named people, career thoughts, credentials) as private-by-default.
+
+**Multiplayer sync (company mode).** Several people work in their own clones at once, so nobody pushes straight to `main`:
+
+- Each person works on a personal branch `arc/<slug>` (`<slug>` from `git config user.email`). The SessionEnd auto-push commits and pushes that branch; in company mode it refuses to push `main` (protects the shared base). On Codex (no SessionEnd), the user runs `/sync`.
+- The SessionStart pull hook only **fetches** `origin/main` in company mode (a silent rebase could leave the repo mid-conflict). The integrate happens in `/sync`.
+- At session start the agent receives a **sync reminder** (from `scripts/sync_status.py`) when there are unsynced commits or an open PR — surface it: offer to `/sync`, or to merge near end of day. Be proactive about this; it's how the shared brain stays current.
+- `/sync` in company mode: ensure personal branch → commit → `git rebase origin/main` → `/reconcile` on conflicts → push branch → open/update a PR into `main`. Never auto-merge; merge only on explicit confirmation.
+- Conflicts are resolved by `/reconcile`, which treats the wiki as additive (union both sides) and only asks the founder about genuine contradictions. Fail closed on `visibility: private`.
+- The append-heavy files `wiki/index.md`, `wiki/log.md`, `wiki/mocs/*.md`, and `daily/*.md` use git's `union` merge driver (`.gitattributes`), so concurrent additions auto-merge instead of conflicting on every sync. `/garden` and `/consolidate` dedupe any leftovers.
+- **Sync strategy** (`- Sync:` in `sharing.md`): `pr` (default) uses personal branches + PRs as above. `direct` (small trusted teams) has everyone work on `main`; `/sync` rebases onto `origin/main`, reconciles, and pushes `main` directly with no PR. In `pr` mode the session-end hook refuses to push `main`; in `direct` mode it pushes `main`.
+
+**Setting up the shared GitHub home.** Run `uv run python scripts/github_status.py` to see what you can automate. The shared brain is one **private** repo accessed via a **GitHub Org** (recommended — each person uses their own account) or repo collaborators; never a shared login, never a teammate's personal repo. Note: `gh` **cannot create an org** (no `gh org create`); org creation is a ~30s browser step at `https://github.com/account/organizations/new`. Everything after (repo create, invites, remote, push, PR) you can do via `gh`. `/upgrade-to-company` walks this whole flow.
+
+**A teammate joining** does NOT clone arc-starter — they clone the **company repo** from the org (it already holds the framework + the wiki), then run `/join-company`, which sets them up without re-running the business interview. If you open a session in a cloned company brain (Mode `company`, populated wiki) and the person isn't set up yet, offer `/join-company`.
 
 ### Wiki retrieval & context hygiene
 

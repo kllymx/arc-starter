@@ -5,6 +5,8 @@ Reads context/workspace.md to determine which LLM SDK to use,
 and provides shared configuration for all scripts.
 """
 
+from __future__ import annotations  # tolerate `str | None` etc. on Python 3.9
+
 import os
 import re
 from pathlib import Path
@@ -21,12 +23,27 @@ DAILY_DIR = PROJECT_ROOT / "daily"
 IMPORTS_DIR = PROJECT_ROOT / "imports"
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 
+# Private tier (company mode) — local-only, never pushed to the shared remote.
+# See .gitignore: the whole `private/` tree is excluded from git, so personal
+# context stays on the founder's machine and never reaches teammates. It is
+# created by /setup (empty) and populated by /upgrade-to-company and /promote.
+PRIVATE_DIR = PROJECT_ROOT / "private"
+PRIVATE_WIKI_DIR = PRIVATE_DIR / "wiki"
+PRIVATE_CONCEPTS_DIR = PRIVATE_WIKI_DIR / "concepts"
+PRIVATE_CONNECTIONS_DIR = PRIVATE_WIKI_DIR / "connections"
+PRIVATE_QA_DIR = PRIVATE_WIKI_DIR / "qa"
+PRIVATE_CONTEXT_DIR = PRIVATE_DIR / "context"
+
 # Key files
 WIKI_INDEX = WIKI_DIR / "index.md"
 WIKI_LOG = WIKI_DIR / "log.md"
+PRIVATE_WIKI_INDEX = PRIVATE_WIKI_DIR / "index.md"
 OVERVIEW_FILE = CONTEXT_DIR / "overview.md"
 WORKSPACE_FILE = CONTEXT_DIR / "workspace.md"
 MEMORY_FILE = CONTEXT_DIR / "memory.md"
+# Shared, committed sharing settings (Mode + Sync). Kept separate from the
+# per-person workspace.md so the team's shared truth isn't a per-machine file.
+SHARING_CONFIG_FILE = CONTEXT_DIR / "sharing.md"
 STATE_FILE = SCRIPTS_DIR / "state.json"
 
 # Compilation settings
@@ -104,6 +121,117 @@ def detect_environment() -> str:
         return "codex"
 
     return "unknown"
+
+
+def get_mode() -> str:
+    """Return the ARC sharing mode: 'personal' (default) or 'company'.
+
+    Personal mode: a single founder's brain. Captured knowledge compiles
+    straight into the shared `wiki/`.
+
+    Company mode: a shared/team brain. New auto-captured knowledge compiles
+    into the local-only `private/wiki/` first and only reaches the shared
+    `wiki/` through a deliberate, reviewed step (/promote or the manifest in
+    /upgrade-to-company). This keeps the personal-vs-company privacy boundary
+    a fail-closed default rather than something the founder must remember.
+
+    Resolution order:
+    1. ARC_MODE environment variable ('personal' | 'company')
+    2. context/sharing.md  ('- Mode: company')  — the shared, committed setting
+    3. context/workspace.md  — back-compat fallback for older workspaces
+    4. default 'personal'
+    """
+    env = os.environ.get("ARC_MODE", "").strip().lower()
+    if env in {"personal", "company"}:
+        return env
+
+    value = _read_setting("Mode", SHARING_CONFIG_FILE, WORKSPACE_FILE)
+    if value in {"personal", "company"}:
+        return value
+    return "personal"
+
+
+def get_sync_strategy() -> str:
+    """Return the company-mode sync strategy: 'pr' (default) or 'direct'.
+
+    - 'pr': each person works on a personal branch and merges via pull requests.
+      The safe default; nobody pushes shared main directly.
+    - 'direct': small trusted teams work on main and `/sync` rebases onto
+      origin/main, reconciles, and pushes main directly — no branches/PRs.
+
+    Resolution: ARC_SYNC_STRATEGY env, then context/sharing.md ('- Sync: direct'),
+    then context/workspace.md (back-compat), then 'pr'.
+    """
+    env = os.environ.get("ARC_SYNC_STRATEGY", "").strip().lower()
+    if env in {"pr", "direct"}:
+        return env
+
+    value = _read_setting("Sync", SHARING_CONFIG_FILE, WORKSPACE_FILE)
+    if value in {"pr", "direct"}:
+        return value
+    return "pr"
+
+
+def _read_setting(key: str, *files: Path) -> str | None:
+    """Read a `- <key>: <value>` line from the first file that has one."""
+    pattern = re.compile(
+        rf"^\s*-?\s*{re.escape(key)}:\s*([A-Za-z][\w-]*)\s*$",
+        re.MULTILINE | re.IGNORECASE,
+    )
+    for path in files:
+        if path.exists():
+            match = pattern.search(path.read_text())
+            if match:
+                return match.group(1).lower()
+    return None
+
+
+def get_user_slug() -> str:
+    """Return a filesystem/branch-safe slug identifying this person, used to
+    name their personal company-mode branch (`arc/<slug>`).
+
+    Derived from git config: the local-part of user.email, else user.name,
+    else 'local'. Lowercased; only [a-z0-9._-] kept. Must stay in lockstep
+    with the bash equivalent in hooks/git-push.sh.
+    """
+    import subprocess
+
+    def _git_config(key: str) -> str:
+        try:
+            out = subprocess.run(
+                ["git", "config", key],
+                capture_output=True,
+                text=True,
+                cwd=str(PROJECT_ROOT),
+                timeout=5,
+            )
+            return out.stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            return ""
+
+    email = _git_config("user.email")
+    # GitHub noreply addresses look like `12345+username@users.noreply.github.com`
+    # (or `username@users.noreply.github.com`) — prefer the username. Only special-
+    # case noreply so ordinary plus-addressed emails (user+tag@x.com) aren't mangled.
+    noreply = re.search(
+        r"(?:\d+\+)?([^@+]+)@users\.noreply\.github\.com$", email, re.IGNORECASE
+    )
+    if noreply:
+        raw = noreply.group(1)
+    elif "@" in email:
+        raw = email.split("@", 1)[0]
+    else:
+        raw = email
+    if not raw:
+        raw = _git_config("user.name")
+
+    slug = re.sub(r"[^a-z0-9._-]", "", raw.lower().replace(" ", "-"))
+    return slug or "local"
+
+
+def get_user_branch() -> str:
+    """The personal branch this person works on in company mode."""
+    return f"arc/{get_user_slug()}"
 
 
 def get_llm_backend():

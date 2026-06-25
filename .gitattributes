@@ -9,10 +9,48 @@
 *.py        text eol=lf
 *.ps1       text eol=crlf
 
-# Binary assets that must never be touched
+# Binary assets that must never be touched.
+# Documents dropped into imports/ (decks, plans, spreadsheets) are ZIP-based and
+# WILL be corrupted if git applies CRLF/line-ending conversion on a Windows clone.
+# Marking them binary keeps them byte-for-byte intact when synced.
 *.png       binary
 *.jpg       binary
 *.jpeg      binary
 *.gif       binary
 *.ico       binary
+*.webp      binary
+*.heic      binary
 *.pdf       binary
+# Office / iWork / OpenDocument
+*.docx      binary
+*.doc       binary
+*.pptx      binary
+*.ppt       binary
+*.xlsx      binary
+*.xls       binary
+*.odt       binary
+*.odp       binary
+*.ods       binary
+*.pages     binary
+*.key       binary
+*.numbers   binary
+# Archives + audio/video
+*.zip       binary
+*.mp3       binary
+*.m4a       binary
+*.wav       binary
+*.mp4       binary
+*.mov       binary
+
+# Append-heavy, multi-writer files: use git's built-in `union` merge driver so
+# concurrent additions from different people are KEPT BOTH (no conflict markers)
+# instead of conflicting on almost every sync in company mode. Per-article wiki
+# files are rarely touched by two people at once, so they keep normal merge
+# semantics and still flow through /reconcile when they do collide.
+#
+# Union can leave an occasional duplicate or out-of-order line; that's the right
+# trade (no friction now) and /garden + /consolidate dedupe later.
+wiki/index.md      merge=union
+wiki/log.md        merge=union
+wiki/mocs/*.md     merge=union
+daily/*.md         merge=union

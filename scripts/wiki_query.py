@@ -35,9 +35,14 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from scripts.config import (  # noqa: E402
     CONNECTIONS_DIR,
     CONCEPTS_DIR,
+    PRIVATE_CONCEPTS_DIR,
+    PRIVATE_CONNECTIONS_DIR,
+    PRIVATE_QA_DIR,
+    PRIVATE_WIKI_DIR,
     PROJECT_ROOT as CONFIG_PROJECT_ROOT,
     WIKI_DIR,
     WIKI_INDEX,
+    get_mode,
 )
 
 LOG_FILE = PROJECT_ROOT / "scripts" / "wiki_query.log"
@@ -71,7 +76,14 @@ BLANK_MESSAGE = (
 
 @dataclass(frozen=True)
 class WikiPaths:
-    """Filesystem roots for wiki retrieval (overridable in tests)."""
+    """Filesystem roots for wiki retrieval (overridable in tests).
+
+    `extra_dirs` holds additional article directories searched alongside the
+    shared wiki. In company mode the default() factory adds the local-only
+    `private/wiki/` directories here so the founder's retrieval spans their
+    whole brain. The private tier is gitignored, so a teammate's clone has no
+    `private/` dirs and simply searches the shared wiki only.
+    """
 
     wiki_dir: Path
     concepts_dir: Path
@@ -79,9 +91,16 @@ class WikiPaths:
     qa_dir: Path
     wiki_index: Path
     project_root: Path
+    extra_dirs: tuple[Path, ...] = ()
 
     @classmethod
     def default(cls) -> WikiPaths:
+        # Only fold in the local private tier in company mode — that's the only
+        # mode where the private/shared split is meaningful. In personal mode the
+        # founder's knowledge lives in wiki/ and private/ may not be used.
+        extra: tuple[Path, ...] = ()
+        if get_mode() == "company" and PRIVATE_WIKI_DIR.exists():
+            extra = (PRIVATE_CONCEPTS_DIR, PRIVATE_CONNECTIONS_DIR, PRIVATE_QA_DIR)
         return cls(
             wiki_dir=WIKI_DIR,
             concepts_dir=CONCEPTS_DIR,
@@ -89,6 +108,7 @@ class WikiPaths:
             qa_dir=QA_DIR,
             wiki_index=WIKI_INDEX,
             project_root=CONFIG_PROJECT_ROOT,
+            extra_dirs=extra,
         )
 
 
@@ -203,7 +223,9 @@ def extract_excerpt(body: str, terms: list[str], window: int = 2) -> str:
 
 def iter_article_paths(paths: WikiPaths) -> list[Path]:
     articles: list[Path] = []
-    for article_dir in (paths.concepts_dir, paths.connections_dir, paths.qa_dir):
+    search_dirs = (paths.concepts_dir, paths.connections_dir, paths.qa_dir)
+    search_dirs += tuple(paths.extra_dirs)
+    for article_dir in search_dirs:
         if not article_dir.exists():
             continue
         articles.extend(sorted(article_dir.glob("*.md")))

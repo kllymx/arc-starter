@@ -65,6 +65,28 @@ If a document is old, partial, or aspirational, ARC should not blindly treat it 
 
 ---
 
+## Documents and Syncing (Company Mode)
+
+In a company brain, anything you drop in `imports/` is part of the shared repo, so it
+**syncs to the whole team** along with the wiki. That's usually what you want: decks,
+plans, and spreadsheets become shared source material.
+
+A few things to know:
+
+- **They sync intact.** PDFs, Word/PowerPoint/Excel files, Keynote, images, and audio
+  are stored as binary, so they arrive byte-for-byte correct on every teammate's
+  machine (no corruption from line-ending conversion).
+- **Keep files reasonably sized.** GitHub rejects any single file over **100 MB** and
+  warns over **50 MB**. For very large decks or videos, either keep them out of the repo
+  (link to Google Drive or Dropbox instead) or set up [Git LFS](https://git-lfs.com) for
+  large media. A knowledge base full of giant binaries gets slow to clone.
+- **Shared means shared.** Because `imports/` syncs to everyone, don't drop something
+  there you wouldn't want all teammates to see. If a document should stay just on your
+  machine, put it in **`private/imports/`** (local only, never synced) and ask ARC to
+  ingest it into your private notes.
+
+---
+
 ## Best Practice For Founders
 
 For workshop use, the best pattern is:

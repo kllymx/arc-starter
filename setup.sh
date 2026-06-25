@@ -33,7 +33,20 @@ if ! command -v uv &> /dev/null; then
   echo "uv installed successfully."
 fi
 
-# Step 2: Install project dependencies
+# Step 2: Create the local-only private tier (idempotent; gitignored).
+# Done BEFORE dependency sync — it's stdlib-only (no deps needed), so the private
+# tier is created even if `uv sync` later fails. Gives the founder a private layer
+# from day one; makes a later personal→company upgrade a move, not a retrofit.
+# Don't hard-fail bootstrap, but DO surface the failure — company mode needs it.
+if python3 scripts/scaffold_private.py 2>/dev/null \
+   || uv run python scripts/scaffold_private.py 2>/dev/null; then
+  :
+else
+  echo "WARNING: could not create the private/ tier (scripts/scaffold_private.py failed)." >&2
+  echo "         Company mode needs it. Run 'uv run python scripts/scaffold_private.py' manually." >&2
+fi
+
+# Step 3: Install project dependencies
 echo "Installing dependencies..."
 uv sync --quiet 2>&1
 echo "Automated knowledge capture is ready."

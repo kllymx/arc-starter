@@ -7,6 +7,94 @@ the safe-update contract.
 
 ---
 
+## [2026-06-25] — Company mode (personal → shared second brain)
+
+Adds a `personal` vs `company` sharing mode so an ARC brain can grow from a single
+founder's workspace into a shared team brain without leaking personal context. The
+boundary is structural and fail-closed: a local-only `private/` tier, gitignored from
+the shared remote, plus a default-deny upgrade ritual. Hooks and capture are unchanged;
+only the compile target and retrieval scope become mode-aware.
+
+### Added
+
+- **`Mode` setting + `get_mode()` (`scripts/config.py`).** Resolves `personal`
+  (default) or `company` from `ARC_MODE` env var or `- Mode:` in
+  `context/workspace.md`. New `private/` tier path constants.
+- **Mode-aware compilation (`scripts/compile.py`).** In company mode, new captures
+  compile into the local-only `private/wiki/` and only reach the shared `wiki/` via
+  `/promote`; personal mode is unchanged.
+- **Whole-brain local retrieval (`scripts/wiki_query.py`, `scripts/context_select.py`).**
+  In company mode, retrieval and SessionStart injection also span `private/wiki/` so
+  the founder's connections keep surfacing locally. Teammates' clones have no
+  `private/` tier (gitignored), so they see only the shared wiki.
+- **`/upgrade-to-company` and `/promote`** commands (+ Codex skills). Default-deny
+  upgrade with a privacy classification manifest, and the reviewed promote path.
+- **`SHARING.md`** — founder-facing governance for the company-brain model.
+- **`scripts/test_company_mode.py`** + a `test_company_mode_wiring` smoke check.
+- **Multiplayer sync.** In company mode each person works on a personal branch
+  `arc/<slug>` and merges via PRs; nobody pushes `main` directly. `get_user_branch()`
+  (`scripts/config.py`) names the branch; the SessionEnd push hook refuses to push
+  `main` and pushes the personal branch instead; the SessionStart pull hook only
+  *fetches* `origin/main` (no silent rebase). `/sync` is now mode-aware: branch →
+  commit → rebase `origin/main` → reconcile → push → open/update PR.
+- **Agent-aware sync reminder (`scripts/sync_status.py`).** SessionStart (both the
+  `.py` and bash hooks, so Claude + Codex) surfaces unsynced commits / open-PR /
+  end-of-day prompts.
+- **LLM-assisted conflict resolution.** `scripts/conflicts.py` exposes git merge
+  stages (base/ours/theirs); new `/reconcile` command (+ Codex skill) unions additive
+  wiki knowledge, flags genuine contradictions for the founder, and fails closed on
+  `visibility: private`.
+- **Private tier scaffold (`scripts/scaffold_private.py`).** Idempotent; run by
+  `setup.sh` and `/setup`, so the gitignored `private/` tier exists from day one even
+  in personal mode (a later upgrade is a move, not a retrofit). `/setup` now writes the
+  `Mode: personal` knob into `context/workspace.md`.
+- **GitHub access model documented.** `/upgrade-to-company` and `SHARING.md` are now
+  explicit: the shared brain is one private repo accessed via a **GitHub Org** (or repo
+  collaborators), with each person using their **own** GitHub account — never a shared
+  login and never a teammate's personal repo.
+- **Guided GitHub setup (`scripts/github_status.py`).** A preflight the agent runs to
+  see what it can automate (gh installed/auth, scopes, existing orgs, origin/visibility).
+  `/upgrade-to-company` now walks the org-vs-collaborators decision, recommends the org,
+  and automates repo creation + invites + remote + push via `gh`. It's explicit that
+  `gh` cannot create an org (browser step) but everything after is scriptable.
+- **Teammate join flow (`/join-company` + Codex skill).** A teammate clones the *company
+  repo* (not arc-starter) and runs `/join-company`, which sets them up — environment,
+  their own local `private/` tier, personal branch — without re-running the business
+  interview. The agent offers it automatically when a cloned company brain is detected.
+
+### Multiplayer refinements
+
+- **Conflict-free append files.** `.gitattributes` now sets git's `union` merge driver on
+  `wiki/index.md`, `wiki/log.md`, `wiki/mocs/*.md`, and `daily/*.md`, so concurrent
+  additions auto-merge instead of conflicting on nearly every sync.
+- **Sync strategy.** `- Sync:` in `context/sharing.md` (read via `get_sync_strategy()`):
+  `pr` (default, branches + PRs) or `direct` (small trusted teams work on `main`; `/sync`
+  rebases + reconciles + pushes main, no PR). The session-end hook honors it (refuses
+  `main` in `pr`, pushes `main` in `direct`).
+- **Shared settings split out.** `Mode` and `Sync` now live in the committed, shared
+  `context/sharing.md` instead of the per-person `workspace.md` (which is honored as a
+  back-compat fallback), so changing a teammate's environment no longer touches a shared
+  setting. Branch slug now handles GitHub noreply emails (`arc/<username>`).
+- **Quick wins.** `uv.lock` is committed (identical deps for everyone). Merged PRs are
+  cleaned up with `--delete-branch`. README rewritten as a clean, non-technical guide to
+  the framework and the two modes. `/join-company` gives a first win immediately and
+  notes the one-time hook-trust prompt on a fresh clone.
+- **Documents sync intact.** `.gitattributes` now marks Office, iWork, OpenDocument,
+  PDF, image, archive, and audio/video files as binary, so documents dropped in
+  `imports/` sync to the team byte-for-byte (no line-ending corruption of ZIP-based
+  Office files on Windows clones). `/sync` warns before pushing files over 50 MB (GitHub
+  rejects >100 MB; use Drive links or Git LFS). Added a local-only `private/imports/`
+  drop zone for documents that should NOT sync. Documented in `privacy-and-imports.md`.
+
+### Changed
+
+- `.gitignore` now excludes `private/` and `.firecrawl/`; the previously committed
+  `.firecrawl/` research scrapes were untracked (kept on disk) so they stop shipping
+  on every push.
+- `CLAUDE.md` / `AGENTS.md` document the two new commands and the sharing modes.
+
+---
+
 ## [2026-06-24] — Second-brain improvements (context hygiene, retrieval, maintenance)
 
 Implemented from a research pass on PKM/second-brain patterns for AI coding agents.

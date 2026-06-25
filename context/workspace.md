@@ -5,3 +5,8 @@
 > Once populated, this file contains: which environment the founder is using (Claude Code, Codex, Cursor, etc.), whether slash commands are available, how technical the agent should be, and any setup constraints.
 >
 > The hooks and automation scripts also read this file to determine which LLM SDK to use for background processing (Claude Agent SDK for Claude Code, OpenAI SDK for Codex).
+>
+> Note: workspace.md is per-person (your environment and preferences). The shared
+> sharing settings (personal vs company mode, sync strategy) live in
+> `context/sharing.md`, managed by `/upgrade-to-company`.
+

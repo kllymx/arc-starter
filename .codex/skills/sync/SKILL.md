@@ -11,6 +11,45 @@ Push the founder's ARC changes to their git remote. This is the manual
 version of what the auto-pull hook does at session start. Codex's Stop
 event fires per-turn so we don't auto-push — sync runs explicitly.
 
+## Mode check (do this first)
+
+Read `- Mode:` in `context/workspace.md`.
+
+- **`personal`** (default) → follow the phases below.
+- **`company`** → follow **Company mode** instead. Never push straight to `main`.
+
+## Company mode (shared brain)
+
+Read `- Sync:` in `context/sharing.md`. **`pr`** (default) = PR strategy below;
+**`direct`** = Direct strategy.
+
+### PR strategy (default)
+
+1. **Be on a personal branch** `arc/<slug>` (`<slug>` = `git config user.email`
+   before `@`, lowercased — matches `scripts/config.py:get_user_branch()`). If on
+   `main`/`master`, `git switch -c arc/<slug>` carrying local commits, then reset
+   local `main`: `git fetch origin && git branch -f main origin/main`.
+2. **Commit** pending changes (private content is gitignored).
+3. **Integrate:** `git fetch origin main` then `git rebase origin/main`. On
+   conflicts, run the `reconcile` skill, then `git rebase --continue`. Repeat.
+4. **Push the branch:** `git push -u origin arc/<slug>` (confirm remote is private
+   first; abort if PUBLIC).
+5. **Open/update PR:** `gh pr view arc/<slug>` — if none, offer
+   `gh pr create --base main --head arc/<slug> --fill`; if `gh` is unavailable, give
+   the compare URL.
+6. Remind about merging at end of day; merge only on explicit confirmation, then
+   `gh pr merge <pr> --squash --delete-branch` so branches don't pile up.
+
+### Direct strategy (small trusted teams, no PRs)
+
+Everyone works on `main`. 1) commit on `main`; 2) `git fetch origin main` then
+`git rebase origin/main` (run `reconcile` on conflicts, then `--continue`); 3) confirm
+private, then `git push origin main`. If rejected because main moved, repeat from 2.
+Never `git push --force`.
+
+Report what was synced and any conflicts reconciled, then stop — the phases below are
+personal mode only.
+
 ## When to use
 
 - Founder wants to push captures without ending the session

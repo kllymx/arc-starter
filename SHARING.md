@@ -1,0 +1,122 @@
+# Sharing your ARC brain with your team
+
+This file governs how ARC works as a **company brain** shared across more than one
+person. Solo? You don't need this yet — keep using ARC in personal mode and run
+`/upgrade-to-company` when you're ready to bring teammates in.
+
+## The model in one paragraph
+
+The brain lives in **one shared git repo** that is the single source of truth.
+Everyone clones it. The brain grows through a deliberate promotion step, not by
+everyone's agent writing into the shared canon at once. Anything personal stays in a
+local `private/` folder that is gitignored and never reaches the shared repo.
+
+## The three things that make a brain "company" instead of "personal"
+
+1. **Where it lives** — a private GitHub repo, not a local-only folder and not a
+   cloud-synced shared folder. Dropbox/Drive corrupt concurrent markdown edits and
+   lose history; git is the sync layer.
+2. **Who writes the canon** — `main` is the source of truth. Captures land locally;
+   approved knowledge is promoted into the shared `wiki/`. Designate a curator
+   (usually the founder at first).
+3. **What stays private** — the `private/` tier is gitignored from the shared repo, so
+   personal context never leaves your machine through the company remote.
+
+## How company mode actually behaves
+
+When `context/workspace.md` is set to `- Mode: company`:
+
+- New auto-captured knowledge compiles into **`private/wiki/`**, not the shared
+  `wiki/`. The privacy default is fail-closed.
+- Your local retrieval and session-start context still span **both** tiers, so your
+  own connections keep surfacing. Teammates only ever see the shared `wiki/`.
+- Knowledge reaches the shared wiki only via **`/promote`**, which re-checks for
+  sensitive content and asks you to confirm before moving anything.
+
+## What is shared vs private
+
+| Shared (in the company repo)        | Private (local only, in `private/`)        |
+|-------------------------------------|--------------------------------------------|
+| `wiki/` company knowledge           | personal finance, comp, equity             |
+| `context/` company snapshot         | health, family                             |
+| team roster, roles, ways of working | candid opinions about named people         |
+| product, customers, process docs    | career / exit thoughts                     |
+|                                     | credentials, secrets (also use `.env`)     |
+
+When in doubt, it goes private. You can always `/promote` later; you can't un-leak.
+
+## Daily use
+
+- **Work normally.** New captures compile into `private/wiki/` by default.
+- **Promote** durable, shareable knowledge with `/promote` (re-checks for sensitive
+  content, asks you to confirm, moves it into shared `wiki/`, fixes links).
+- **Sync** with `/sync` — it puts you on your branch, integrates teammates' work, and
+  opens/updates your PR. ARC reminds you at the start of each session (and near end of
+  day) when you have unsynced work.
+- **Curate.** `/garden` and `/link` draft changes for review and never auto-apply.
+
+## Multiplayer: branches, PRs, and conflicts
+
+When several people use the brain at once, nobody pushes straight to `main`:
+
+- **Everyone gets a personal branch** `arc/<you>`. Your sessions auto-commit and push
+  that branch (Claude Code does it at session end; on Codex you run `/sync`). The hook
+  will not push `main` in company mode — that protects the shared base.
+- **`main` is integrated through PRs.** `/sync` rebases your branch onto the latest
+  `main`, pushes, and opens or updates a pull request. Review and merge when ready;
+  ARC never auto-merges.
+- **Conflicts are reconciled, not lost.** The wiki is additive, so when two people edit
+  the same article `/reconcile` keeps **both** sides (union), and only asks you to
+  decide when there's a genuine contradiction (a reversed decision, a changed number).
+  If either version is marked private, the merged result stays private.
+- **Stay current.** Pull/sync at the start of a work block so you build on teammates'
+  latest. ARC's start-of-session reminder will nudge you when `main` has moved.
+
+This works the same on Claude Code, Cursor, and Codex — the commands are identical; only
+the automatic session-end push is Claude-only, and Codex covers it with `/sync`.
+
+## Where the shared repo lives (and how people access it)
+
+The company brain is **one private repo that everyone accesses with their own GitHub
+account**. You do not need — and should not create — a shared "company login".
+
+- **Best: a GitHub Organization.** Create a free org (a ~30-second browser step at
+  <https://github.com/account/organizations/new> — the CLI can't create orgs), then your
+  agent does the rest: `gh repo create <org>/arc-brain --private` and invites. Add each
+  person as an org member. The org owns the repo, so it survives anyone leaving, and you
+  get real access control. `/upgrade-to-company` walks you through all of this.
+- **Quick (two people): collaborators.** One private repo with the second person added
+  under Settings → Collaborators by their GitHub username. Fine to start; move to an org
+  as the team grows.
+- **Never:** a shared account both log into (shared password, broken 2FA, lost
+  attribution), or using one person's existing personal repo as the shared home.
+
+Each person authenticates as themselves (`gh auth login`, or their own SSH key / token).
+GitHub grants access based on org membership or collaborator status — no one logs in as
+anyone else.
+
+## Onboarding a teammate
+
+A teammate does **not** clone arc-starter — they clone **this company repo** (it already
+has the framework and the team's wiki), then let their agent set them up.
+
+1. Add them to the org (or as a repo collaborator) by their GitHub username.
+2. They `gh auth login` **as themselves**, then `git clone <org>/<repo>`.
+3. They open it in their agent and say **"join the company brain"** (`/join-company`).
+   That installs capture, creates their own local `private/` tier, configures their
+   environment, and puts them on their own branch `arc/<their-name>` — without
+   re-running the business interview.
+4. They do **not** get your `private/` folder; it isn't in the repo.
+5. Optional: non-technical teammates can open the repo as an Obsidian vault to browse
+   the wiki without touching git.
+
+## Keep credentials out of the brain
+
+Never put API keys, passwords, or true secrets in any article. Use `.env` (gitignored)
+and keep secret values out of `imports/` too. The brain is context, not a vault.
+
+## What this is not
+
+This is the lightweight shared model. A full company rollout (role-based permissions,
+scheduled agents, orchestration, server-enforced access) is a larger build and a
+separate engagement. Start here; layer on sophistication when you actually need it.

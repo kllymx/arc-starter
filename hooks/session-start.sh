@@ -211,9 +211,28 @@ if [ -n "$activity" ]; then
   parts="${parts}## Recent Session Logs\n\n${activity}"
 fi
 
-# Output as JSON if we have anything to inject
+# Apply the wiki/context budget BEFORE appending the sync reminder, so the
+# reminder is never truncated away.
 if [ -n "$parts" ]; then
   parts="$(apply_total_budget "$parts" "$INJECT_BUDGET")"
+fi
+
+# 5. Company-mode sync reminder (stdlib python, no deps; empty unless company mode)
+sync_status="$(python3 "$PROJECT_ROOT/scripts/sync_status.py" 2>/dev/null)"
+if [ -n "$sync_status" ]; then
+  if [ -n "$parts" ]; then
+    parts="${parts}\n\n---\n\n${sync_status}"
+  else
+    parts="${sync_status}"
+  fi
+fi
+
+# Normalize the hardcoded `\n` section separators (literal backslash-n in bash
+# double quotes) into real newlines so the injected context renders correctly.
+parts="${parts//\\n/$'\n'}"
+
+# Output as JSON if we have anything to inject
+if [ -n "$parts" ]; then
   escaped=$(printf '%s' "$parts" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '%s' "$parts" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' | tr '\n' ' ')
   echo "{\"hookSpecificOutput\": {\"hookEventName\": \"SessionStart\", \"additionalContext\": ${escaped}}}"
 fi
