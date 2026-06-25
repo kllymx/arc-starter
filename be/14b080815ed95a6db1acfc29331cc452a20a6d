@@ -1,0 +1,39 @@
+scripts/scaffold_private.py
+  s_48fd00163ae46b::t_aca45afd9cbc03 1-109
+CHANGELOG.md
+  s_48fd00163ae46b::t_c060585a05c4c1 47-54
+scripts/smoke_test.py
+  s_48fd00163ae46b::t_9670194f1a1f4d 276
+.claude/commands/setup.md
+  s_48fd00163ae46b::t_9b280a1b88b129 29-40
+  s_48fd00163ae46b::t_5bca6d503f99b0 64-66,71-72
+  s_48fd00163ae46b::t_47a8fa48552ffe 73
+setup.sh
+  s_48fd00163ae46b::t_254e0f5ed1b79a 40-46
+.codex/skills/upgrade-to-company/SKILL.md
+  s_48fd00163ae46b::t_b5cc701a20a3e0 48-52
+  s_48fd00163ae46b::t_4d4eb191b1d10b 29-35
+.claude/commands/upgrade-to-company.md
+  s_48fd00163ae46b::t_a10ec30166c05d 38-53,57-61
+  s_48fd00163ae46b::t_7091c8c221a95b 94,96-102
+SHARING.md
+  s_48fd00163ae46b::t_85745f32db5b48 78-95,98-104
+scripts/test_company_mode.py
+  s_48fd00163ae46b::t_bbf0aea89274cb 263-313,323
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "be14b080815ed95a6db1acfc29331cc452a20a6d",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
