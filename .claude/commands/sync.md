@@ -24,6 +24,12 @@ First read `- Sync:` in `context/sharing.md`:
 - **`pr`** (default) → follow **PR strategy** below.
 - **`direct`** (small trusted teams) → follow **Direct strategy** at the end.
 
+**Before pushing (either strategy), check for oversized files.** GitHub rejects any
+single file over 100 MB, which would break the push for everyone. Run
+`find imports daily wiki -type f -size +50M 2>/dev/null`. If anything shows up, warn the
+founder: keep large decks/videos out of the repo (link to Drive instead) or set up Git
+LFS. Don't push a >100 MB file.
+
 ### PR strategy (default)
 
 Goal: get this person's captures onto their own branch and into an open PR

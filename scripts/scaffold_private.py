@@ -40,7 +40,8 @@ company mode, new auto-captured knowledge lands in `private/wiki/` first and onl
 reaches the shared `wiki/` when you run `/promote`.
 
 Layout mirrors the shared wiki: `wiki/concepts/`, `wiki/connections/`, `wiki/qa/`,
-plus `context/` for private snapshot notes.
+plus `context/` for private snapshot notes, and `imports/` for documents you want
+ARC to read but NOT sync to the team (drop a file there and ask ARC to ingest it).
 
 Never put real secrets (API keys, passwords) even here — use `.env`.
 """
@@ -70,6 +71,7 @@ def scaffold_private() -> list[str]:
     """Create the private scaffold. Returns the list of paths newly created."""
     created: list[str] = []
 
+    private_imports_dir = PRIVATE_DIR / "imports"
     for directory in (
         PRIVATE_DIR,
         PRIVATE_WIKI_DIR,
@@ -77,6 +79,7 @@ def scaffold_private() -> list[str]:
         PRIVATE_CONNECTIONS_DIR,
         PRIVATE_QA_DIR,
         PRIVATE_CONTEXT_DIR,
+        private_imports_dir,
     ):
         directory.mkdir(parents=True, exist_ok=True)
 
@@ -88,6 +91,7 @@ def scaffold_private() -> list[str]:
         PRIVATE_CONNECTIONS_DIR / ".gitkeep": "",
         PRIVATE_QA_DIR / ".gitkeep": "",
         PRIVATE_CONTEXT_DIR / ".gitkeep": "",
+        private_imports_dir / ".gitkeep": "",
     }
     for path, content in files.items():
         if _write_if_absent(path, content):

@@ -79,6 +79,12 @@ only the compile target and retrieval scope become mode-aware.
   cleaned up with `--delete-branch`. README rewritten as a clean, non-technical guide to
   the framework and the two modes. `/join-company` gives a first win immediately and
   notes the one-time hook-trust prompt on a fresh clone.
+- **Documents sync intact.** `.gitattributes` now marks Office, iWork, OpenDocument,
+  PDF, image, archive, and audio/video files as binary, so documents dropped in
+  `imports/` sync to the team byte-for-byte (no line-ending corruption of ZIP-based
+  Office files on Windows clones). `/sync` warns before pushing files over 50 MB (GitHub
+  rejects >100 MB; use Drive links or Git LFS). Added a local-only `private/imports/`
+  drop zone for documents that should NOT sync. Documented in `privacy-and-imports.md`.
 
 ### Changed
 

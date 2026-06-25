@@ -260,6 +260,24 @@ def test_company_mode_wiring() -> None:
     assert (PROJECT_ROOT / "SHARING.md").exists(), "SHARING.md must exist at repo root"
 
 
+def test_document_types_sync_intact() -> None:
+    """Office/PDF documents dropped in imports/ are marked binary so git never
+    applies line-ending conversion (which corrupts ZIP-based Office files), and
+    imports/ itself is not gitignored — so documents sync to the team intact."""
+    for name in ("deck.pptx", "plan.docx", "model.xlsx", "report.pdf"):
+        result = run_command("git", "check-attr", "binary", "--", f"imports/{name}")
+        assert "binary: set" in result.stdout, (
+            f"imports/{name} must be marked binary in .gitattributes (else it can be "
+            f"corrupted on a Windows clone)"
+        )
+
+    ignored = subprocess.run(
+        ["git", "check-ignore", "imports/example.pdf"],
+        cwd=PROJECT_ROOT, capture_output=True, text=True,
+    )
+    assert ignored.returncode != 0, "imports/ must not be gitignored — documents must sync"
+
+
 def test_new_scripts_importable() -> None:
     """The new retrieval/maintenance modules import cleanly (no syntax/import
     errors) and are import-side-effect-free. Behavior is covered by each
@@ -292,6 +310,7 @@ def main() -> None:
         test_hook_timeouts_are_seconds_not_milliseconds,
         test_maintenance_commands_have_skill_parity,
         test_company_mode_wiring,
+        test_document_types_sync_intact,
         test_new_scripts_importable,
     ]
 
