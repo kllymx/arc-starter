@@ -1,0 +1,57 @@
+.gitignore
+  s_48fd00163ae46b::t_912f97f64246d0 14-21
+.claude/commands/promote.md
+  s_48fd00163ae46b::t_353014d6efaf0b 1-48
+context/workspace.md
+  s_48fd00163ae46b::t_8e2fa339e7445c 8-17
+.codex/skills/upgrade-to-company/SKILL.md
+  s_48fd00163ae46b::t_78b08a08a33def 1-61
+AGENTS.md
+  s_48fd00163ae46b::t_33083d996af02c 196-206
+.codex/skills/promote/SKILL.md
+  s_48fd00163ae46b::t_c96957411dc147 1-43
+scripts/test_company_mode.py
+  s_48fd00163ae46b::t_51240b3550f651 1-77,102-103,108-111,114,118-121,124-128,131-135,141-181
+  s_48fd00163ae46b::t_ae142fcb28162f 78-101,104-107,112-113,115-117,122-123,129-130,136-140
+scripts/compile.py
+  s_48fd00163ae46b::t_07ef5ed1482b5f 31-32
+  s_48fd00163ae46b::t_ac147deae9a670 125-146,150,158,163-166
+  s_48fd00163ae46b::t_14215e5a360d98 192
+scripts/smoke_test.py
+  s_48fd00163ae46b::t_3e22a560a8823c 231-262
+  s_48fd00163ae46b::t_4f8532d1de287a 290
+scripts/context_select.py
+  s_48fd00163ae46b::t_8045f87e580e8e 17,20
+  s_48fd00163ae46b::t_d6ca64869787e5 226-233
+.claude/commands/upgrade-to-company.md
+  s_48fd00163ae46b::t_c85dd206c4f459 1-93
+scripts/config.py
+  s_48fd00163ae46b::t_efe97f79cebb00 121-153
+  s_48fd00163ae46b::t_70472ab113b421 24-34,38
+scripts/wiki_query.py
+  s_48fd00163ae46b::t_3e417df824b36c 222-224
+  s_48fd00163ae46b::t_8302cc8c06d652 78-85,93,97-99,107
+  s_48fd00163ae46b::t_02b2b4ac5a8093 38-41
+SHARING.md
+  s_48fd00163ae46b::t_11dc94b3968499 1-75
+CHANGELOG.md
+  s_48fd00163ae46b::t_fb4021dcabd862 10-43
+CLAUDE.md
+  s_48fd00163ae46b::t_6fc24e0761e461 196-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "f848e0be497db6a2061646cfe5508823bd3993ac",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
