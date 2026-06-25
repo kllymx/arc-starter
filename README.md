@@ -77,8 +77,8 @@ The full team playbook lives in [`SHARING.md`](SHARING.md).
 
 **2. Open it in your AI tool and say "let's set up".**
 
-- **VS Code or Cursor + Claude Code** (recommended): open the folder, open the Claude
-  Code panel, say "let's set up".
+- **VS Code or Cursor + Claude Code**: open the folder, open the Claude Code panel,
+  say "let's set up".
 - **Codex**: open the folder, say "let's set up" in plain language.
 - **Claude Code in the terminal**: `cd` into the folder, run `claude`, say "let's set
   up".
