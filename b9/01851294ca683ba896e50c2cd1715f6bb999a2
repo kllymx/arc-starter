@@ -1,0 +1,31 @@
+scripts/scaffold_private.py
+  s_48fd00163ae46b::t_504c32a5f84d9f 43-44
+  s_48fd00163ae46b::t_821b5cdf9fe5f9 74,82,94
+CHANGELOG.md
+  s_48fd00163ae46b::t_015140907da5a5 82-87
+.claude/commands/sync.md
+  s_48fd00163ae46b::t_6ccf42ce0a81be 27-32
+.gitattributes
+  s_48fd00163ae46b::t_e3b953b8b74378 12-15,21-22,24-43
+scripts/smoke_test.py
+  s_48fd00163ae46b::t_1c2e732dd90087 313
+  s_48fd00163ae46b::t_e4e14142fccba7 263-280
+guides/privacy-and-imports.md
+  s_48fd00163ae46b::t_0a4c48072e9e6a 68-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "b901851294ca683ba896e50c2cd1715f6bb999a2",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
