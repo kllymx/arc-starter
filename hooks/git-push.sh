@@ -44,15 +44,23 @@ LOG="$LOG_DIR/last-sync.log"
   echo "--- $(date -u +%Y-%m-%dT%H:%M:%SZ) git-push.sh ---"
 } >>"$LOG" 2>&1
 
-CUR_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || echo main)"
+# Empty when detached HEAD — we must NOT fall back to "main" (that would push a
+# detached commit as main). A detached HEAD skips the push entirely below.
+CUR_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null)"
 
 # Company mode + PR strategy: never push the shared main/master from a silent
 # hook — work belongs on a personal branch (arc/<slug>) and PRs do the merging.
 # Direct strategy (small trusted teams) works on main, so pushing it is allowed.
-COMPANY=0
-[ "$(arc_read_setting Mode)" = "company" ] && COMPANY=1
-STRATEGY="$(arc_read_setting Sync)"
+# Resolve mode/strategy via the Python config (single source of truth: honors
+# ARC_MODE/ARC_SYNC_STRATEGY env + sharing.md/workspace.md precedence). Fall back
+# to grepping the files only if python can't run.
+MODE="$(python3 "$PROJECT_DIR/scripts/config_get.py" mode 2>/dev/null)"
+[ -z "$MODE" ] && MODE="$(arc_read_setting Mode)"
+STRATEGY="$(python3 "$PROJECT_DIR/scripts/config_get.py" sync 2>/dev/null)"
+[ -z "$STRATEGY" ] && STRATEGY="$(arc_read_setting Sync)"
 [ -z "$STRATEGY" ] && STRATEGY="pr"
+COMPANY=0
+[ "$MODE" = "company" ] && COMPANY=1
 
 git add -A >>"$LOG" 2>&1
 git commit -m "arc: $(date -u +%Y-%m-%d-%H%M)" >>"$LOG" 2>&1 || true
@@ -67,10 +75,37 @@ fi
 
 # Only attempt push if origin is configured. Pushes the CURRENT branch:
 # personal arc/<slug> in company+pr, main in company+direct, or main in
-# personal mode. A rejected push (e.g. direct mode, main moved) is swallowed;
-# /sync rebases and reconciles.
+# personal mode. We never block the session on a push, but we DON'T silently
+# swallow a failure: it's logged clearly, and the committed-but-unpushed work
+# is then surfaced at the next session start (the sync reminder reports commits
+# ahead of origin/main and prompts /sync), so a failed push is recoverable.
+if [ -z "$CUR_BRANCH" ]; then
+  # Detached HEAD: don't guess a branch. Commit stays local; /sync sorts it out.
+  echo "[arc] detached HEAD — committed locally, not pushing. Run /sync once on a branch." >>"$LOG" 2>&1
+  exit 0
+fi
+
 if git remote get-url origin >/dev/null 2>&1; then
-  git push origin "$CUR_BRANCH" >>"$LOG" 2>&1 || true
+  # Fail closed on the brain leaking: only auto-push when origin is CONFIRMED
+  # private. We need gh to verify (pinned to origin's owner/repo so a public
+  # upstream in a fork can't be mistaken for origin). If gh is missing or can't
+  # determine visibility, we DON'T auto-push — the user can /sync (which guides
+  # setup) or install gh. Commits remain safe locally either way.
+  VIS=""
+  if command -v gh >/dev/null 2>&1; then
+    ORIGIN_REPO="$(git remote get-url origin 2>/dev/null | sed -E 's#^.*[:/]([^/:]+/[^/:]+?)(\.git)?/?$#\1#')"
+    VIS="$(gh repo view "$ORIGIN_REPO" --json visibility -q .visibility 2>/dev/null)"
+  fi
+
+  if [ "$VIS" = "PRIVATE" ] || [ "$VIS" = "INTERNAL" ]; then
+    if ! git push origin "$CUR_BRANCH" >>"$LOG" 2>&1; then
+      echo "[arc] push of '$CUR_BRANCH' failed (see above). Commits are safe locally; run /sync to retry." >>"$LOG" 2>&1
+    fi
+  elif [ "$VIS" = "PUBLIC" ]; then
+    echo "[arc] origin is PUBLIC — not auto-pushing (would leak the brain). Use a private remote." >>"$LOG" 2>&1
+  else
+    echo "[arc] could not confirm origin is private (gh missing or unavailable) — not auto-pushing to be safe. Run /sync, or install gh. Commits are safe locally." >>"$LOG" 2>&1
+  fi
 fi
 
 exit 0

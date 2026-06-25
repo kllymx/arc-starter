@@ -21,6 +21,8 @@ private/
 
 # Claude Code ephemeral state
 .claude/worktrees/
+# Runtime git-sync log written by the hooks — local state, not shared history
+.claude/last-sync.log
 
 # OS
 .DS_Store

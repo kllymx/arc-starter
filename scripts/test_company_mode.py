@@ -198,6 +198,27 @@ def test_user_branch_shape() -> None:
     )
 
 
+def test_user_slug_handles_github_noreply() -> None:
+    """Slug uses the username from a GitHub noreply email, and does not mangle an
+    ordinary plus-addressed email down to the tag."""
+    original_root = config.PROJECT_ROOT
+    try:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            repo = Path(tmp)
+            _run_git(repo, "init")
+            config.PROJECT_ROOT = repo
+
+            _run_git(repo, "config", "user.email",
+                     "12345+alice@users.noreply.github.com")
+            assert_equal(config.get_user_slug(), "alice", "noreply email → username")
+
+            _run_git(repo, "config", "user.email", "bob+promo@startup.com")
+            assert_equal(config.get_user_slug(), "bobpromo",
+                         "plus-addressed email keeps the user, not the tag")
+    finally:
+        config.PROJECT_ROOT = original_root
+
+
 def test_sync_status_empty_in_personal_mode() -> None:
     import scripts.sync_status as sync_status
 
@@ -338,8 +359,8 @@ def test_sync_status_suggests_join_on_fresh_clone() -> None:
     import scripts.sync_status as sync_status
 
     original_root = sync_status.PROJECT_ROOT
-    original_priv = sync_status.PRIVATE_DIR
     prior_mode = os.environ.get("ARC_MODE")
+    prior_sync = os.environ.get("ARC_SYNC_STRATEGY")
     try:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             repo = Path(tmp)
@@ -353,18 +374,19 @@ def test_sync_status_suggests_join_on_fresh_clone() -> None:
             _run_git(repo, "remote", "add", "origin", str(repo / "origin.git"))
 
             sync_status.PROJECT_ROOT = repo
-            # No private tier on this machine yet → the "not set up" join nudge.
-            sync_status.PRIVATE_DIR = repo / "private"
+            # Company + pr strategy, on main, no personal branch yet → the fresh-
+            # teammate "join" nudge (branch-based, so it survives setup.sh).
             os.environ["ARC_MODE"] = "company"
+            os.environ["ARC_SYNC_STRATEGY"] = "pr"
             out = sync_status.build_sync_status()
             assert_true("join the company brain" in out, f"expected join nudge, got: {out!r}")
     finally:
         sync_status.PROJECT_ROOT = original_root
-        sync_status.PRIVATE_DIR = original_priv
-        if prior_mode is None:
-            os.environ.pop("ARC_MODE", None)
-        else:
-            os.environ["ARC_MODE"] = prior_mode
+        for k, v in (("ARC_MODE", prior_mode), ("ARC_SYNC_STRATEGY", prior_sync)):
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
 
 
 def test_union_merge_keeps_both_appends() -> None:
@@ -438,6 +460,7 @@ def main() -> int:
     test_compile_target_is_mode_aware()
     test_retrieval_includes_private_dirs()
     test_user_branch_shape()
+    test_user_slug_handles_github_noreply()
     test_sync_status_empty_in_personal_mode()
     test_conflicts_detection_and_stages()
     test_scaffold_private_idempotent()

@@ -28,7 +28,13 @@ mkdir -p "$LOG_DIR" 2>/dev/null
 # rebase that hits a conflict would leave the repo mid-rebase at session start.
 # The SessionStart reminder tells the founder, and /sync does the integrate +
 # LLM-assisted /reconcile under human supervision.
-if grep -Eqi '^\s*-?\s*Mode:\s*company\b' "$PROJECT_DIR/context/sharing.md" "$PROJECT_DIR/context/workspace.md" 2>/dev/null; then
+# Resolve mode via the Python config (single source of truth), grep fallback.
+MODE="$(python3 "$PROJECT_DIR/scripts/config_get.py" mode 2>/dev/null)"
+if [ -z "$MODE" ] && grep -Eqi '^\s*-?\s*Mode:\s*company\b' \
+    "$PROJECT_DIR/context/sharing.md" "$PROJECT_DIR/context/workspace.md" 2>/dev/null; then
+  MODE="company"
+fi
+if [ "$MODE" = "company" ]; then
   git fetch origin main >>"$LOG_DIR/last-sync.log" 2>&1 || \
     git fetch origin master >>"$LOG_DIR/last-sync.log" 2>&1 || true
   exit 0

@@ -227,6 +227,10 @@ if [ -n "$sync_status" ]; then
   fi
 fi
 
+# Normalize the hardcoded `\n` section separators (literal backslash-n in bash
+# double quotes) into real newlines so the injected context renders correctly.
+parts="${parts//\\n/$'\n'}"
+
 # Output as JSON if we have anything to inject
 if [ -n "$parts" ]; then
   escaped=$(printf '%s' "$parts" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '%s' "$parts" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' | tr '\n' ' ')

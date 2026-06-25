@@ -42,6 +42,7 @@ from scripts.config import (  # noqa: E402
     PROJECT_ROOT as CONFIG_PROJECT_ROOT,
     WIKI_DIR,
     WIKI_INDEX,
+    get_mode,
 )
 
 LOG_FILE = PROJECT_ROOT / "scripts" / "wiki_query.log"
@@ -94,8 +95,11 @@ class WikiPaths:
 
     @classmethod
     def default(cls) -> WikiPaths:
+        # Only fold in the local private tier in company mode — that's the only
+        # mode where the private/shared split is meaningful. In personal mode the
+        # founder's knowledge lives in wiki/ and private/ may not be used.
         extra: tuple[Path, ...] = ()
-        if PRIVATE_WIKI_DIR.exists():
+        if get_mode() == "company" and PRIVATE_WIKI_DIR.exists():
             extra = (PRIVATE_CONCEPTS_DIR, PRIVATE_CONNECTIONS_DIR, PRIVATE_QA_DIR)
         return cls(
             wiki_dir=WIKI_DIR,

@@ -50,7 +50,7 @@ INDEX = """# Private Wiki Index
 
 > Local-only. Articles here are never shared until you `/promote` them.
 
-_No private articles yet._
+_No articles yet._
 """
 
 LOG = """# Private Wiki Log

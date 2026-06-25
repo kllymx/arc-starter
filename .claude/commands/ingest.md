@@ -18,6 +18,16 @@ If `imports/` is empty:
 
 > "There's nothing in the imports folder yet. Drop any document there — pitch decks, articles, meeting notes, competitor research, anything — and tell me to ingest it."
 
+### Private imports (company mode)
+
+Also check `private/imports/` if it exists. In company mode, documents there are
+**personal and local-only** (the folder is gitignored). When ingesting from
+`private/imports/`, write the resulting articles into `private/wiki/` (not the shared
+`wiki/`) and log to `private/wiki/log.md`, so the knowledge stays private until the
+founder runs `/promote`. Everything else about the process below is the same; just
+swap the target tree. Never copy private-import content into the shared wiki without
+an explicit `/promote`.
+
 ---
 
 ## Ingest Process

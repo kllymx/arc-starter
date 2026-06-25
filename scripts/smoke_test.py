@@ -293,6 +293,7 @@ def test_new_scripts_importable() -> None:
         "scripts.conflicts",
         "scripts.scaffold_private",
         "scripts.github_status",
+        "scripts.config_get",
     ):
         importlib.import_module(mod)
 

@@ -16,6 +16,7 @@ field. Run: `uv run python scripts/github_status.py`
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -68,8 +69,25 @@ def _origin() -> str | None:
     return out.strip() if code == 0 and out.strip() else None
 
 
+def _origin_owner_repo() -> str | None:
+    """Parse OWNER/REPO from the origin URL (https or ssh form)."""
+    url = _origin()
+    if not url:
+        return None
+    match = re.search(r"[:/]([^/:]+/[^/:]+?)(?:\.git)?/?$", url)
+    return match.group(1) if match else None
+
+
 def _origin_visibility() -> str | None:
-    code, out = _run(["gh", "repo", "view", "--json", "visibility", "--jq", ".visibility"])
+    # Pin the check to ORIGIN's owner/repo. `gh repo view` with no arg uses gh's
+    # default repo, which in a fork setup (origin = company repo, upstream =
+    # public arc-starter) can resolve to the wrong, public repo.
+    target = _origin_owner_repo()
+    args = ["gh", "repo", "view"]
+    if target:
+        args.append(target)
+    args += ["--json", "visibility", "--jq", ".visibility"]
+    code, out = _run(args)
     return out.strip() if code == 0 and out.strip() else None
 
 

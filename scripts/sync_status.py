@@ -13,6 +13,7 @@ or when there is nothing to say. Never fails loudly: any error → silent exit.
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -21,7 +22,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.config import (  # noqa: E402
-    PRIVATE_DIR,
     get_mode,
     get_sync_strategy,
     get_user_branch,
@@ -59,6 +59,23 @@ def _current_branch() -> str:
     return _git("rev-parse", "--abbrev-ref", "HEAD") or ""
 
 
+def _origin_repo() -> str | None:
+    """OWNER/REPO parsed from the origin URL (https or ssh), or None."""
+    url = _git("remote", "get-url", "origin")
+    if not url:
+        return None
+    match = re.search(r"[:/]([^/:]+/[^/:]+?)(?:\.git)?/?$", url)
+    return match.group(1) if match else None
+
+
+def _branch_exists(branch: str) -> bool:
+    """True if `branch` exists locally or on origin."""
+    for ref in (f"refs/heads/{branch}", f"refs/remotes/origin/{branch}"):
+        if _git("rev-parse", "--verify", "--quiet", ref) is not None:
+            return True
+    return False
+
+
 def _main_ref() -> str | None:
     """Prefer origin/main, fall back to origin/master if that's the default."""
     for ref in ("origin/main", "origin/master"):
@@ -80,17 +97,28 @@ def _counts(left: str, right: str) -> tuple[int, int] | None:
 
 
 def _open_pr(branch: str) -> str | None:
-    """Return an open PR number for `branch` via gh, or None. gh optional."""
+    """Return an open PR number whose head is `branch` via gh, or None.
+
+    Uses `gh pr list --head` (the canonical branch→PR lookup) rather than
+    `gh pr view <branch>`, which is unreliable for resolving a branch to its PR.
+    gh is optional; any failure → None.
+    """
+    cmd = ["gh", "pr", "list", "--head", branch, "--state", "open",
+           "--json", "number", "-q", ".[0].number"]
+    repo = _origin_repo()
+    if repo:  # pin to origin so a public upstream in a fork isn't queried instead
+        cmd += ["-R", repo]
     try:
         res = subprocess.run(
-            ["gh", "pr", "view", branch, "--json", "number,state", "-q",
-             'select(.state=="OPEN") | .number'],
+            cmd,
             capture_output=True,
             text=True,
             cwd=str(PROJECT_ROOT),
             timeout=10,
         )
     except (OSError, subprocess.SubprocessError):
+        return None
+    if res.returncode != 0:
         return None
     num = res.stdout.strip()
     return num or None
@@ -110,24 +138,30 @@ def build_sync_status() -> str:
     if not _is_repo() or not _has_origin():
         return ""
 
-    # Not set up on this machine yet (no local private tier) → guide the join flow.
-    # Strategy-independent: works whether they'll end up on a branch or on main.
-    if not PRIVATE_DIR.exists():
-        return (
-            "## ARC Sync (company mode)\n\n"
-            "- Looks like you've cloned a company brain but haven't set up yet. "
-            "Say \"join the company brain\" (/join-company) and I'll configure your "
-            "access, private tier, and branch."
-        )
-
     strategy = get_sync_strategy()
     branch = _current_branch()
+
+    # Detached HEAD or unknown branch: we can't reason about sync state cleanly
+    # (and `gh pr view HEAD` would misreport an existing PR). Stay quiet rather
+    # than mislead the founder.
+    if branch in ("", "HEAD"):
+        return ""
+
     personal = get_user_branch()
     main_ref = _main_ref()
     lines: list[str] = []
 
     if strategy == "pr" and branch in ("main", "master"):
-        # PR strategy means work belongs on a personal branch, not shared main.
+        # PR strategy: work belongs on a personal branch, not shared main. If the
+        # personal branch doesn't exist yet, this is a fresh teammate who hasn't
+        # joined (bootstrap doesn't create a branch, so this survives setup.sh).
+        if not _branch_exists(personal):
+            return (
+                "## ARC Sync (company mode)\n\n"
+                "- Looks like you've cloned a company brain but haven't set up yet. "
+                "Say \"join the company brain\" (/join-company) and I'll configure "
+                "your access, private tier, and branch."
+            )
         lines.append(
             f"- You're on `{branch}`. In company mode, work happens on your own "
             f"branch `{personal}`. Say \"sync\" and I'll move your changes there "

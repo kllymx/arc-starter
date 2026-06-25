@@ -5,6 +5,8 @@ Reads context/workspace.md to determine which LLM SDK to use,
 and provides shared configuration for all scripts.
 """
 
+from __future__ import annotations  # tolerate `str | None` etc. on Python 3.9
+
 import os
 import re
 from pathlib import Path
@@ -207,12 +209,19 @@ def get_user_slug() -> str:
         except (OSError, subprocess.SubprocessError):
             return ""
 
-    raw = _git_config("user.email")
-    if "@" in raw:
-        raw = raw.split("@", 1)[0]
-    # GitHub noreply addresses look like `12345+username` — prefer the username.
-    if "+" in raw:
-        raw = raw.rsplit("+", 1)[1]
+    email = _git_config("user.email")
+    # GitHub noreply addresses look like `12345+username@users.noreply.github.com`
+    # (or `username@users.noreply.github.com`) — prefer the username. Only special-
+    # case noreply so ordinary plus-addressed emails (user+tag@x.com) aren't mangled.
+    noreply = re.search(
+        r"(?:\d+\+)?([^@+]+)@users\.noreply\.github\.com$", email, re.IGNORECASE
+    )
+    if noreply:
+        raw = noreply.group(1)
+    elif "@" in email:
+        raw = email.split("@", 1)[0]
+    else:
+        raw = email
     if not raw:
         raw = _git_config("user.name")
 
