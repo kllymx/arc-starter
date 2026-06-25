@@ -1,0 +1,26 @@
+scripts/sync_status.py
+  s_48fd00163ae46b::t_8e53761534c31f 123-124,126
+scripts/github_status.py
+  s_48fd00163ae46b::t_224b77254db71b 158-172
+  s_48fd00163ae46b::t_52ca8cf73142bf 119-128,135-137
+  s_48fd00163ae46b::t_7f52cc6249dca1 36-41,44,51,54,64
+  s_48fd00163ae46b::t_7792971299f32a 109
+hooks/git-push.sh
+  s_48fd00163ae46b::t_bb805a037d6522 89-99,101-112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "ab732f2f0e75b94ca1c3dcc52a9b5756028d9feb",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
