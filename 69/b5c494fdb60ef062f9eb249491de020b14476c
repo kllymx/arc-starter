@@ -1,0 +1,45 @@
+.claude/commands/upgrade-to-company.md
+  s_48fd00163ae46b::t_f9e509270eea7d 37-68,71,73-81,83-91
+  s_48fd00163ae46b::t_1d1b807ab37ffb 69-70,72
+  s_48fd00163ae46b::t_ffc7aa750c4c21 82
+  s_48fd00163ae46b::t_c36da67cee8f89 130-144
+AGENTS.md
+  s_48fd00163ae46b::t_a7b412f6a550ce 218-221
+  s_48fd00163ae46b::t_eb73669cc8a54d 199
+scripts/smoke_test.py
+  s_48fd00163ae46b::t_176ef204d91436 251
+  s_48fd00163ae46b::t_40998f15bb4355 277
+scripts/github_status.py
+  s_48fd00163ae46b::t_621e662e21f497 1-153
+.claude/commands/join-company.md
+  s_48fd00163ae46b::t_797fcc9db7c914 1-82
+.codex/skills/join-company/SKILL.md
+  s_48fd00163ae46b::t_57a51d5f9279e2 1-45
+CLAUDE.md
+  s_48fd00163ae46b::t_5bd57aee3591ae 199
+  s_48fd00163ae46b::t_88c63bd143561b 218-221
+CHANGELOG.md
+  s_48fd00163ae46b::t_44c07c592937fe 55-63
+SHARING.md
+  s_48fd00163ae46b::t_785701feb08571 83-87
+  s_48fd00163ae46b::t_f88336fe84a03f 100-102,104-110
+scripts/test_company_mode.py
+  s_48fd00163ae46b::t_02a5db036d46b6 215-217
+  s_48fd00163ae46b::t_c87ca2876ad5fb 316-339,350
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "69b5c494fdb60ef062f9eb249491de020b14476c",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
