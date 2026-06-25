@@ -61,15 +61,13 @@ Save the answer to `context/workspace.md` immediately using this structure:
 - Technical comfort: [non-technical / somewhat technical / technical]
 - Preferred guidance style: [plain language / mixed / technical]
 
-## Sharing
-- Mode: personal
-
 ## Notes
 - [Any setup constraints or helpful notes about how ARC should behave in this environment]
 ```
 
-Leave `- Mode: personal` as-is. It only changes to `company` via
-`/upgrade-to-company`; never set it to `company` by hand during setup.
+Sharing settings (personal vs company mode, sync strategy) live in the committed
+`context/sharing.md`, which already ships set to `Mode: personal`. Leave it alone
+during setup; it only changes to `company` via `/upgrade-to-company`.
 
 Use that file to adapt the rest of setup:
 - If slash commands are available, you can mention them as optional shortcuts.

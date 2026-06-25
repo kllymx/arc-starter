@@ -121,8 +121,14 @@ if PUBLIC**.
 
 ### Step 4 — Company scaffolding
 
-1. Set `- Mode: company` in `context/workspace.md` (this flips compile to write new
-   captures into `private/wiki/` by default; see `scripts/config.py:get_mode`).
+1. Write the shared settings to `context/sharing.md` (committed; the same for the whole
+   team, unlike per-person `workspace.md`):
+   - `- Mode: company` (flips compile to write new captures into `private/wiki/` by
+     default; see `scripts/config.py:get_mode`).
+   - `- Sync: pr` by default. Ask the founder: for a small, trusted team that wants to
+     move fast without pull requests, offer `- Sync: direct` (everyone works on `main`;
+     `/sync` rebases + reconciles + pushes main). PR is the safe default; recommend it
+     unless they ask for direct.
 2. Interview the founder briefly and create team context articles:
    `wiki/concepts/team-roster.md`, `roles.md`, `access-tiers.md`, `ways-of-working.md`.
 3. Update `context/overview.md` to read as a company brain (audience = the team).

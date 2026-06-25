@@ -26,53 +26,73 @@ def assert_true(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
+import contextlib  # noqa: E402
+
+
+@contextlib.contextmanager
+def _config_files(sharing: str | None = None, workspace: str | None = None,
+                  env: dict | None = None):
+    """Point config at temp sharing.md/workspace.md and control the relevant env
+    vars; restore everything on exit. A None text means the file does not exist."""
+    orig_s, orig_w = config.SHARING_CONFIG_FILE, config.WORKSPACE_FILE
+    prior = {k: os.environ.get(k) for k in ("ARC_MODE", "ARC_SYNC_STRATEGY")}
+    with tempfile.TemporaryDirectory() as tmp:
+        s = Path(tmp) / "sharing.md"
+        w = Path(tmp) / "workspace.md"
+        if sharing is not None:
+            s.write_text(sharing)
+        if workspace is not None:
+            w.write_text(workspace)
+        config.SHARING_CONFIG_FILE = s
+        config.WORKSPACE_FILE = w
+        for k in ("ARC_MODE", "ARC_SYNC_STRATEGY"):
+            os.environ.pop(k, None)
+        if env:
+            os.environ.update(env)
+        try:
+            yield
+        finally:
+            config.SHARING_CONFIG_FILE, config.WORKSPACE_FILE = orig_s, orig_w
+            for k, v in prior.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+
 def test_default_mode_is_personal() -> None:
-    original = config.WORKSPACE_FILE
-    prior_env = os.environ.pop("ARC_MODE", None)
-    try:
-        with tempfile.TemporaryDirectory() as tmp:
-            # Placeholder workspace with no Mode line.
-            workspace = Path(tmp) / "workspace.md"
-            workspace.write_text("# Workspace Context\n\nNo mode set here.\n")
-            config.WORKSPACE_FILE = workspace
-            assert_equal(config.get_mode(), "personal", "missing Mode defaults to personal")
-    finally:
-        config.WORKSPACE_FILE = original
-        if prior_env is not None:
-            os.environ["ARC_MODE"] = prior_env
+    with _config_files(workspace="# Workspace\n\nNo mode here.\n"):
+        assert_equal(config.get_mode(), "personal", "missing Mode defaults to personal")
 
 
-def test_workspace_mode_company() -> None:
-    original = config.WORKSPACE_FILE
-    prior_env = os.environ.pop("ARC_MODE", None)
-    try:
-        with tempfile.TemporaryDirectory() as tmp:
-            workspace = Path(tmp) / "workspace.md"
-            workspace.write_text("# Workspace Context\n\n## Sharing\n\n- Mode: company\n")
-            config.WORKSPACE_FILE = workspace
-            assert_equal(config.get_mode(), "company", "workspace Mode: company is read")
-    finally:
-        config.WORKSPACE_FILE = original
-        if prior_env is not None:
-            os.environ["ARC_MODE"] = prior_env
+def test_sharing_file_mode_company() -> None:
+    with _config_files(sharing="- Mode: company\n"):
+        assert_equal(config.get_mode(), "company", "sharing.md Mode: company is read")
 
 
-def test_env_overrides_workspace() -> None:
-    original = config.WORKSPACE_FILE
-    prior_env = os.environ.get("ARC_MODE")
-    try:
-        with tempfile.TemporaryDirectory() as tmp:
-            workspace = Path(tmp) / "workspace.md"
-            workspace.write_text("- Mode: company\n")
-            config.WORKSPACE_FILE = workspace
-            os.environ["ARC_MODE"] = "personal"
-            assert_equal(config.get_mode(), "personal", "ARC_MODE overrides workspace")
-    finally:
-        config.WORKSPACE_FILE = original
-        if prior_env is None:
-            os.environ.pop("ARC_MODE", None)
-        else:
-            os.environ["ARC_MODE"] = prior_env
+def test_sharing_takes_precedence_over_workspace() -> None:
+    with _config_files(sharing="- Mode: company\n", workspace="- Mode: personal\n"):
+        assert_equal(config.get_mode(), "company", "sharing.md wins over workspace.md")
+
+
+def test_workspace_mode_is_backcompat_fallback() -> None:
+    # No sharing.md → fall back to a legacy workspace.md Mode line.
+    with _config_files(workspace="## Sharing\n\n- Mode: company\n"):
+        assert_equal(config.get_mode(), "company", "workspace.md Mode is a fallback")
+
+
+def test_env_overrides_files() -> None:
+    with _config_files(sharing="- Mode: company\n", env={"ARC_MODE": "personal"}):
+        assert_equal(config.get_mode(), "personal", "ARC_MODE overrides files")
+
+
+def test_sync_strategy_default_and_sources() -> None:
+    with _config_files():
+        assert_equal(config.get_sync_strategy(), "pr", "default sync strategy is pr")
+    with _config_files(sharing="- Mode: company\n- Sync: direct\n"):
+        assert_equal(config.get_sync_strategy(), "direct", "sharing.md Sync is read")
+    with _config_files(sharing="- Sync: direct\n", env={"ARC_SYNC_STRATEGY": "pr"}):
+        assert_equal(config.get_sync_strategy(), "pr", "env overrides sync strategy")
 
 
 def _install_fake_sdk(captured: dict[str, str]):
@@ -318,6 +338,7 @@ def test_sync_status_suggests_join_on_fresh_clone() -> None:
     import scripts.sync_status as sync_status
 
     original_root = sync_status.PROJECT_ROOT
+    original_priv = sync_status.PRIVATE_DIR
     prior_mode = os.environ.get("ARC_MODE")
     try:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -332,15 +353,55 @@ def test_sync_status_suggests_join_on_fresh_clone() -> None:
             _run_git(repo, "remote", "add", "origin", str(repo / "origin.git"))
 
             sync_status.PROJECT_ROOT = repo
+            # No private tier on this machine yet → the "not set up" join nudge.
+            sync_status.PRIVATE_DIR = repo / "private"
             os.environ["ARC_MODE"] = "company"
             out = sync_status.build_sync_status()
             assert_true("join the company brain" in out, f"expected join nudge, got: {out!r}")
     finally:
         sync_status.PROJECT_ROOT = original_root
+        sync_status.PRIVATE_DIR = original_priv
         if prior_mode is None:
             os.environ.pop("ARC_MODE", None)
         else:
             os.environ["ARC_MODE"] = prior_mode
+
+
+def test_union_merge_keeps_both_appends() -> None:
+    """The .gitattributes union driver auto-merges concurrent appends to log.md
+    without a conflict, keeping both lines."""
+    import subprocess
+
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        repo = Path(tmp)
+        _run_git(repo, "init", "-b", "main")
+        _run_git(repo, "config", "user.email", "t@example.com")
+        _run_git(repo, "config", "user.name", "Tester")
+        (repo / ".gitattributes").write_text("wiki/log.md merge=union\n")
+        log = repo / "wiki" / "log.md"
+        log.parent.mkdir(parents=True)
+        log.write_text("# Log\n\n- base entry\n")
+        _run_git(repo, "add", "-A")
+        _run_git(repo, "commit", "-m", "base")
+
+        _run_git(repo, "checkout", "-b", "feature")
+        log.write_text("# Log\n\n- base entry\n- feature entry\n")
+        _run_git(repo, "add", "-A")
+        _run_git(repo, "commit", "-m", "feature entry")
+
+        _run_git(repo, "checkout", "main")
+        log.write_text("# Log\n\n- base entry\n- main entry\n")
+        _run_git(repo, "add", "-A")
+        _run_git(repo, "commit", "-m", "main entry")
+
+        merge = subprocess.run(
+            ["git", "merge", "feature"],
+            cwd=str(repo), capture_output=True, text=True,
+        )
+        assert_equal(merge.returncode, 0, f"union merge should not conflict: {merge.stderr}")
+        merged = log.read_text()
+        assert_true("feature entry" in merged, "feature line kept")
+        assert_true("main entry" in merged, "main line kept")
 
 
 def test_github_status_shape() -> None:
@@ -369,8 +430,11 @@ def test_github_status_shape() -> None:
 
 def main() -> int:
     test_default_mode_is_personal()
-    test_workspace_mode_company()
-    test_env_overrides_workspace()
+    test_sharing_file_mode_company()
+    test_sharing_takes_precedence_over_workspace()
+    test_workspace_mode_is_backcompat_fallback()
+    test_env_overrides_files()
+    test_sync_strategy_default_and_sources()
     test_compile_target_is_mode_aware()
     test_retrieval_includes_private_dirs()
     test_user_branch_shape()
@@ -379,6 +443,7 @@ def main() -> int:
     test_scaffold_private_idempotent()
     test_github_status_shape()
     test_sync_status_suggests_join_on_fresh_clone()
+    test_union_merge_keeps_both_appends()
     print("All company_mode tests passed.")
     return 0
 

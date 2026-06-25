@@ -62,6 +62,24 @@ only the compile target and retrieval scope become mode-aware.
   their own local `private/` tier, personal branch — without re-running the business
   interview. The agent offers it automatically when a cloned company brain is detected.
 
+### Multiplayer refinements
+
+- **Conflict-free append files.** `.gitattributes` now sets git's `union` merge driver on
+  `wiki/index.md`, `wiki/log.md`, `wiki/mocs/*.md`, and `daily/*.md`, so concurrent
+  additions auto-merge instead of conflicting on nearly every sync.
+- **Sync strategy.** `- Sync:` in `context/sharing.md` (read via `get_sync_strategy()`):
+  `pr` (default, branches + PRs) or `direct` (small trusted teams work on `main`; `/sync`
+  rebases + reconciles + pushes main, no PR). The session-end hook honors it (refuses
+  `main` in `pr`, pushes `main` in `direct`).
+- **Shared settings split out.** `Mode` and `Sync` now live in the committed, shared
+  `context/sharing.md` instead of the per-person `workspace.md` (which is honored as a
+  back-compat fallback), so changing a teammate's environment no longer touches a shared
+  setting. Branch slug now handles GitHub noreply emails (`arc/<username>`).
+- **Quick wins.** `uv.lock` is committed (identical deps for everyone). Merged PRs are
+  cleaned up with `--delete-branch`. README rewritten as a clean, non-technical guide to
+  the framework and the two modes. `/join-company` gives a first win immediately and
+  notes the one-time hook-trust prompt on a fresh clone.
+
 ### Changed
 
 - `.gitignore` now excludes `private/` and `.firecrawl/`; the previously committed

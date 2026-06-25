@@ -54,21 +54,24 @@ capture tooling and creates their own local, gitignored `private/` tier via
 hooks once** before they run (a security prompt). Tell them to approve it — that's what
 enables auto-capture and the session-start sync reminder. Until then, those won't fire.
 
-## Step 4 — Configure their environment (keep Mode)
+## Step 4 — Configure their environment
 
-Ask the two setup questions and write THEIR answers into `context/workspace.md`, leaving
-`- Mode: company` untouched:
+Ask the two setup questions and write THEIR answers into `context/workspace.md` (a
+per-person file):
 
 > "What are you using ARC in — Claude Code, Cursor, Codex, Claude Desktop? And how
 > technical should I be: non-technical, somewhat technical, technical?"
 
-(The Environment / Founder Preferences sections are per-person; Mode is shared.)
+Don't touch `context/sharing.md` — Mode and Sync are shared settings that already came
+with the clone.
 
 ## Step 5 — Put them on their own branch
 
 ```bash
 git fetch origin main
-git switch -c arc/<slug>     # <slug> = git config user.email before @, lowercased
+# Get the exact branch name (handles GitHub noreply emails correctly):
+uv run python -c "from scripts.config import get_user_branch; print(get_user_branch())"
+git switch -c arc/<slug>
 ```
 
 If the branch already exists remotely (they've joined before from another machine):
@@ -76,12 +79,18 @@ If the branch already exists remotely (they've joined before from another machin
 
 ## Step 6 — Orient them
 
-They're in. Briefly explain the team workflow:
+They're in. **Give them an immediate first win:** ask what they work on, then run
+`uv run python scripts/wiki_query.py "<their area>"` and show them what the brain already
+knows about it (their team, the relevant product, recent decisions). This makes the value
+land in the first minute instead of asking them to imagine it.
+
+Then briefly explain the team workflow:
 
 - The wiki is already here — ask it anything about the business; retrieval works now.
 - New captures land in their local `private/wiki/` by default; `/promote` shares one.
-- `/sync` pushes their branch and opens/updates a PR into `main`; ARC reminds them at
-  session start when there's unsynced work.
+- `/sync` pushes their work and opens/updates a PR into `main` (or pushes `main` directly
+  if the team uses `Sync: direct`); ARC reminds them at session start when there's
+  unsynced work.
 - `private/` is theirs and never leaves their machine. Keep secrets in `.env`.
 
-Do a first `/sync` so their branch exists on the remote and they see the loop work.
+Do a first `/sync` so their branch/commits land on the remote and they see the loop work.

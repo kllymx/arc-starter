@@ -19,12 +19,19 @@ Read `- Mode:` in `context/workspace.md` (or run
 
 ## Company mode (shared brain)
 
+First read `- Sync:` in `context/sharing.md`:
+
+- **`pr`** (default) → follow **PR strategy** below.
+- **`direct`** (small trusted teams) → follow **Direct strategy** at the end.
+
+### PR strategy (default)
+
 Goal: get this person's captures onto their own branch and into an open PR
 against `main`, integrating teammates' work safely along the way.
 
-1. **Be on a personal branch.** Compute it as `arc/<slug>` where `<slug>` comes
-   from `git config user.email` (the part before `@`, lowercased) — this matches
-   `scripts/config.py:get_user_branch()`. If currently on `main`/`master`:
+1. **Be on a personal branch.** Get the exact name with
+   `uv run python -c "from scripts.config import get_user_branch; print(get_user_branch())"`
+   (it's `arc/<slug>`). If currently on `main`/`master`:
    - Create/switch to the personal branch carrying any local commits:
      `git switch -c arc/<slug>` (or `git switch arc/<slug>` if it exists, then
      cherry-pick/rebase the stray commits over).
@@ -44,10 +51,26 @@ against `main`, integrating teammates' work safely along the way.
      (If `gh` is missing or unauthenticated, give the compare URL to open manually.)
 6. **End-of-day / merge.** If it's late in the day or the founder is wrapping up,
    remind them they can merge their PR so teammates get their latest. Only merge on
-   explicit confirmation; never auto-merge.
+   explicit confirmation; never auto-merge. When they do merge, clean up the branch:
+   `gh pr merge <pr> --squash --delete-branch` so `arc/<slug>` branches don't pile up.
 
 Report: branch, commits synced, conflicts reconciled (if any), and the PR link.
 Then stop — the personal-mode phases below do NOT apply in company mode.
+
+### Direct strategy (small trusted teams, no PRs)
+
+Everyone works on `main` and shares by pushing it directly. Faster for two trusted
+founders; no branches or PRs. `/reconcile` still protects against clobbering.
+
+1. **Commit** pending changes on `main`:
+   `git add -A && git commit -m "arc: $(date -u +%Y-%m-%d-%H%M)"`.
+2. **Integrate then push.** `git fetch origin main` then `git rebase origin/main`.
+   - **Conflicts?** Run `/reconcile`, then `git rebase --continue`. Repeat until clean.
+3. **Push `main`.** Confirm private first (`gh repo view --json visibility`; abort if
+   PUBLIC), then `git push origin main`. If rejected because `main` moved again, repeat
+   from step 2.
+
+Report what was synced and any conflicts reconciled. Never `git push --force`.
 
 ## When to use
 

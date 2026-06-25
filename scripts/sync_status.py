@@ -20,7 +20,12 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.config import get_mode, get_user_branch  # noqa: E402
+from scripts.config import (  # noqa: E402
+    PRIVATE_DIR,
+    get_mode,
+    get_sync_strategy,
+    get_user_branch,
+)
 
 # Past this local hour, escalate the reminder to "wrap up / open-or-merge a PR".
 END_OF_DAY_HOUR = 18
@@ -52,14 +57,6 @@ def _has_origin() -> bool:
 
 def _current_branch() -> str:
     return _git("rev-parse", "--abbrev-ref", "HEAD") or ""
-
-
-def _branch_exists(branch: str) -> bool:
-    """True if `branch` exists locally or on origin."""
-    for ref in (f"refs/heads/{branch}", f"refs/remotes/origin/{branch}"):
-        if _git("rev-parse", "--verify", "--quiet", ref) is not None:
-            return True
-    return False
 
 
 def _main_ref() -> str | None:
@@ -113,38 +110,45 @@ def build_sync_status() -> str:
     if not _is_repo() or not _has_origin():
         return ""
 
+    # Not set up on this machine yet (no local private tier) → guide the join flow.
+    # Strategy-independent: works whether they'll end up on a branch or on main.
+    if not PRIVATE_DIR.exists():
+        return (
+            "## ARC Sync (company mode)\n\n"
+            "- Looks like you've cloned a company brain but haven't set up yet. "
+            "Say \"join the company brain\" (/join-company) and I'll configure your "
+            "access, private tier, and branch."
+        )
+
+    strategy = get_sync_strategy()
     branch = _current_branch()
     personal = get_user_branch()
     main_ref = _main_ref()
     lines: list[str] = []
 
-    # On main/master in company mode is the wrong place to work.
-    if branch in ("main", "master"):
-        if not _branch_exists(personal):
-            # Fresh clone of a company brain, not set up yet → guide the join flow.
-            lines.append(
-                "- Looks like you've cloned a company brain but haven't set up yet. "
-                "Say \"join the company brain\" (/join-company) and I'll configure your "
-                "access, private tier, and personal branch."
-            )
-        else:
-            lines.append(
-                f"- You're on `{branch}`. In company mode, work happens on your own "
-                f"branch `{personal}`. Say \"sync\" and I'll move your changes there "
-                f"and open a PR — this protects the shared `{branch}`."
-            )
-    else:
-        if main_ref:
-            counts = _counts("HEAD", main_ref)
-            if counts:
-                ahead, behind = counts
-                if behind:
+    if strategy == "pr" and branch in ("main", "master"):
+        # PR strategy means work belongs on a personal branch, not shared main.
+        lines.append(
+            f"- You're on `{branch}`. In company mode, work happens on your own "
+            f"branch `{personal}`. Say \"sync\" and I'll move your changes there "
+            f"and open a PR — this protects the shared `{branch}`."
+        )
+    elif main_ref:
+        counts = _counts("HEAD", main_ref)
+        if counts:
+            ahead, behind = counts
+            if behind:
+                lines.append(
+                    f"- `{main_ref}` has {behind} new commit(s) you don't have yet. "
+                    f"Say \"sync\" to integrate them (I'll reconcile any conflicts)."
+                )
+            if ahead:
+                if strategy == "direct":
                     lines.append(
-                        f"- `{main_ref}` has {behind} new commit(s) you don't have "
-                        f"yet. Say \"sync\" to integrate them (I'll reconcile any "
-                        f"conflicts)."
+                        f"- {ahead} commit(s) not yet pushed to `main`. Say \"sync\" "
+                        f"to rebase and push (direct mode, no PR)."
                     )
-                if ahead:
+                else:
                     pr = _open_pr(branch)
                     if pr:
                         lines.append(

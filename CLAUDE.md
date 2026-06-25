@@ -200,7 +200,7 @@ These can be triggered by typing the `/command` name in compatible environments 
 
 ### Sharing modes (personal vs company)
 
-ARC runs in one of two modes, set by `- Mode:` in `context/workspace.md` (default `personal`). The automation reads it via `scripts/config.py:get_mode()`.
+ARC runs in one of two modes, set by `- Mode:` in the committed, shared `context/sharing.md` (default `personal`; `workspace.md` is honored as a back-compat fallback). The automation reads it via `scripts/config.py:get_mode()`. `sharing.md` also holds `- Sync:` (`pr` default, or `direct`), read via `get_sync_strategy()`. These are shared team settings, separate from the per-person `workspace.md`.
 
 - **Personal** — a single founder's brain. Captured knowledge compiles straight into the shared `wiki/`.
 - **Company** — a shared/team brain. New auto-captured knowledge compiles into the **local-only `private/wiki/`** first and only reaches the shared `wiki/` through `/promote`. The `private/` tier is gitignored, so personal context never reaches teammates. Your own retrieval and session-start context still span both tiers locally, so connections keep surfacing for you. See `SHARING.md`.
@@ -214,6 +214,8 @@ Never flip `Mode` by hand — run `/upgrade-to-company`, which also handles the 
 - At session start the agent receives a **sync reminder** (from `scripts/sync_status.py`) when there are unsynced commits or an open PR — surface it: offer to `/sync`, or to merge near end of day. Be proactive about this; it's how the shared brain stays current.
 - `/sync` in company mode: ensure personal branch → commit → `git rebase origin/main` → `/reconcile` on conflicts → push branch → open/update a PR into `main`. Never auto-merge; merge only on explicit confirmation.
 - Conflicts are resolved by `/reconcile`, which treats the wiki as additive (union both sides) and only asks the founder about genuine contradictions. Fail closed on `visibility: private`.
+- The append-heavy files `wiki/index.md`, `wiki/log.md`, `wiki/mocs/*.md`, and `daily/*.md` use git's `union` merge driver (`.gitattributes`), so concurrent additions auto-merge instead of conflicting on every sync. `/garden` and `/consolidate` dedupe any leftovers.
+- **Sync strategy** (`- Sync:` in `sharing.md`): `pr` (default) uses personal branches + PRs as above. `direct` (small trusted teams) has everyone work on `main`; `/sync` rebases onto `origin/main`, reconciles, and pushes `main` directly with no PR. In `pr` mode the session-end hook refuses to push `main`; in `direct` mode it pushes `main`.
 
 **Setting up the shared GitHub home.** Run `uv run python scripts/github_status.py` to see what you can automate. The shared brain is one **private** repo accessed via a **GitHub Org** (recommended — each person uses their own account) or repo collaborators; never a shared login, never a teammate's personal repo. Note: `gh` **cannot create an org** (no `gh org create`); org creation is a ~30s browser step at `https://github.com/account/organizations/new`. Everything after (repo create, invites, remote, push, PR) you can do via `gh`. `/upgrade-to-company` walks this whole flow.
 

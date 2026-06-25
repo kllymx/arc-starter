@@ -16,3 +16,16 @@
 *.gif       binary
 *.ico       binary
 *.pdf       binary
+
+# Append-heavy, multi-writer files: use git's built-in `union` merge driver so
+# concurrent additions from different people are KEPT BOTH (no conflict markers)
+# instead of conflicting on almost every sync in company mode. Per-article wiki
+# files are rarely touched by two people at once, so they keep normal merge
+# semantics and still flow through /reconcile when they do collide.
+#
+# Union can leave an occasional duplicate or out-of-order line; that's the right
+# trade (no friction now) and /garden + /consolidate dedupe later.
+wiki/index.md      merge=union
+wiki/log.md        merge=union
+wiki/mocs/*.md     merge=union
+daily/*.md         merge=union

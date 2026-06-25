@@ -20,6 +20,11 @@ Read `- Mode:` in `context/workspace.md`.
 
 ## Company mode (shared brain)
 
+Read `- Sync:` in `context/sharing.md`. **`pr`** (default) = PR strategy below;
+**`direct`** = Direct strategy.
+
+### PR strategy (default)
+
 1. **Be on a personal branch** `arc/<slug>` (`<slug>` = `git config user.email`
    before `@`, lowercased — matches `scripts/config.py:get_user_branch()`). If on
    `main`/`master`, `git switch -c arc/<slug>` carrying local commits, then reset
@@ -32,10 +37,18 @@ Read `- Mode:` in `context/workspace.md`.
 5. **Open/update PR:** `gh pr view arc/<slug>` — if none, offer
    `gh pr create --base main --head arc/<slug> --fill`; if `gh` is unavailable, give
    the compare URL.
-6. Remind about merging at end of day; merge only on explicit confirmation.
+6. Remind about merging at end of day; merge only on explicit confirmation, then
+   `gh pr merge <pr> --squash --delete-branch` so branches don't pile up.
 
-Report branch, commits, conflicts reconciled, and the PR link, then stop — the
-phases below are personal mode only.
+### Direct strategy (small trusted teams, no PRs)
+
+Everyone works on `main`. 1) commit on `main`; 2) `git fetch origin main` then
+`git rebase origin/main` (run `reconcile` on conflicts, then `--continue`); 3) confirm
+private, then `git push origin main`. If rejected because main moved, repeat from 2.
+Never `git push --force`.
+
+Report what was synced and any conflicts reconciled, then stop — the phases below are
+personal mode only.
 
 ## When to use
 

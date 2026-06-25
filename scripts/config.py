@@ -39,6 +39,9 @@ PRIVATE_WIKI_INDEX = PRIVATE_WIKI_DIR / "index.md"
 OVERVIEW_FILE = CONTEXT_DIR / "overview.md"
 WORKSPACE_FILE = CONTEXT_DIR / "workspace.md"
 MEMORY_FILE = CONTEXT_DIR / "memory.md"
+# Shared, committed sharing settings (Mode + Sync). Kept separate from the
+# per-person workspace.md so the team's shared truth isn't a per-machine file.
+SHARING_CONFIG_FILE = CONTEXT_DIR / "sharing.md"
 STATE_FILE = SCRIPTS_DIR / "state.json"
 
 # Compilation settings
@@ -132,23 +135,53 @@ def get_mode() -> str:
 
     Resolution order:
     1. ARC_MODE environment variable ('personal' | 'company')
-    2. context/workspace.md  ('- Mode: company')
-    3. default 'personal'
+    2. context/sharing.md  ('- Mode: company')  — the shared, committed setting
+    3. context/workspace.md  — back-compat fallback for older workspaces
+    4. default 'personal'
     """
     env = os.environ.get("ARC_MODE", "").strip().lower()
     if env in {"personal", "company"}:
         return env
 
-    if WORKSPACE_FILE.exists():
-        match = re.search(
-            r"^\s*-?\s*Mode:\s*(personal|company)\s*$",
-            WORKSPACE_FILE.read_text(),
-            re.MULTILINE | re.IGNORECASE,
-        )
-        if match:
-            return match.group(1).lower()
-
+    value = _read_setting("Mode", SHARING_CONFIG_FILE, WORKSPACE_FILE)
+    if value in {"personal", "company"}:
+        return value
     return "personal"
+
+
+def get_sync_strategy() -> str:
+    """Return the company-mode sync strategy: 'pr' (default) or 'direct'.
+
+    - 'pr': each person works on a personal branch and merges via pull requests.
+      The safe default; nobody pushes shared main directly.
+    - 'direct': small trusted teams work on main and `/sync` rebases onto
+      origin/main, reconciles, and pushes main directly — no branches/PRs.
+
+    Resolution: ARC_SYNC_STRATEGY env, then context/sharing.md ('- Sync: direct'),
+    then context/workspace.md (back-compat), then 'pr'.
+    """
+    env = os.environ.get("ARC_SYNC_STRATEGY", "").strip().lower()
+    if env in {"pr", "direct"}:
+        return env
+
+    value = _read_setting("Sync", SHARING_CONFIG_FILE, WORKSPACE_FILE)
+    if value in {"pr", "direct"}:
+        return value
+    return "pr"
+
+
+def _read_setting(key: str, *files: Path) -> str | None:
+    """Read a `- <key>: <value>` line from the first file that has one."""
+    pattern = re.compile(
+        rf"^\s*-?\s*{re.escape(key)}:\s*([A-Za-z][\w-]*)\s*$",
+        re.MULTILINE | re.IGNORECASE,
+    )
+    for path in files:
+        if path.exists():
+            match = pattern.search(path.read_text())
+            if match:
+                return match.group(1).lower()
+    return None
 
 
 def get_user_slug() -> str:
@@ -177,6 +210,9 @@ def get_user_slug() -> str:
     raw = _git_config("user.email")
     if "@" in raw:
         raw = raw.split("@", 1)[0]
+    # GitHub noreply addresses look like `12345+username` — prefer the username.
+    if "+" in raw:
+        raw = raw.rsplit("+", 1)[1]
     if not raw:
         raw = _git_config("user.name")
 
