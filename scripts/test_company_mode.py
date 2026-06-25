@@ -212,7 +212,9 @@ def test_conflicts_detection_and_stages() -> None:
 
     original_root = conflicts.PROJECT_ROOT
     try:
-        with tempfile.TemporaryDirectory() as tmp:
+        # ignore_cleanup_errors: git may leave a background fsmonitor/socket that
+        # races with rmtree of the temp .git on some platforms.
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             repo = Path(tmp)
             _run_git(repo, "init", "-b", "main")
             _run_git(repo, "config", "user.email", "t@example.com")
@@ -311,6 +313,30 @@ def test_scaffold_private_idempotent() -> None:
             setattr(sp, name, value)
 
 
+def test_github_status_shape() -> None:
+    """github_status.collect() returns the expected keys and never throws,
+    whether or not gh is installed/authenticated."""
+    import scripts.github_status as gh
+
+    status = gh.collect()
+    for key in (
+        "gh_installed",
+        "authenticated",
+        "login",
+        "scopes",
+        "can_create_repo",
+        "can_admin_org",
+        "orgs",
+        "origin",
+        "origin_visibility",
+    ):
+        assert_true(key in status, f"github_status missing key {key}")
+    assert_true(isinstance(status["scopes"], list), "scopes is a list")
+    assert_true(isinstance(status["orgs"], list), "orgs is a list")
+    # render() must produce a string regardless of state.
+    assert_true(isinstance(gh.render(status), str), "render returns a string")
+
+
 def main() -> int:
     test_default_mode_is_personal()
     test_workspace_mode_company()
@@ -321,6 +347,7 @@ def main() -> int:
     test_sync_status_empty_in_personal_mode()
     test_conflicts_detection_and_stages()
     test_scaffold_private_idempotent()
+    test_github_status_shape()
     print("All company_mode tests passed.")
     return 0
 

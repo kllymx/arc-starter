@@ -196,6 +196,7 @@ These can be triggered by typing the `/command` name in compatible environments 
 | `/upgrade-to-company` | "make this a company brain", "share this with my team", "upgrade to company" | Converts a personal brain into a shared company brain. A deliberate, reviewed, default-deny ritual — classifies what is shareable vs private, never auto-shares. |
 | `/promote` | "share this with the team", "promote this to the company wiki", "this should be company knowledge" | Company mode only. Moves a `private/wiki/` article into the shared `wiki/` after a sensitive-content re-check and your confirmation. |
 | `/reconcile` | "fix the conflicts", "reconcile", "merge these changes" | Resolves git merge/rebase conflicts in the wiki. Unions additive knowledge, flags real contradictions for you. Usually called by `/sync`. |
+| `/join-company` | "join the company brain", "join an existing company", "I was added to the team brain" | For a teammate who cloned an existing company brain. Sets up THEM (environment, private tier, personal branch) without re-interviewing the business. |
 
 ### Sharing modes (personal vs company)
 
@@ -213,6 +214,10 @@ Never flip `Mode` by hand — run `/upgrade-to-company`, which also handles the 
 - At session start the agent receives a **sync reminder** (from `scripts/sync_status.py`) when there are unsynced commits or an open PR — surface it: offer to `/sync`, or to merge near end of day. Be proactive about this; it's how the shared brain stays current.
 - `/sync` in company mode: ensure personal branch → commit → `git rebase origin/main` → `/reconcile` on conflicts → push branch → open/update a PR into `main`. Never auto-merge; merge only on explicit confirmation.
 - Conflicts are resolved by `/reconcile`, which treats the wiki as additive (union both sides) and only asks the founder about genuine contradictions. Fail closed on `visibility: private`.
+
+**Setting up the shared GitHub home.** Run `uv run python scripts/github_status.py` to see what you can automate. The shared brain is one **private** repo accessed via a **GitHub Org** (recommended — each person uses their own account) or repo collaborators; never a shared login, never a teammate's personal repo. Note: `gh` **cannot create an org** (no `gh org create`); org creation is a ~30s browser step at `https://github.com/account/organizations/new`. Everything after (repo create, invites, remote, push, PR) you can do via `gh`. `/upgrade-to-company` walks this whole flow.
+
+**A teammate joining** does NOT clone arc-starter — they clone the **company repo** from the org (it already holds the framework + the wiki), then run `/join-company`, which sets them up without re-running the business interview. If you open a session in a cloned company brain (Mode `company`, populated wiki) and the person isn't set up yet, offer `/join-company`.
 
 ### Wiki retrieval & context hygiene
 

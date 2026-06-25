@@ -34,23 +34,61 @@ this with my team", "upgrade to company", "set up the team version".
 
 ### Step 0 — Preconditions
 
-1. Confirm `/setup` has run (a populated `wiki/` exists). If not, stop and run setup.
-2. **Decide where the shared brain will live (this matters — get it right).** The
-   company repo must NOT be a teammate's personal repo, and you must NOT create a
-   shared GitHub login. Each person keeps their own GitHub account. Recommend, in order:
-   - **A GitHub Organization (best).** Create a free org and put a fresh **private**
-     repo under it: `gh repo create <org>/arc-brain --private`. Add each teammate as an
-     org member; they authenticate as themselves (`gh auth login` / their own SSH key
-     or token). Clean ownership, real access control, survives anyone leaving.
-   - **Collaborators on a private repo (fine for two people, quick).** One private repo;
-     add the other person under the repo's Settings → Collaborators by their GitHub
-     username. They push with their own account. Downside: ownership is tied to one
-     individual — migrate to an org later.
-   - **Never:** a shared "company account" both log into (shared password, broken 2FA,
-     lost attribution), or pointing the shared remote at someone's existing personal
-     repo.
-3. Verify the company remote is private: `gh repo view --json visibility`; abort if
-   PUBLIC.
+Confirm `/setup` has run (a populated `wiki/` exists). If not, stop and run setup.
+
+### Step 0b — Set up the shared GitHub home (guided)
+
+This is where the brain will live for the whole team. Walk the founder through it;
+don't just dump commands. **Run the preflight first** so you know what you can automate:
+
+```bash
+uv run python scripts/github_status.py
+```
+
+That reports whether `gh` is installed/authenticated, the login, whether they can
+create repos / invite org members, and any orgs they already belong to.
+
+**Explain the options in plain language and recommend the org:**
+
+- **GitHub Organization (recommended).** The org owns a fresh **private** repo. Each
+  teammate joins with their **own** account — no shared logins, real access control,
+  survives anyone leaving. Best for a company brain.
+- **Collaborators on a private repo (fine for two people).** Quicker, but ownership is
+  tied to one individual; migrate to an org later.
+- **Never:** a shared "company account", or using a teammate's existing personal repo.
+
+**Important capability note:** `gh` **cannot create an organization** (there is no
+`gh org create`, and org creation isn't in the API for normal accounts). Org creation
+is a ~30-second browser step. Everything after it you CAN automate.
+
+**Org path:**
+1. If the preflight lists an existing org they want to use, use it. Otherwise tell them:
+   "Creating the org is the one step I can't do from here — open
+   <https://github.com/account/organizations/new>, pick the Free plan, name it (e.g.
+   `acme-brains`), and tell me the org name when it's done." Wait for confirmation.
+2. Create the private repo under the org and wire it as origin (the initial push
+   happens in Step 5, after the personal branch is set up):
+   ```bash
+   gh repo create <org>/<repo> --private --source=. --remote=origin
+   ```
+3. Invite teammates (each keeps their own account):
+   - If the preflight shows `admin:org`: `gh api -X PUT orgs/<org>/memberships/<user> -f role=member`
+   - Else add them to the repo: `gh api -X PUT repos/<org>/<repo>/collaborators/<user> -f permission=push`
+   - Else (no scope / gh limits): point them to the org's People → Invite, or
+     `gh auth refresh -s admin:org` then retry.
+
+**Collaborator path (no org):**
+```bash
+gh repo create <user>/<repo> --private --source=. --remote=origin
+gh api -X PUT repos/<user>/<repo>/collaborators/<teammate> -f permission=push
+```
+
+**If `gh` is missing or unauthenticated:** walk them through install
+(<https://cli.github.com>) and `gh auth login`, or fall back to creating the repo in the
+browser and `git remote add origin <url>`.
+
+**Always** confirm the result is private (`gh repo view --json visibility`) and **abort
+if PUBLIC**.
 
 ### Step 1 — Create the private tier (if absent)
 
@@ -89,17 +127,21 @@ this with my team", "upgrade to company", "set up the team version".
    `wiki/concepts/team-roster.md`, `roles.md`, `access-tiers.md`, `ways-of-working.md`.
 3. Update `context/overview.md` to read as a company brain (audience = the team).
 
-### Step 5 — Establish the shared remote
+### Step 5 — Push the shared base and onboard the team
 
-1. Point `origin` at the org/private repo from Step 0.
-2. Push only the shareable tree (everything except `private/` and gitignored paths).
-3. Print teammate onboarding, and be explicit that **each person uses their own GitHub
-   account**:
-   - Founder adds them as an org member (or repo collaborator).
-   - They run `gh auth login` as themselves, then `git clone` the repo.
-   - They run `setup.sh` (installs capture + creates their own local `private/` tier).
-   - They read `SHARING.md`, then work on their own branch `arc/<their-slug>` and sync
-     via `/sync`. No shared credentials, ever.
+`origin` is already wired (Step 0b). Now publish and set the founder up for ongoing work:
+
+1. Push the shareable tree to `main` (private/ and gitignored paths are excluded
+   automatically): `git push -u origin main`.
+2. Put the founder on their own personal branch for future sessions:
+   `git switch -c arc/<slug>` (matches `scripts/config.py:get_user_branch()`).
+3. **Onboard teammates — they do NOT clone arc-starter; they clone THIS repo.** Tell the
+   founder to send each teammate:
+   - "You've been added to the `<org>/<repo>` brain. Run `gh auth login` as yourself,
+     `git clone` it, open it in your agent, and say **join the company brain** (`/join-company`)."
+   - Each person uses their **own** GitHub account; no shared credentials, ever.
+   The `/join-company` flow sets up that person (their environment, private tier, personal
+   branch) without re-running the business interview.
 
 ### Step 6 — Govern and close out
 

@@ -80,9 +80,11 @@ the automatic session-end push is Claude-only, and Codex covers it with `/sync`.
 The company brain is **one private repo that everyone accesses with their own GitHub
 account**. You do not need — and should not create — a shared "company login".
 
-- **Best: a GitHub Organization.** Create a free org and put a private repo under it
-  (`gh repo create <org>/arc-brain --private`). Add each person as an org member. The
-  org owns the repo, so it survives anyone leaving, and you get real access control.
+- **Best: a GitHub Organization.** Create a free org (a ~30-second browser step at
+  <https://github.com/account/organizations/new> — the CLI can't create orgs), then your
+  agent does the rest: `gh repo create <org>/arc-brain --private` and invites. Add each
+  person as an org member. The org owns the repo, so it survives anyone leaving, and you
+  get real access control. `/upgrade-to-company` walks you through all of this.
 - **Quick (two people): collaborators.** One private repo with the second person added
   under Settings → Collaborators by their GitHub username. Fine to start; move to an org
   as the team grows.
@@ -95,13 +97,17 @@ anyone else.
 
 ## Onboarding a teammate
 
+A teammate does **not** clone arc-starter — they clone **this company repo** (it already
+has the framework and the team's wiki), then let their agent set them up.
+
 1. Add them to the org (or as a repo collaborator) by their GitHub username.
-2. They `gh auth login` **as themselves**, then `git clone` the repo.
-3. They run `setup.sh` — installs the capture tooling and creates their own local
-   `private/` tier.
-4. They read this file, then work on their own branch `arc/<their-name>` and `/sync`.
-5. They do **not** get your `private/` folder; it isn't in the repo.
-6. Optional: non-technical teammates can open the repo as an Obsidian vault to browse
+2. They `gh auth login` **as themselves**, then `git clone <org>/<repo>`.
+3. They open it in their agent and say **"join the company brain"** (`/join-company`).
+   That installs capture, creates their own local `private/` tier, configures their
+   environment, and puts them on their own branch `arc/<their-name>` — without
+   re-running the business interview.
+4. They do **not** get your `private/` folder; it isn't in the repo.
+5. Optional: non-technical teammates can open the repo as an Obsidian vault to browse
    the wiki without touching git.
 
 ## Keep credentials out of the brain

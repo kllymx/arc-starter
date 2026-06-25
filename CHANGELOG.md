@@ -52,6 +52,15 @@ only the compile target and retrieval scope become mode-aware.
   explicit: the shared brain is one private repo accessed via a **GitHub Org** (or repo
   collaborators), with each person using their **own** GitHub account — never a shared
   login and never a teammate's personal repo.
+- **Guided GitHub setup (`scripts/github_status.py`).** A preflight the agent runs to
+  see what it can automate (gh installed/auth, scopes, existing orgs, origin/visibility).
+  `/upgrade-to-company` now walks the org-vs-collaborators decision, recommends the org,
+  and automates repo creation + invites + remote + push via `gh`. It's explicit that
+  `gh` cannot create an org (browser step) but everything after is scriptable.
+- **Teammate join flow (`/join-company` + Codex skill).** A teammate clones the *company
+  repo* (not arc-starter) and runs `/join-company`, which sets them up — environment,
+  their own local `private/` tier, personal branch — without re-running the business
+  interview. The agent offers it automatically when a cloned company brain is detected.
 
 ### Changed
 
