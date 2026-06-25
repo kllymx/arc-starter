@@ -1,0 +1,55 @@
+.claude/commands/sync.md
+  s_48fd00163ae46b::t_d09111392fc985 11-51
+SHARING.md
+  s_48fd00163ae46b::t_1dc4b5dbbbcd65 53-55,58-76
+  s_48fd00163ae46b::t_4be8e5909a3d27 77
+scripts/config.py
+  s_48fd00163ae46b::t_1a2393abd00317 154-191
+CLAUDE.md
+  s_48fd00163ae46b::t_85e9a8d7790a5f 209-216
+  s_48fd00163ae46b::t_f232de163f99de 198
+scripts/conflicts.py
+  s_48fd00163ae46b::t_4a855a49475299 1-132
+hooks/session-start.py
+  s_48fd00163ae46b::t_d80a61ae341471 24-28,33-42
+scripts/sync_status.py
+  s_48fd00163ae46b::t_06bbc61cba9036 1-164
+hooks/git-push.sh
+  s_48fd00163ae46b::t_3c3926b12de9fd 33-41,45-53,55
+scripts/test_company_mode.py
+  s_48fd00163ae46b::t_b8c23b82809dee 170-262,269-271
+.claude/commands/reconcile.md
+  s_48fd00163ae46b::t_4d288dc736fcd2 1-87
+.codex/skills/reconcile/SKILL.md
+  s_48fd00163ae46b::t_4986f4ebb9ad12 1-62
+CHANGELOG.md
+  s_48fd00163ae46b::t_64c13e559505a4 34-46
+AGENTS.md
+  s_48fd00163ae46b::t_4697013c6586f2 209-216
+  s_48fd00163ae46b::t_15bb8273d6a61b 198
+scripts/smoke_test.py
+  s_48fd00163ae46b::t_b846eb6b8f0edd 251
+  s_48fd00163ae46b::t_01fe8f40d082dc 274-275
+.codex/skills/sync/SKILL.md
+  s_48fd00163ae46b::t_ff369dc7a920ba 14-39
+hooks/session-start.sh
+  s_48fd00163ae46b::t_345cc1741b31fc 214-215,218-231
+hooks/git-pull.sh
+  s_48fd00163ae46b::t_e43850067a174c 24-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "dc2dce9ea289f430c65d5a9908e05d34dfef35fc",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
