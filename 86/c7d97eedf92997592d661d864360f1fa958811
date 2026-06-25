@@ -1,0 +1,68 @@
+.gitignore
+  s_48fd00163ae46b::t_ed3944bb04cce8 5
+scripts/test_company_mode.py
+  s_48fd00163ae46b::t_0eefc14b218c2a 341,356-357,363,370-404
+  s_48fd00163ae46b::t_328289adea5452 433-437,446
+  s_48fd00163ae46b::t_0005a327e9f3fe 29-62,64-65,68-70,73-95
+  s_48fd00163ae46b::t_e775c6cb0d6751 405-406
+context/sharing.md
+  s_48fd00163ae46b::t_c0450d696ca9c4 1-24
+scripts/sync_status.py
+  s_48fd00163ae46b::t_647f14f700dbc8 23-28
+  s_48fd00163ae46b::t_29ce145cae0d84 113-123,129-146,148-149,151
+hooks/git-pull.sh
+  s_48fd00163ae46b::t_59925ea278128b 31
+.claude/commands/upgrade-to-company.md
+  s_48fd00163ae46b::t_b437309e0f7071 124-131
+.claude/commands/sync.md
+  s_48fd00163ae46b::t_ff23f71f6a20b9 54-55,60-73
+  s_48fd00163ae46b::t_08471fe47636b8 32-34
+  s_48fd00163ae46b::t_955fdb9ea7c785 22-28
+  s_48fd00163ae46b::t_cc80c7b50574b4 74
+hooks/git-push.sh
+  s_48fd00163ae46b::t_21371866af0b50 20-33
+  s_48fd00163ae46b::t_3c3e4143b83aff 49-51,53-55,60-61,64,69-71
+.gitattributes
+  s_48fd00163ae46b::t_9db65690c2abbb 19-31
+README.md
+  s_48fd00163ae46b::t_8cd199b50edd3a 9-10,12-14,16-17,21,23-24,26-29,31-32,34-35,37,39,41-42,44,46-48,50,52-53,55-64,66,68,70,72-73,75-76,78,80-84,86-87,89,91-95,97,99-100,102-104,106,108,110,112-117,119,125-129,131-138,140,142-147,149,151-157,159-160,162,164,166,168-174,178,180,182-190,192,194,196,199-213,220-227
+CLAUDE.md
+  s_48fd00163ae46b::t_00313de2a08e1e 203
+  s_48fd00163ae46b::t_9522dc14d3f434 217-218
+CHANGELOG.md
+  s_48fd00163ae46b::t_34c8896eda3599 65-82
+.claude/commands/setup.md
+  s_48fd00163ae46b::t_21c24bcbd5dee4 68-70
+.claude/commands/join-company.md
+  s_48fd00163ae46b::t_73c71a448c66c2 57,59-60,65-66
+  s_48fd00163ae46b::t_3fd28c3b388069 82-87,91-93,96
+  s_48fd00163ae46b::t_92612768540ba1 72-74
+.codex/skills/sync/SKILL.md
+  s_48fd00163ae46b::t_1cb75750027d21 23-27,40-48,50-51
+AGENTS.md
+  s_48fd00163ae46b::t_39ed2be6d2ca18 203
+  s_48fd00163ae46b::t_491238e5d449de 217-218
+context/workspace.md
+  s_48fd00163ae46b::t_28a16ea325929e 8-11
+scripts/config.py
+  s_48fd00163ae46b::t_b495d88b5034e8 42-44
+  s_48fd00163ae46b::t_9cd64026ca6ffa 213-215
+  s_48fd00163ae46b::t_465a259e4c6dc7 138-140,146-148,152-184
+  s_48fd00163ae46b::t_f66cbbe9de028a 185-186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "86c7d97eedf92997592d661d864360f1fa958811",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
