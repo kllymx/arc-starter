@@ -38,6 +38,26 @@ The `private/` folder is gitignored: it's the founder's personal layer and
 never reaches a shared remote. It exists from day one so a later
 `/upgrade-to-company` is a move-into-an-existing-folder, not a retrofit.
 
+### If prerequisites are missing, install them
+
+The founder may be on a fresh machine. Don't assume Python or tooling is present
+— `setup.sh` is designed to bootstrap everything:
+
+- It installs **uv**, which brings its own **Python** (no system Python needed for
+  the capture engine).
+- If `setup.sh` fails, read the actual error and help install what's missing
+  **for their OS**, then re-run it. Common cases:
+  - **No `curl`/`wget`** (so uv can't install): on macOS suggest installing the
+    Xcode command-line tools or Homebrew; on Linux, their package manager.
+  - **`uv` installed but not on PATH**: add `~/.local/bin` to PATH (or restart the
+    shell) and re-run.
+  - **No system `python3`** at all: that's fine for the engine (uv provides Python);
+    the few shell-hook helpers also fall back to `uv run python`.
+- Do this proactively and plainly — a non-technical founder should never be left
+  staring at a missing-dependency error. Install it for them, confirm it worked,
+  and continue. Only ask them to act if something genuinely needs their input
+  (e.g. an admin password).
+
 ### Check the founder's environment first
 
 Look at `context/workspace.md`. If it is empty or still contains placeholder text, ask this before anything else:
@@ -326,5 +346,23 @@ If they say yes, do it immediately. If they want alternatives, offer up to two m
 > - Ask me to **brainstorm** when you want automation ideas
 > - Drop documents in `imports/` and tell me to **ingest** them to grow the wiki
 > - Ask me to **reflect** after a productive session to capture what we learned"
+
+### Optional: give the workspace a name they'll recognize
+
+Once setup is done, offer (don't force) a friendlier folder name:
+
+> "One small thing: this folder is still called `arc-starter`. If you'd like, you
+> can rename it to something that feels like yours — `acme-brain`, `Brain`, your
+> company name, whatever. Want a suggestion?"
+
+If they want to rename it, **don't try to rename the folder you're running inside**
+— that breaks the open session. Instead tell them to do it themselves:
+
+> "Close this window, rename the folder in Finder/Explorer (or `mv arc-starter
+> acme-brain`), then reopen it. Everything keeps working — nothing inside depends
+> on the folder's name."
+
+This is purely cosmetic and safe to skip; the brain is the same regardless of the
+folder name.
 
 Update `context/setup-status.md` to mark setup complete.

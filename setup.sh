@@ -38,11 +38,12 @@ fi
 # tier is created even if `uv sync` later fails. Gives the founder a private layer
 # from day one; makes a later personal→company upgrade a move, not a retrofit.
 # Don't hard-fail bootstrap, but DO surface the failure — company mode needs it.
-if python3 scripts/scaffold_private.py; then
+if python3 scripts/scaffold_private.py 2>/dev/null \
+   || uv run python scripts/scaffold_private.py 2>/dev/null; then
   :
 else
   echo "WARNING: could not create the private/ tier (scripts/scaffold_private.py failed)." >&2
-  echo "         Company mode needs it. Run 'python3 scripts/scaffold_private.py' manually." >&2
+  echo "         Company mode needs it. Run 'uv run python scripts/scaffold_private.py' manually." >&2
 fi
 
 # Step 3: Install project dependencies
