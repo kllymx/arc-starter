@@ -33,18 +33,25 @@ def _run(args: list[str]) -> tuple[int, str]:
 
 
 def _user_and_scopes() -> tuple[str | None, list[str]]:
-    """Return (login, oauth_scopes) from a single authenticated API call."""
+    """Return (login, oauth_scopes, scopes_known) from one authenticated call.
+
+    `scopes_known` is False when no `x-oauth-scopes` header was present — which is
+    the case for fine-grained PATs and GitHub App tokens. Those don't expose
+    scopes, so an empty list must NOT be read as "no permissions".
+    """
     code, out = _run(["gh", "api", "-i", "user"])
     if code != 0 or not out:
-        return None, []
+        return None, [], False
 
     # Split headers from JSON body.
     sep = "\r\n\r\n" if "\r\n\r\n" in out else "\n\n"
     head, _, body = out.partition(sep)
 
     scopes: list[str] = []
+    scopes_known = False
     for line in head.splitlines():
         if line.lower().startswith("x-oauth-scopes:"):
+            scopes_known = True
             raw = line.split(":", 1)[1]
             scopes = [s.strip() for s in raw.split(",") if s.strip()]
             break
@@ -54,7 +61,7 @@ def _user_and_scopes() -> tuple[str | None, list[str]]:
         login = json.loads(body).get("login")
     except (json.JSONDecodeError, AttributeError):
         pass
-    return login, scopes
+    return login, scopes, scopes_known
 
 
 def _orgs() -> list[str]:
@@ -99,6 +106,7 @@ def collect() -> dict:
             "authenticated": False,
             "login": None,
             "scopes": [],
+            "scopes_known": False,
             "can_create_repo": False,
             "can_admin_org": False,
             "orgs": [],
@@ -108,15 +116,25 @@ def collect() -> dict:
 
     code, _ = _run(["gh", "auth", "status"])
     authenticated = code == 0
-    login, scopes = _user_and_scopes() if authenticated else (None, [])
+    login, scopes, scopes_known = (
+        _user_and_scopes() if authenticated else (None, [], False)
+    )
+
+    # When scopes are known (classic OAuth), report capability precisely. When
+    # they aren't (fine-grained PAT / GitHub App), report None = "unknown" rather
+    # than False, so the upgrade flow attempts the action instead of wrongly
+    # telling the user they can't.
+    can_create_repo = ("repo" in scopes) if scopes_known else (None if authenticated else False)
+    can_admin_org = ("admin:org" in scopes) if scopes_known else (None if authenticated else False)
 
     return {
         "gh_installed": True,
         "authenticated": authenticated,
         "login": login,
         "scopes": scopes,
-        "can_create_repo": "repo" in scopes,
-        "can_admin_org": "admin:org" in scopes,
+        "scopes_known": scopes_known,
+        "can_create_repo": can_create_repo,
+        "can_admin_org": can_admin_org,
         "orgs": _orgs() if authenticated else [],
         "origin": _origin(),
         "origin_visibility": _origin_visibility(),
@@ -137,12 +155,21 @@ def render(status: dict) -> str:
         return "\n".join(lines)
 
     lines.append(f"- Authenticated as **{status['login']}**.")
-    lines.append(f"- Can create repos (repo scope): {'yes' if status['can_create_repo'] else 'no'}.")
-    lines.append(
-        "- Can invite ORG members via API (admin:org scope): "
-        + ("yes" if status["can_admin_org"] else "no — use repo collaborators, the web "
-           "UI, or `gh auth refresh -s admin:org`.")
-    )
+    if not status.get("scopes_known", True):
+        lines.append(
+            "- Token scopes unavailable (fine-grained PAT or GitHub App) — I'll "
+            "attempt repo creation and org invites and fall back (repo "
+            "collaborators / web UI) only if GitHub actually refuses."
+        )
+    else:
+        lines.append(
+            f"- Can create repos (repo scope): {'yes' if status['can_create_repo'] else 'no'}."
+        )
+        lines.append(
+            "- Can invite ORG members via API (admin:org scope): "
+            + ("yes" if status["can_admin_org"] else "no — use repo collaborators, the "
+               "web UI, or `gh auth refresh -s admin:org`.")
+        )
     if status["orgs"]:
         lines.append(f"- Existing orgs you belong to: {', '.join(status['orgs'])}.")
     else:

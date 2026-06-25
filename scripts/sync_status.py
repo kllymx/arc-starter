@@ -120,8 +120,10 @@ def _open_pr(branch: str) -> str | None:
         return None
     if res.returncode != 0:
         return None
+    # jq renders `.[0].number` on an empty array as the literal "null" (exit 0),
+    # so guard against it rather than reporting "Open PR #null".
     num = res.stdout.strip()
-    return num or None
+    return num if num and num.lower() not in ("null", "none") else None
 
 
 def _local_hour() -> int:

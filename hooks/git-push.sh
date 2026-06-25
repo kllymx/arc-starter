@@ -86,25 +86,33 @@ if [ -z "$CUR_BRANCH" ]; then
 fi
 
 if git remote get-url origin >/dev/null 2>&1; then
-  # Fail closed on the brain leaking: only auto-push when origin is CONFIRMED
-  # private. We need gh to verify (pinned to origin's owner/repo so a public
-  # upstream in a fork can't be mistaken for origin). If gh is missing or can't
-  # determine visibility, we DON'T auto-push — the user can /sync (which guides
-  # setup) or install gh. Commits remain safe locally either way.
-  VIS=""
-  if command -v gh >/dev/null 2>&1; then
-    ORIGIN_REPO="$(git remote get-url origin 2>/dev/null | sed -E 's#^.*[:/]([^/:]+/[^/:]+?)(\.git)?/?$#\1#')"
-    VIS="$(gh repo view "$ORIGIN_REPO" --json visibility -q .visibility 2>/dev/null)"
-  fi
+  if [ "$COMPANY" -eq 1 ]; then
+    # Company mode: fail closed on the shared brain leaking — only auto-push when
+    # origin is CONFIRMED private (gh pinned to origin's owner/repo so a public
+    # upstream in a fork can't be mistaken for origin). If gh is missing or can't
+    # determine visibility, stay safe: commits remain local and the next-session
+    # sync reminder (commits ahead of origin/main) covers it.
+    VIS=""
+    if command -v gh >/dev/null 2>&1; then
+      ORIGIN_REPO="$(git remote get-url origin 2>/dev/null | sed -E 's#^.*[:/]([^/:]+/[^/:]+?)(\.git)?/?$#\1#')"
+      VIS="$(gh repo view "$ORIGIN_REPO" --json visibility -q .visibility 2>/dev/null)"
+    fi
 
-  if [ "$VIS" = "PRIVATE" ] || [ "$VIS" = "INTERNAL" ]; then
+    if [ "$VIS" = "PRIVATE" ] || [ "$VIS" = "INTERNAL" ]; then
+      if ! git push origin "$CUR_BRANCH" >>"$LOG" 2>&1; then
+        echo "[arc] push of '$CUR_BRANCH' failed (see above). Commits are safe locally; run /sync to retry." >>"$LOG" 2>&1
+      fi
+    elif [ "$VIS" = "PUBLIC" ]; then
+      echo "[arc] origin is PUBLIC — not auto-pushing (would leak the shared brain). Use a private remote." >>"$LOG" 2>&1
+    else
+      echo "[arc] could not confirm origin is private (gh missing or unavailable) — not auto-pushing to be safe. Run /sync, or install gh. Commits are safe locally." >>"$LOG" 2>&1
+    fi
+  else
+    # Personal mode: the founder owns their own remote — push unconditionally
+    # (unchanged from before company mode existed).
     if ! git push origin "$CUR_BRANCH" >>"$LOG" 2>&1; then
       echo "[arc] push of '$CUR_BRANCH' failed (see above). Commits are safe locally; run /sync to retry." >>"$LOG" 2>&1
     fi
-  elif [ "$VIS" = "PUBLIC" ]; then
-    echo "[arc] origin is PUBLIC — not auto-pushing (would leak the brain). Use a private remote." >>"$LOG" 2>&1
-  else
-    echo "[arc] could not confirm origin is private (gh missing or unavailable) — not auto-pushing to be safe. Run /sync, or install gh. Commits are safe locally." >>"$LOG" 2>&1
   fi
 fi
 
