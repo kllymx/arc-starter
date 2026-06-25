@@ -7,6 +7,40 @@ the safe-update contract.
 
 ---
 
+## [2026-06-25] — Company mode (personal → shared second brain)
+
+Adds a `personal` vs `company` sharing mode so an ARC brain can grow from a single
+founder's workspace into a shared team brain without leaking personal context. The
+boundary is structural and fail-closed: a local-only `private/` tier, gitignored from
+the shared remote, plus a default-deny upgrade ritual. Hooks and capture are unchanged;
+only the compile target and retrieval scope become mode-aware.
+
+### Added
+
+- **`Mode` setting + `get_mode()` (`scripts/config.py`).** Resolves `personal`
+  (default) or `company` from `ARC_MODE` env var or `- Mode:` in
+  `context/workspace.md`. New `private/` tier path constants.
+- **Mode-aware compilation (`scripts/compile.py`).** In company mode, new captures
+  compile into the local-only `private/wiki/` and only reach the shared `wiki/` via
+  `/promote`; personal mode is unchanged.
+- **Whole-brain local retrieval (`scripts/wiki_query.py`, `scripts/context_select.py`).**
+  In company mode, retrieval and SessionStart injection also span `private/wiki/` so
+  the founder's connections keep surfacing locally. Teammates' clones have no
+  `private/` tier (gitignored), so they see only the shared wiki.
+- **`/upgrade-to-company` and `/promote`** commands (+ Codex skills). Default-deny
+  upgrade with a privacy classification manifest, and the reviewed promote path.
+- **`SHARING.md`** — founder-facing governance for the company-brain model.
+- **`scripts/test_company_mode.py`** + a `test_company_mode_wiring` smoke check.
+
+### Changed
+
+- `.gitignore` now excludes `private/` and `.firecrawl/`; the previously committed
+  `.firecrawl/` research scrapes were untracked (kept on disk) so they stop shipping
+  on every push.
+- `CLAUDE.md` / `AGENTS.md` document the two new commands and the sharing modes.
+
+---
+
 ## [2026-06-24] — Second-brain improvements (context hygiene, retrieval, maintenance)
 
 Implemented from a research pass on PKM/second-brain patterns for AI coding agents.

@@ -28,6 +28,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from scripts.config import get_mode  # noqa: E402
+
 DAILY_DIR = PROJECT_ROOT / "daily"
 WIKI_DIR = PROJECT_ROOT / "wiki"
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
@@ -120,10 +122,32 @@ async def compile_daily_log(log_path: Path, state: dict) -> float:
 
     log_content = log_path.read_text(encoding="utf-8")
 
+    mode = get_mode()
+    if mode == "company":
+        target_wiki = "private/wiki"
+        mode_instructions = (
+            "## Sharing mode: COMPANY\n\n"
+            "This is a shared/company brain. New knowledge is PRIVATE-by-default: it must\n"
+            "land in the LOCAL-ONLY `private/wiki/` tier, never directly in the shared\n"
+            "`wiki/`. The shared `wiki/` only changes through the founder-reviewed /promote\n"
+            "flow, never from automatic compilation.\n\n"
+            "- CREATE new concept articles in `private/wiki/concepts/`.\n"
+            "- CREATE connection articles in `private/wiki/connections/`.\n"
+            "- UPDATE an existing article wherever it already lives (a `private/wiki/`\n"
+            "  article if one exists; otherwise create a new `private/wiki/` article —\n"
+            "  do NOT edit shared `wiki/` articles during compilation).\n"
+            "- Maintain `private/wiki/index.md` and `private/wiki/log.md`.\n"
+            "- You MAY read shared `wiki/` articles to avoid duplicates and to cross-link,\n"
+            "  but treat them as read-only here.\n\n"
+        )
+    else:
+        target_wiki = "wiki"
+        mode_instructions = ""
+
     prompt = f"""You are a knowledge compiler for an ARC workspace. Your job is to read a daily
 conversation log and compile durable knowledge into wiki articles.
 
-## Daily Log to Compile
+{mode_instructions}## Daily Log to Compile
 
 **File:** {log_path.name}
 
@@ -131,15 +155,15 @@ conversation log and compile durable knowledge into wiki articles.
 
 ## Your Task
 
-1. Read `wiki/index.md` to see what articles already exist
+1. Read `{target_wiki}/index.md` to see what articles already exist
 2. Read relevant existing articles to understand what's already documented
 3. Extract key concepts, decisions, lessons, and connections from the daily log
 4. For each piece of durable knowledge:
    - If a relevant article exists: UPDATE it with new information
-   - If no article exists: CREATE a new one in `wiki/concepts/`
-   - If the log reveals non-obvious connections between 2+ concepts: CREATE a connection article in `wiki/connections/`
-5. Update `wiki/index.md` with any new articles
-6. Append a timestamped entry to `wiki/log.md`
+   - If no article exists: CREATE a new one in `{target_wiki}/concepts/`
+   - If the log reveals non-obvious connections between 2+ concepts: CREATE a connection article in `{target_wiki}/connections/`
+5. Update `{target_wiki}/index.md` with any new articles
+6. Append a timestamped entry to `{target_wiki}/log.md`
 
 ## Article Format
 
@@ -165,7 +189,7 @@ tags: [comma-separated]
 ```
 
 ## Rules
-- **NEVER modify files in `daily/` — they are immutable inputs. Only write to `wiki/`.**
+- **NEVER modify files in `daily/` — they are immutable inputs. Only write to `{target_wiki}/`.**
 - Use [[wikilinks]] throughout — every mention of a concept that has its own article should link to it
 - Keep articles atomic — one concept per file
 - File names: kebab-case (e.g., `business-model.md`, `sales-process.md`)

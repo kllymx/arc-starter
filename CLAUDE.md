@@ -193,6 +193,17 @@ These can be triggered by typing the `/command` name in compatible environments 
 | `/skill-audit` | "what should become a skill", "audit repeated workflows", "turn this into a skill" | Finds repeated ARC workflows and can build an approved reusable Claude command / Codex skill. |
 | `/garden` | "garden the wiki", "daily declutter", "tidy the wiki" | Lightweight daily/periodic hygiene pass. Drafts `wiki/garden-{date}.md` (stale, orphaned, promote-from-daily candidates) for your review — lighter and faster than `/consolidate`. |
 | `/link` | "link the wiki", "add wikilinks", "build MOCs" | Proposes verified `[[wikilinks]]` and Maps of Content as a draft for review. Only ever links to articles that exist. |
+| `/upgrade-to-company` | "make this a company brain", "share this with my team", "upgrade to company" | Converts a personal brain into a shared company brain. A deliberate, reviewed, default-deny ritual — classifies what is shareable vs private, never auto-shares. |
+| `/promote` | "share this with the team", "promote this to the company wiki", "this should be company knowledge" | Company mode only. Moves a `private/wiki/` article into the shared `wiki/` after a sensitive-content re-check and your confirmation. |
+
+### Sharing modes (personal vs company)
+
+ARC runs in one of two modes, set by `- Mode:` in `context/workspace.md` (default `personal`). The automation reads it via `scripts/config.py:get_mode()`.
+
+- **Personal** — a single founder's brain. Captured knowledge compiles straight into the shared `wiki/`.
+- **Company** — a shared/team brain. New auto-captured knowledge compiles into the **local-only `private/wiki/`** first and only reaches the shared `wiki/` through `/promote`. The `private/` tier is gitignored, so personal context never reaches teammates. Your own retrieval and session-start context still span both tiers locally, so connections keep surfacing for you. See `SHARING.md`.
+
+Never flip `Mode` by hand — run `/upgrade-to-company`, which also handles the privacy classification, the `private/` scaffold, and the shared remote. Treat anything personal (comp, equity, health, candid opinions about named people, career thoughts, credentials) as private-by-default.
 
 ### Wiki retrieval & context hygiene
 

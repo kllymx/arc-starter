@@ -11,6 +11,14 @@ scripts/last-flush.json
 scripts/session-flush-*.md
 reports/
 
+# Private tier (company mode) — local-only second brain, never pushed to the
+# shared/company remote. Personal context (comp, health, candid notes, career
+# thoughts) lives here and stays on the founder's machine. See SHARING.md.
+private/
+
+# Harness research scrapes — scratch material, not framework code
+.firecrawl/
+
 # Claude Code ephemeral state
 .claude/worktrees/
 

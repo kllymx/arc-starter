@@ -14,8 +14,10 @@ from scripts.config import (
     DAILY_DIR,
     MEMORY_FILE,
     OVERVIEW_FILE,
+    PRIVATE_WIKI_INDEX,
     SCRIPTS_DIR,
     WIKI_INDEX,
+    get_mode,
 )
 
 INJECT_BUDGET_CHARS = 7000
@@ -220,6 +222,14 @@ def build_session_context(
     wiki_nav = index_navigation(wiki_index_path=wiki_index_path)
     if wiki_nav:
         parts.append(f"## Wiki Index\n\n{wiki_nav}")
+
+    # Company mode: also surface the local-only private wiki so the founder's
+    # own connections keep appearing at session start. Teammates never have a
+    # private/ tree (it is gitignored), so this is a no-op for them.
+    if wiki_index_path is None and get_mode() == "company":
+        private_nav = index_navigation(wiki_index_path=PRIVATE_WIKI_INDEX)
+        if private_nav:
+            parts.append(f"## Private Wiki Index (local only)\n\n{private_nav}")
 
     activity = recent_activity(daily_dir=daily_dir)
     if activity:

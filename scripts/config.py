@@ -21,9 +21,21 @@ DAILY_DIR = PROJECT_ROOT / "daily"
 IMPORTS_DIR = PROJECT_ROOT / "imports"
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 
+# Private tier (company mode) — local-only, never pushed to the shared remote.
+# See .gitignore: the whole `private/` tree is excluded from git, so personal
+# context stays on the founder's machine and never reaches teammates. It is
+# created by /setup (empty) and populated by /upgrade-to-company and /promote.
+PRIVATE_DIR = PROJECT_ROOT / "private"
+PRIVATE_WIKI_DIR = PRIVATE_DIR / "wiki"
+PRIVATE_CONCEPTS_DIR = PRIVATE_WIKI_DIR / "concepts"
+PRIVATE_CONNECTIONS_DIR = PRIVATE_WIKI_DIR / "connections"
+PRIVATE_QA_DIR = PRIVATE_WIKI_DIR / "qa"
+PRIVATE_CONTEXT_DIR = PRIVATE_DIR / "context"
+
 # Key files
 WIKI_INDEX = WIKI_DIR / "index.md"
 WIKI_LOG = WIKI_DIR / "log.md"
+PRIVATE_WIKI_INDEX = PRIVATE_WIKI_DIR / "index.md"
 OVERVIEW_FILE = CONTEXT_DIR / "overview.md"
 WORKSPACE_FILE = CONTEXT_DIR / "workspace.md"
 MEMORY_FILE = CONTEXT_DIR / "memory.md"
@@ -104,6 +116,39 @@ def detect_environment() -> str:
         return "codex"
 
     return "unknown"
+
+
+def get_mode() -> str:
+    """Return the ARC sharing mode: 'personal' (default) or 'company'.
+
+    Personal mode: a single founder's brain. Captured knowledge compiles
+    straight into the shared `wiki/`.
+
+    Company mode: a shared/team brain. New auto-captured knowledge compiles
+    into the local-only `private/wiki/` first and only reaches the shared
+    `wiki/` through a deliberate, reviewed step (/promote or the manifest in
+    /upgrade-to-company). This keeps the personal-vs-company privacy boundary
+    a fail-closed default rather than something the founder must remember.
+
+    Resolution order:
+    1. ARC_MODE environment variable ('personal' | 'company')
+    2. context/workspace.md  ('- Mode: company')
+    3. default 'personal'
+    """
+    env = os.environ.get("ARC_MODE", "").strip().lower()
+    if env in {"personal", "company"}:
+        return env
+
+    if WORKSPACE_FILE.exists():
+        match = re.search(
+            r"^\s*-?\s*Mode:\s*(personal|company)\s*$",
+            WORKSPACE_FILE.read_text(),
+            re.MULTILINE | re.IGNORECASE,
+        )
+        if match:
+            return match.group(1).lower()
+
+    return "personal"
 
 
 def get_llm_backend():

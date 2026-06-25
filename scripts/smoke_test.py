@@ -228,6 +228,38 @@ def test_maintenance_commands_have_skill_parity() -> None:
         )
 
 
+def test_company_mode_wiring() -> None:
+    """Company mode (2026-06-25): mode resolver defaults to personal, the
+    private tier is gitignored, and the new commands ship with Codex parity."""
+    # Mode resolver exists and defaults to personal in a clean env.
+    result = run_python_with_clean_agent_env(
+        "import os; os.environ.pop('ARC_MODE', None)\n"
+        "from scripts.config import get_mode; print(get_mode())\n"
+    )
+    assert_equal(
+        result.stdout.strip(),
+        "personal",
+        "get_mode must default to personal",
+    )
+
+    # The private tier and research scrapes must be gitignored.
+    gitignore = (PROJECT_ROOT / ".gitignore").read_text()
+    assert "private/" in gitignore, "private/ must be gitignored (company-mode boundary)"
+    assert ".firecrawl/" in gitignore, ".firecrawl/ must be gitignored"
+
+    # New commands ship as BOTH a Claude command and a Codex skill.
+    for name in ("upgrade-to-company", "promote"):
+        assert (PROJECT_ROOT / ".claude" / "commands" / f"{name}.md").exists(), (
+            f"/{name} missing its Claude command (.claude/commands/{name}.md)"
+        )
+        assert (PROJECT_ROOT / ".codex" / "skills" / name / "SKILL.md").exists(), (
+            f"/{name} missing its Codex skill (.codex/skills/{name}/SKILL.md)"
+        )
+
+    # The shared-brain governance doc must exist.
+    assert (PROJECT_ROOT / "SHARING.md").exists(), "SHARING.md must exist at repo root"
+
+
 def test_new_scripts_importable() -> None:
     """The new retrieval/maintenance modules import cleanly (no syntax/import
     errors) and are import-side-effect-free. Behavior is covered by each
@@ -255,6 +287,7 @@ def main() -> None:
         test_hook_configs_export_runtime_env,
         test_hook_timeouts_are_seconds_not_milliseconds,
         test_maintenance_commands_have_skill_parity,
+        test_company_mode_wiring,
         test_new_scripts_importable,
     ]
 
