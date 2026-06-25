@@ -21,15 +21,27 @@ git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 # No origin remote? skip silently (founder hasn't connected GitHub)
 git remote get-url origin >/dev/null 2>&1 || exit 0
 
-# Working tree dirty? skip — don't risk in-progress work
+LOG_DIR="$PROJECT_DIR/.claude"
+mkdir -p "$LOG_DIR" 2>/dev/null
+
+# Company mode? Only FETCH the shared main — never auto-rebase here. A silent
+# rebase that hits a conflict would leave the repo mid-rebase at session start.
+# The SessionStart reminder tells the founder, and /sync does the integrate +
+# LLM-assisted /reconcile under human supervision.
+if grep -Eqi '^\s*-?\s*Mode:\s*company\b' "$PROJECT_DIR/context/workspace.md" 2>/dev/null; then
+  git fetch origin main >>"$LOG_DIR/last-sync.log" 2>&1 || \
+    git fetch origin master >>"$LOG_DIR/last-sync.log" 2>&1 || true
+  exit 0
+fi
+
+# Personal mode: safe to fast-forward the current branch.
+# Working tree dirty? skip — don't risk in-progress work.
 if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
   exit 0
 fi
 
 DEFAULT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || echo main)"
 
-LOG_DIR="$PROJECT_DIR/.claude"
-mkdir -p "$LOG_DIR" 2>/dev/null
 git pull --rebase --autostash origin "$DEFAULT_BRANCH" \
   >>"$LOG_DIR/last-sync.log" 2>&1 || true
 

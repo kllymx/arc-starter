@@ -8,6 +8,47 @@ Push the founder's ARC changes to their git remote. This is the manual
 version of what the auto-pull and auto-push hooks do at session
 boundaries.
 
+## Mode check (do this first)
+
+Read `- Mode:` in `context/workspace.md` (or run
+`uv run python scripts/config.py` is not needed — just grep the file).
+
+- **`personal`** (default) → follow the personal-mode phases below.
+- **`company`** → follow **Company mode** immediately below instead. The shared
+  brain is multiplayer, so you never push straight to `main`.
+
+## Company mode (shared brain)
+
+Goal: get this person's captures onto their own branch and into an open PR
+against `main`, integrating teammates' work safely along the way.
+
+1. **Be on a personal branch.** Compute it as `arc/<slug>` where `<slug>` comes
+   from `git config user.email` (the part before `@`, lowercased) — this matches
+   `scripts/config.py:get_user_branch()`. If currently on `main`/`master`:
+   - Create/switch to the personal branch carrying any local commits:
+     `git switch -c arc/<slug>` (or `git switch arc/<slug>` if it exists, then
+     cherry-pick/rebase the stray commits over).
+   - Reset local `main` back to the remote: `git fetch origin && git branch -f main origin/main`.
+2. **Commit** pending changes: `git add -A && git commit -m "arc: $(date -u +%Y-%m-%d-%H%M)"`
+   (or a description the founder gives). Private content is gitignored, so it won't
+   be staged.
+3. **Integrate `main`.** `git fetch origin main` then `git rebase origin/main`.
+   - **Conflicts?** Run `/reconcile` (it unions additive wiki knowledge and flags
+     real contradictions), then `git rebase --continue`. Repeat until clean.
+4. **Push the branch.** `git push -u origin arc/<slug>`. Confirm the remote is
+   private first: `gh repo view --json visibility`; **abort and warn if PUBLIC**.
+5. **Open or update the PR.**
+   - If a PR for this branch exists (`gh pr view arc/<slug>`), the push already
+     updated it — report the PR number/URL.
+   - If not, offer to open one: `gh pr create --base main --head arc/<slug> --fill`.
+     (If `gh` is missing or unauthenticated, give the compare URL to open manually.)
+6. **End-of-day / merge.** If it's late in the day or the founder is wrapping up,
+   remind them they can merge their PR so teammates get their latest. Only merge on
+   explicit confirmation; never auto-merge.
+
+Report: branch, commits synced, conflicts reconciled (if any), and the PR link.
+Then stop — the personal-mode phases below do NOT apply in company mode.
+
 ## When to use
 
 - Founder wants to push captures right now without ending the session

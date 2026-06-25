@@ -151,6 +151,44 @@ def get_mode() -> str:
     return "personal"
 
 
+def get_user_slug() -> str:
+    """Return a filesystem/branch-safe slug identifying this person, used to
+    name their personal company-mode branch (`arc/<slug>`).
+
+    Derived from git config: the local-part of user.email, else user.name,
+    else 'local'. Lowercased; only [a-z0-9._-] kept. Must stay in lockstep
+    with the bash equivalent in hooks/git-push.sh.
+    """
+    import subprocess
+
+    def _git_config(key: str) -> str:
+        try:
+            out = subprocess.run(
+                ["git", "config", key],
+                capture_output=True,
+                text=True,
+                cwd=str(PROJECT_ROOT),
+                timeout=5,
+            )
+            return out.stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            return ""
+
+    raw = _git_config("user.email")
+    if "@" in raw:
+        raw = raw.split("@", 1)[0]
+    if not raw:
+        raw = _git_config("user.name")
+
+    slug = re.sub(r"[^a-z0-9._-]", "", raw.lower().replace(" ", "-"))
+    return slug or "local"
+
+
+def get_user_branch() -> str:
+    """The personal branch this person works on in company mode."""
+    return f"arc/{get_user_slug()}"
+
+
 def get_llm_backend():
     """
     Returns the appropriate LLM backend based on detected environment.

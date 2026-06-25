@@ -11,6 +11,32 @@ Push the founder's ARC changes to their git remote. This is the manual
 version of what the auto-pull hook does at session start. Codex's Stop
 event fires per-turn so we don't auto-push — sync runs explicitly.
 
+## Mode check (do this first)
+
+Read `- Mode:` in `context/workspace.md`.
+
+- **`personal`** (default) → follow the phases below.
+- **`company`** → follow **Company mode** instead. Never push straight to `main`.
+
+## Company mode (shared brain)
+
+1. **Be on a personal branch** `arc/<slug>` (`<slug>` = `git config user.email`
+   before `@`, lowercased — matches `scripts/config.py:get_user_branch()`). If on
+   `main`/`master`, `git switch -c arc/<slug>` carrying local commits, then reset
+   local `main`: `git fetch origin && git branch -f main origin/main`.
+2. **Commit** pending changes (private content is gitignored).
+3. **Integrate:** `git fetch origin main` then `git rebase origin/main`. On
+   conflicts, run the `reconcile` skill, then `git rebase --continue`. Repeat.
+4. **Push the branch:** `git push -u origin arc/<slug>` (confirm remote is private
+   first; abort if PUBLIC).
+5. **Open/update PR:** `gh pr view arc/<slug>` — if none, offer
+   `gh pr create --base main --head arc/<slug> --fill`; if `gh` is unavailable, give
+   the compare URL.
+6. Remind about merging at end of day; merge only on explicit confirmation.
+
+Report branch, commits, conflicts reconciled, and the PR link, then stop — the
+phases below are personal mode only.
+
 ## When to use
 
 - Founder wants to push captures without ending the session

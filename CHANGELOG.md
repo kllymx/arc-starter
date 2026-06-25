@@ -31,6 +31,19 @@ only the compile target and retrieval scope become mode-aware.
   upgrade with a privacy classification manifest, and the reviewed promote path.
 - **`SHARING.md`** — founder-facing governance for the company-brain model.
 - **`scripts/test_company_mode.py`** + a `test_company_mode_wiring` smoke check.
+- **Multiplayer sync.** In company mode each person works on a personal branch
+  `arc/<slug>` and merges via PRs; nobody pushes `main` directly. `get_user_branch()`
+  (`scripts/config.py`) names the branch; the SessionEnd push hook refuses to push
+  `main` and pushes the personal branch instead; the SessionStart pull hook only
+  *fetches* `origin/main` (no silent rebase). `/sync` is now mode-aware: branch →
+  commit → rebase `origin/main` → reconcile → push → open/update PR.
+- **Agent-aware sync reminder (`scripts/sync_status.py`).** SessionStart (both the
+  `.py` and bash hooks, so Claude + Codex) surfaces unsynced commits / open-PR /
+  end-of-day prompts.
+- **LLM-assisted conflict resolution.** `scripts/conflicts.py` exposes git merge
+  stages (base/ours/theirs); new `/reconcile` command (+ Codex skill) unions additive
+  wiki knowledge, flags genuine contradictions for the founder, and fails closed on
+  `visibility: private`.
 
 ### Changed
 

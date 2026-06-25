@@ -167,12 +167,108 @@ def test_retrieval_includes_private_dirs() -> None:
         assert_true("secret.md" in found, "private article is surfaced locally")
 
 
+def test_user_branch_shape() -> None:
+    branch = config.get_user_branch()
+    assert_true(branch.startswith("arc/"), "personal branch is namespaced under arc/")
+    slug = branch[len("arc/"):]
+    assert_true(slug != "", "slug must be non-empty")
+    assert_true(
+        all(c.isalnum() or c in "._-" for c in slug),
+        f"slug must be branch-safe, got {slug!r}",
+    )
+
+
+def test_sync_status_empty_in_personal_mode() -> None:
+    import scripts.sync_status as sync_status
+
+    prior = os.environ.get("ARC_MODE")
+    try:
+        os.environ["ARC_MODE"] = "personal"
+        assert_equal(sync_status.build_sync_status(), "", "no sync reminder in personal mode")
+    finally:
+        if prior is None:
+            os.environ.pop("ARC_MODE", None)
+        else:
+            os.environ["ARC_MODE"] = prior
+
+
+def _run_git(repo: Path, *args: str) -> None:
+    import subprocess
+
+    subprocess.run(
+        ["git", "-c", "commit.gpgsign=false", *args],
+        cwd=str(repo),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_conflicts_detection_and_stages() -> None:
+    """conflicts.py detects an unmerged file and exposes ours/theirs stages."""
+    import subprocess
+
+    import scripts.conflicts as conflicts
+
+    original_root = conflicts.PROJECT_ROOT
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            _run_git(repo, "init", "-b", "main")
+            _run_git(repo, "config", "user.email", "t@example.com")
+            _run_git(repo, "config", "user.name", "Tester")
+
+            article = repo / "wiki" / "concepts" / "pricing.md"
+            article.parent.mkdir(parents=True)
+            article.write_text("# Pricing\n\nBase price is 10.\n")
+            _run_git(repo, "add", "-A")
+            _run_git(repo, "commit", "-m", "base")
+
+            _run_git(repo, "checkout", "-b", "feature")
+            article.write_text("# Pricing\n\nBase price is 12.\n")
+            _run_git(repo, "add", "-A")
+            _run_git(repo, "commit", "-m", "feature change")
+
+            _run_git(repo, "checkout", "main")
+            article.write_text("# Pricing\n\nBase price is 15.\n")
+            _run_git(repo, "add", "-A")
+            _run_git(repo, "commit", "-m", "main change")
+
+            # Merge feature into main → conflict on the same line.
+            merge = subprocess.run(
+                ["git", "merge", "feature"],
+                cwd=str(repo),
+                capture_output=True,
+                text=True,
+            )
+            assert_true(merge.returncode != 0, "merge should conflict")
+
+            conflicts.PROJECT_ROOT = repo
+            files = conflicts.conflicted_files()
+            assert_true(
+                any(f.endswith("pricing.md") for f in files),
+                f"pricing.md should be conflicted, got {files}",
+            )
+            assert_equal(conflicts.operation_state(), "merge", "merge in progress")
+
+            stages = conflicts.file_stages("wiki/concepts/pricing.md")
+            assert_true(stages["ours"] is not None, "ours stage present")
+            assert_true(stages["theirs"] is not None, "theirs stage present")
+            assert_true("15" in (stages["ours"] or ""), "ours holds main's value")
+            assert_true("12" in (stages["theirs"] or ""), "theirs holds feature's value")
+    finally:
+        conflicts.PROJECT_ROOT = original_root
+
+
 def main() -> int:
     test_default_mode_is_personal()
     test_workspace_mode_company()
     test_env_overrides_workspace()
     test_compile_target_is_mode_aware()
     test_retrieval_includes_private_dirs()
+    test_user_branch_shape()
+    test_sync_status_empty_in_personal_mode()
+    test_conflicts_detection_and_stages()
     print("All company_mode tests passed.")
     return 0
 

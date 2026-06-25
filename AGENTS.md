@@ -195,6 +195,7 @@ These can be triggered by typing the `/command` name in compatible environments 
 | `/link` | "link the wiki", "add wikilinks", "build MOCs" | Proposes verified `[[wikilinks]]` and Maps of Content as a draft for review. Only ever links to articles that exist. |
 | `/upgrade-to-company` | "make this a company brain", "share this with my team", "upgrade to company" | Converts a personal brain into a shared company brain. A deliberate, reviewed, default-deny ritual — classifies what is shareable vs private, never auto-shares. |
 | `/promote` | "share this with the team", "promote this to the company wiki", "this should be company knowledge" | Company mode only. Moves a `private/wiki/` article into the shared `wiki/` after a sensitive-content re-check and your confirmation. |
+| `/reconcile` | "fix the conflicts", "reconcile", "merge these changes" | Resolves git merge/rebase conflicts in the wiki. Unions additive knowledge, flags real contradictions for you. Usually called by `/sync`. |
 
 ### Sharing modes (personal vs company)
 
@@ -204,6 +205,14 @@ ARC runs in one of two modes, set by `- Mode:` in `context/workspace.md` (defaul
 - **Company** — a shared/team brain. New auto-captured knowledge compiles into the **local-only `private/wiki/`** first and only reaches the shared `wiki/` through `/promote`. The `private/` tier is gitignored, so personal context never reaches teammates. Your own retrieval and session-start context still span both tiers locally, so connections keep surfacing for you. See `SHARING.md`.
 
 Never flip `Mode` by hand — run `/upgrade-to-company`, which also handles the privacy classification, the `private/` scaffold, and the shared remote. Treat anything personal (comp, equity, health, candid opinions about named people, career thoughts, credentials) as private-by-default.
+
+**Multiplayer sync (company mode).** Several people work in their own clones at once, so nobody pushes straight to `main`:
+
+- Each person works on a personal branch `arc/<slug>` (`<slug>` from `git config user.email`). The SessionEnd auto-push commits and pushes that branch; in company mode it refuses to push `main` (protects the shared base). On Codex (no SessionEnd), the user runs `/sync`.
+- The SessionStart pull hook only **fetches** `origin/main` in company mode (a silent rebase could leave the repo mid-conflict). The integrate happens in `/sync`.
+- At session start the agent receives a **sync reminder** (from `scripts/sync_status.py`) when there are unsynced commits or an open PR — surface it: offer to `/sync`, or to merge near end of day. Be proactive about this; it's how the shared brain stays current.
+- `/sync` in company mode: ensure personal branch → commit → `git rebase origin/main` → `/reconcile` on conflicts → push branch → open/update a PR into `main`. Never auto-merge; merge only on explicit confirmation.
+- Conflicts are resolved by `/reconcile`, which treats the wiki as additive (union both sides) and only asks the founder about genuine contradictions. Fail closed on `visibility: private`.
 
 ### Wiki retrieval & context hygiene
 

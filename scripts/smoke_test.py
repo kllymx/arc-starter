@@ -248,7 +248,7 @@ def test_company_mode_wiring() -> None:
     assert ".firecrawl/" in gitignore, ".firecrawl/ must be gitignored"
 
     # New commands ship as BOTH a Claude command and a Codex skill.
-    for name in ("upgrade-to-company", "promote"):
+    for name in ("upgrade-to-company", "promote", "reconcile"):
         assert (PROJECT_ROOT / ".claude" / "commands" / f"{name}.md").exists(), (
             f"/{name} missing its Claude command (.claude/commands/{name}.md)"
         )
@@ -271,6 +271,8 @@ def test_new_scripts_importable() -> None:
         "scripts.wiki_query",
         "scripts.garden",
         "scripts.link_pass",
+        "scripts.sync_status",
+        "scripts.conflicts",
     ):
         importlib.import_module(mod)
 
