@@ -49,6 +49,11 @@ capture tooling and creates their own local, gitignored `private/` tier via
 `scripts/scaffold_private.py`. If `.venv` already exists, just run
 `uv run python scripts/scaffold_private.py` to ensure the private tier.
 
+**Heads up about hooks:** the repo ships with hooks wired in `.claude/settings.json` /
+`.codex/hooks.json`, but a freshly cloned project asks the user to **trust/approve the
+hooks once** before they run (a security prompt). Tell them to approve it — that's what
+enables auto-capture and the session-start sync reminder. Until then, those won't fire.
+
 ## Step 4 — Configure their environment (keep Mode)
 
 Ask the two setup questions and write THEIR answers into `context/workspace.md`, leaving

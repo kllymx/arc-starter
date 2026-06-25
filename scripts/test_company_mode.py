@@ -313,6 +313,36 @@ def test_scaffold_private_idempotent() -> None:
             setattr(sp, name, value)
 
 
+def test_sync_status_suggests_join_on_fresh_clone() -> None:
+    """On main, in company mode, with no personal branch → suggest /join-company."""
+    import scripts.sync_status as sync_status
+
+    original_root = sync_status.PROJECT_ROOT
+    prior_mode = os.environ.get("ARC_MODE")
+    try:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            repo = Path(tmp)
+            _run_git(repo, "init", "-b", "main")
+            _run_git(repo, "config", "user.email", "joiner@example.com")
+            _run_git(repo, "config", "user.name", "Joiner")
+            (repo / "README.md").write_text("# Company brain\n")
+            _run_git(repo, "add", "-A")
+            _run_git(repo, "commit", "-m", "base")
+            # An origin must exist for the reminder to engage (value need not resolve).
+            _run_git(repo, "remote", "add", "origin", str(repo / "origin.git"))
+
+            sync_status.PROJECT_ROOT = repo
+            os.environ["ARC_MODE"] = "company"
+            out = sync_status.build_sync_status()
+            assert_true("join the company brain" in out, f"expected join nudge, got: {out!r}")
+    finally:
+        sync_status.PROJECT_ROOT = original_root
+        if prior_mode is None:
+            os.environ.pop("ARC_MODE", None)
+        else:
+            os.environ["ARC_MODE"] = prior_mode
+
+
 def test_github_status_shape() -> None:
     """github_status.collect() returns the expected keys and never throws,
     whether or not gh is installed/authenticated."""
@@ -348,6 +378,7 @@ def main() -> int:
     test_conflicts_detection_and_stages()
     test_scaffold_private_idempotent()
     test_github_status_shape()
+    test_sync_status_suggests_join_on_fresh_clone()
     print("All company_mode tests passed.")
     return 0
 

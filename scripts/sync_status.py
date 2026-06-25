@@ -54,6 +54,14 @@ def _current_branch() -> str:
     return _git("rev-parse", "--abbrev-ref", "HEAD") or ""
 
 
+def _branch_exists(branch: str) -> bool:
+    """True if `branch` exists locally or on origin."""
+    for ref in (f"refs/heads/{branch}", f"refs/remotes/origin/{branch}"):
+        if _git("rev-parse", "--verify", "--quiet", ref) is not None:
+            return True
+    return False
+
+
 def _main_ref() -> str | None:
     """Prefer origin/main, fall back to origin/master if that's the default."""
     for ref in ("origin/main", "origin/master"):
@@ -112,11 +120,19 @@ def build_sync_status() -> str:
 
     # On main/master in company mode is the wrong place to work.
     if branch in ("main", "master"):
-        lines.append(
-            f"- You're on `{branch}`. In company mode, work happens on your own "
-            f"branch `{personal}`. Say \"sync\" and I'll move your changes there "
-            f"and open a PR — this protects the shared `{branch}`."
-        )
+        if not _branch_exists(personal):
+            # Fresh clone of a company brain, not set up yet → guide the join flow.
+            lines.append(
+                "- Looks like you've cloned a company brain but haven't set up yet. "
+                "Say \"join the company brain\" (/join-company) and I'll configure your "
+                "access, private tier, and personal branch."
+            )
+        else:
+            lines.append(
+                f"- You're on `{branch}`. In company mode, work happens on your own "
+                f"branch `{personal}`. Say \"sync\" and I'll move your changes there "
+                f"and open a PR — this protects the shared `{branch}`."
+            )
     else:
         if main_ref:
             counts = _counts("HEAD", main_ref)
