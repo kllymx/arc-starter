@@ -1,0 +1,22 @@
+setup.sh
+  s_48fd00163ae46b::t_9b8fff0938b279 41-42,46
+.claude/commands/setup.md
+  s_48fd00163ae46b::t_2bf5cb1e66c741 41-60
+  s_48fd00163ae46b::t_082952600bfee7 350-367
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "ddb292769c2cf7ed618df79df8a26792cc9f3764",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
