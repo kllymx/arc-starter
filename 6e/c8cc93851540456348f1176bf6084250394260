@@ -1,0 +1,25 @@
+scripts/test_company_mode.py
+  s_48fd00163ae46b::t_c0d8d8a53a6c9c 316-345
+  s_48fd00163ae46b::t_561d09d9f2c8f4 381
+.claude/commands/join-company.md
+  s_48fd00163ae46b::t_1d320db0afb141 52-56
+scripts/sync_status.py
+  s_48fd00163ae46b::t_1914ad4a7c5bda 123-135
+  s_48fd00163ae46b::t_b08217c8d9765e 57-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "6ec8cc93851540456348f1176bf6084250394260",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
