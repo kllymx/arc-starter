@@ -1,0 +1,63 @@
+scripts/sync_status.py
+  s_48fd00163ae46b::t_a14f9cbe3517d4 16
+  s_48fd00163ae46b::t_afe21588a8b203 155-164
+  s_48fd00163ae46b::t_28fd1213a3b013 62-70,122
+  s_48fd00163ae46b::t_a58324e0984013 71-78
+  s_48fd00163ae46b::t_6c506c20693edd 100-105,121
+  s_48fd00163ae46b::t_f384f62e80d109 106-110,113
+  s_48fd00163ae46b::t_cdaf11134a3f2d 143-149
+setup.sh
+  s_48fd00163ae46b::t_4b3b07c2d4a4f4 42-44,46
+  s_48fd00163ae46b::t_d36ffb3291884e 36-41,45,47-48
+.gitignore
+  s_48fd00163ae46b::t_937ff04932680b 24-25
+scripts/test_company_mode.py
+  s_48fd00163ae46b::t_764645fbb1f23e 201-221
+  s_48fd00163ae46b::t_9f1979872216bc 463
+  s_48fd00163ae46b::t_8d6fb31cb60857 363,377-378,380,385-389
+scripts/config_get.py
+  s_48fd00163ae46b::t_5225b9e951abab 1-46
+hooks/session-start.sh
+  s_48fd00163ae46b::t_e2eddc9691c732 230-233
+.claude/commands/ingest.md
+  s_48fd00163ae46b::t_f144ad7eccfd0d 21-30
+scripts/github_status.py
+  s_48fd00163ae46b::t_6ccd44ea47fa11 72-80,82-90
+  s_48fd00163ae46b::t_e6fe9b3be41108 19
+hooks/git-pull.sh
+  s_48fd00163ae46b::t_6eedafdc616c09 31-37
+scripts/smoke_test.py
+  s_48fd00163ae46b::t_c4a56108725f9f 296
+scripts/config.py
+  s_48fd00163ae46b::t_ab2eb0c0833c9e 8-9
+  s_48fd00163ae46b::t_814a2f1bbb1d31 212-224
+scripts/scaffold_private.py
+  s_48fd00163ae46b::t_cca3d724c36335 53
+scripts/wiki_query.py
+  s_48fd00163ae46b::t_e7d8c1aad9f045 45
+  s_48fd00163ae46b::t_8ef94ee994a8cd 98-100,102
+hooks/git-push.sh
+  s_48fd00163ae46b::t_0f548438e24ba3 54-60,62-63
+  s_48fd00163ae46b::t_5c425a1d0c0e80 82-87
+  s_48fd00163ae46b::t_406232f04baf2e 89-94,99-107
+  s_48fd00163ae46b::t_ca960cfb147b04 47-49
+  s_48fd00163ae46b::t_34a77e15e841cb 95-98
+  s_48fd00163ae46b::t_c44bc305ecfcc9 78,108
+  s_48fd00163ae46b::t_5a78c9b9fe4671 79-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "48ca1701a5ea201a224269498b93962ef5dae8bd",
+  "prompts": {},
+  "sessions": {
+    "s_48fd00163ae46b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5d21560b-b123-46b1-8609-f31fda234ae8",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "kllymx <122115719+kllymx@users.noreply.github.com>"
+    }
+  }
+}
